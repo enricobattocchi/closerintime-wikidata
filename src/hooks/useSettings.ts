@@ -6,7 +6,7 @@ import type { TimespanFormat } from "@/lib/types";
 const STORAGE_KEY = "timespanformat";
 
 export function useSettings() {
-  const [timespanFormat, setTimespanFormat] = useState<TimespanFormat>(0);
+  const [timespanFormat, setTimespanFormat] = useState<TimespanFormat>(2);
 
   useEffect(() => {
     try {

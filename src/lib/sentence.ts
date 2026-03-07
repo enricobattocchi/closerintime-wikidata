@@ -20,7 +20,7 @@ function eventToDate(event: Event, yearsOnly: boolean): Date {
 
 export function generateSentence(
   events: Event[],
-  timespanFormat: TimespanFormat = 0
+  timespanFormat: TimespanFormat = 2
 ): string {
   if (events.length === 0) return "";
 

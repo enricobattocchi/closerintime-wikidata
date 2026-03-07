@@ -20,7 +20,7 @@ function eventToDate(event: Event, yearsOnly: boolean): Date {
 
 export function computeTimeline(
   events: Event[],
-  timespanFormat: TimespanFormat = 0
+  timespanFormat: TimespanFormat = 2
 ): TimelineResult {
   const yearsOnly = events.some((e) => !e.month || !e.day);
   const now = createUTCDate();

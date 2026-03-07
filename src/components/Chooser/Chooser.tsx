@@ -106,7 +106,7 @@ export default function Chooser({
 
   // Recompute client-side when local events are selected OR settings differ from default
   const hasLocalSelection = selectedLocalEvents.length > 0;
-  const needsClientCompute = hasLocalSelection || timespanFormat !== 0;
+  const needsClientCompute = hasLocalSelection || timespanFormat !== 2;
 
   let timeline: { markers: MarkerData[]; segments: SegmentData[] };
   let sentence: string;
