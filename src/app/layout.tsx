@@ -10,6 +10,7 @@ const sourceSerif = Source_Serif_4({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://closerinti.me"),
   title: {
     default: "#closerintime",
     template: "%s #closerintime",
