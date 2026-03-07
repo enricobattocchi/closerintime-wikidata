@@ -19,6 +19,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   icons: {
     icon: "/favicon.svg",
+    apple: "/icons/icon-192.png",
   },
   openGraph: {
     title: "#closerintime",
