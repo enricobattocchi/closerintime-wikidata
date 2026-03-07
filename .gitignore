@@ -36,5 +36,8 @@ public/swe-worker-*.js
 # SQLite (legacy)
 data/*.db
 
+# Backups
+data/backups/
+
 # Deno
 deno.lock

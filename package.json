@@ -9,7 +9,8 @@
     "build": "next build --webpack",
     "start": "next start",
     "lint": "next lint",
-    "seed:blobs": "tsx scripts/seed-blobs.ts"
+    "seed:blobs": "tsx scripts/seed-blobs.ts",
+    "backup": "tsx scripts/backup-blobs.ts"
   },
   "keywords": [],
   "author": "",
