@@ -57,14 +57,10 @@ export default function Chooser({
 
   const currentIds = allSelected.map((e) => e.id);
 
-  const navigateToServerIds = useCallback(
-    (ids: number[]) => {
-      const sorted = [...ids].sort((a, b) => a - b);
-      if (sorted.length === 0) {
-        router.push("/");
-      } else {
-        router.push("/" + sorted.join("/"));
-      }
+  const navigate = useCallback(
+    (serverEvts: Event[], customEvts: Event[]) => {
+      const path = buildShareablePath(serverEvts, customEvts);
+      router.push(path);
     },
     [router]
   );
@@ -72,17 +68,15 @@ export default function Chooser({
   const handleSelect = useCallback(
     (slotIndex: number, event: Event) => {
       if (event.id < 0) {
-        // Local events: client-side only, no navigation
-        setSelectedLocalEvents((prev) => [...prev, event]);
+        const nextCustom = [...selectedLocalEvents, event];
+        setSelectedLocalEvents(nextCustom);
+        navigate(selectedEvents, nextCustom);
       } else {
-        const serverIds = [
-          ...selectedEvents.map((e) => e.id),
-          event.id,
-        ];
-        navigateToServerIds(serverIds);
+        const serverEvts = [...selectedEvents, event];
+        navigate(serverEvts, selectedLocalEvents);
       }
     },
-    [selectedEvents, navigateToServerIds]
+    [selectedEvents, selectedLocalEvents, navigate]
   );
 
   const handleClear = useCallback(
@@ -91,17 +85,23 @@ export default function Chooser({
       if (!event) return;
 
       if (event.id < 0) {
-        setSelectedLocalEvents((prev) =>
-          prev.filter((e) => e.id !== event.id)
-        );
+        const remainingCustom = selectedLocalEvents.filter((e) => e.id !== event.id);
+        setSelectedLocalEvents(remainingCustom);
+        if (selectedEvents.length > 0 || remainingCustom.length > 0) {
+          navigate(selectedEvents, remainingCustom);
+        } else {
+          router.push("/");
+        }
       } else {
-        const serverIds = selectedEvents
-          .filter((e) => e.id !== event.id)
-          .map((e) => e.id);
-        navigateToServerIds(serverIds);
+        const remainingServer = selectedEvents.filter((e) => e.id !== event.id);
+        if (remainingServer.length > 0 || selectedLocalEvents.length > 0) {
+          navigate(remainingServer, selectedLocalEvents);
+        } else {
+          router.push("/");
+        }
       }
     },
-    [allSelected, selectedEvents, navigateToServerIds]
+    [allSelected, selectedEvents, selectedLocalEvents, navigate, router]
   );
 
   // Recompute client-side when local events are selected OR settings differ from default
@@ -169,9 +169,15 @@ export default function Chooser({
                       if (!confirm(`Delete "${event!.name}"?`)) return;
                       const dbId = -(event!.id);
                       deleteLocalEvent(dbId);
-                      setSelectedLocalEvents((prev) =>
-                        prev.filter((e) => e.id !== event!.id)
+                      const remainingCustom = selectedLocalEvents.filter(
+                        (e) => e.id !== event!.id
                       );
+                      setSelectedLocalEvents(remainingCustom);
+                      if (selectedEvents.length > 0 || remainingCustom.length > 0) {
+                        navigate(selectedEvents, remainingCustom);
+                      } else {
+                        router.push("/");
+                      }
                     }
                   : undefined
               }
