@@ -167,6 +167,86 @@
   flex: 1;
 }
 
+.tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--color-border);
+}
+
+.tab {
+  padding: 10px 20px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: var(--color-text-light);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+}
+
+.tab:hover {
+  color: var(--color-primary);
+}
+
+.activeTab {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+  font-weight: 600;
+}
+
+.searchRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.searchInput {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  outline: none;
+}
+
+.searchInput:focus {
+  border-color: var(--color-primary);
+}
+
+.eventCount {
+  font-size: 0.85rem;
+  color: var(--color-text-light);
+  white-space: nowrap;
+}
+
+.cardId {
+  font-size: 0.75rem;
+  color: var(--color-text-light);
+  margin-bottom: 6px;
+}
+
+.card.disabled {
+  opacity: 0.5;
+}
+
+.toggleBtn {
+  padding: 6px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.approveBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .approved {
   color: #2e7d32;
   font-weight: 600;

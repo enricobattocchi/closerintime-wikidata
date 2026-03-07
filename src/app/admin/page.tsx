@@ -1,4 +1,4 @@
-import SubmissionReview from "@/components/Admin/SubmissionReview";
+import AdminShell from "@/components/Admin/AdminShell";
 
 export const metadata = {
   title: "Admin - closerintime",
@@ -8,7 +8,7 @@ export const metadata = {
 export default function AdminPage() {
   return (
     <main>
-      <SubmissionReview />
+      <AdminShell />
     </main>
   );
 }

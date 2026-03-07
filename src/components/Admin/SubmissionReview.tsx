@@ -13,9 +13,11 @@ interface SubmissionWithKey extends Submission {
   key: string;
 }
 
-export default function SubmissionReview() {
-  const [token, setToken] = useState("");
-  const [authenticated, setAuthenticated] = useState(false);
+interface SubmissionReviewProps {
+  token: string;
+}
+
+export default function SubmissionReview({ token }: SubmissionReviewProps) {
   const [submissions, setSubmissions] = useState<SubmissionWithKey[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -30,43 +32,28 @@ export default function SubmissionReview() {
     setEdits((prev) => ({ ...prev, [key]: { ...prev[key], [field]: value } }));
   };
 
-  const fetchSubmissions = useCallback(async (authToken: string) => {
+  const fetchSubmissions = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
       const res = await fetch("/api/admin/submissions", {
-        headers: { Authorization: `Bearer ${authToken}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
-      if (res.status === 401) {
-        setAuthenticated(false);
-        setError("Invalid token");
-        sessionStorage.removeItem("adminToken");
+      if (!res.ok) {
+        setError("Failed to load submissions");
         return;
       }
-      const data = await res.json();
-      setSubmissions(data);
+      setSubmissions(await res.json());
     } catch {
       setError("Failed to load submissions");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [token]);
 
   useEffect(() => {
-    const saved = sessionStorage.getItem("adminToken");
-    if (saved) {
-      setToken(saved);
-      setAuthenticated(true);
-      fetchSubmissions(saved);
-    }
+    fetchSubmissions();
   }, [fetchSubmissions]);
-
-  const handleLogin = () => {
-    if (!token.trim()) return;
-    sessionStorage.setItem("adminToken", token);
-    setAuthenticated(true);
-    fetchSubmissions(token);
-  };
 
   const handleAction = async (key: string, action: "approve" | "reject") => {
     const overrides = edits[key] || {};
@@ -88,34 +75,11 @@ export default function SubmissionReview() {
     }
   };
 
-  if (!authenticated) {
-    return (
-      <div className={styles.container}>
-        <h1 className={styles.title}>Admin</h1>
-        <div className={styles.loginForm}>
-          <input
-            className={styles.input}
-            type="password"
-            placeholder="Admin token"
-            value={token}
-            onChange={(e) => setToken(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-          />
-          <button className={styles.loginBtn} onClick={handleLogin}>
-            Login
-          </button>
-        </div>
-        {error && <p className={styles.error}>{error}</p>}
-      </div>
-    );
-  }
-
   const pending = submissions.filter((s) => s.status === "pending");
   const processed = submissions.filter((s) => s.status !== "pending");
 
   return (
-    <div className={styles.container}>
-      <h1 className={styles.title}>Submissions</h1>
+    <div>
       {loading && <p>Loading...</p>}
       {error && <p className={styles.error}>{error}</p>}
 
