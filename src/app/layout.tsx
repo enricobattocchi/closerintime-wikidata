@@ -45,6 +45,23 @@ export default function RootLayout({
       <body>
         <Header />
         {children}
+        <footer
+          style={{
+            textAlign: "center",
+            padding: "32px 16px 24px",
+            fontSize: "0.8rem",
+            color: "var(--color-text-light)",
+          }}
+        >
+          A progressive web app from{" "}
+          <a href="https://lopo.it" rel="author noopener" target="_blank" style={{ color: "var(--color-primary)" }}>
+            Lopo.it
+          </a>
+          {" "}&middot;{" "}
+          <a href="https://github.com/enricobattocchi/closerintime-node" rel="noopener" target="_blank" style={{ color: "var(--color-primary)" }}>
+            GitHub
+          </a>
+        </footer>
       </body>
     </html>
   );
