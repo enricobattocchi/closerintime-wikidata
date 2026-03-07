@@ -20,14 +20,16 @@ export const metadata: Metadata = {
     icon: "/favicon.svg",
   },
   openGraph: {
-    title: "closerintime",
+    title: "#closerintime",
     description: "Visualize the time between historical events.",
     siteName: "closerintime",
+    images: [{ url: "/closerintime-sharing.png" }],
   },
   twitter: {
-    card: "summary",
-    title: "closerintime",
+    card: "summary_large_image",
+    title: "#closerintime",
     description: "Visualize the time between historical events.",
+    images: ["/closerintime-sharing.png"],
   },
 };
 
