@@ -1,30 +1,53 @@
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
+import type { Event } from "@/lib/types";
 import { getEventsByIds, getEnabledEvents } from "@/lib/events";
 import { computeTimeline } from "@/lib/timeline-math";
 import { generateSentence } from "@/lib/sentence";
+import { decodeCustomEvent, buildShareablePath } from "@/lib/custom-event-url";
 import Chooser from "@/components/Chooser/Chooser";
 
 interface PageProps {
   params: Promise<{ ids: string[] }>;
 }
 
-function parseIds(rawIds: string[]): number[] | null {
+function parseSegments(rawIds: string[]): {
+  serverIds: number[];
+  customEvents: Event[];
+} | null {
   if (rawIds.length < 1 || rawIds.length > 3) return null;
-  const ids = rawIds.map(Number);
-  if (ids.some((id) => !Number.isInteger(id) || id <= 0)) return null;
-  return ids;
+
+  const serverIds: number[] = [];
+  const customEvents: Event[] = [];
+
+  for (let i = 0; i < rawIds.length; i++) {
+    const seg = decodeURIComponent(rawIds[i]);
+    if (seg.startsWith("c:")) {
+      const custom = decodeCustomEvent(seg, i);
+      if (!custom) return null;
+      customEvents.push(custom);
+    } else {
+      const id = Number(seg);
+      if (!Number.isInteger(id) || id <= 0) return null;
+      serverIds.push(id);
+    }
+  }
+
+  return { serverIds, customEvents };
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { ids: rawIds } = await params;
-  const ids = parseIds(rawIds);
-  if (!ids) return { title: "closerintime" };
+  const parsed = parseSegments(rawIds);
+  if (!parsed) return { title: "closerintime" };
 
-  const events = getEventsByIds(ids);
-  if (events.length === 0) return { title: "closerintime" };
+  const serverEvents = parsed.serverIds.length > 0
+    ? getEventsByIds(parsed.serverIds)
+    : [];
+  const allEvents = [...serverEvents, ...parsed.customEvents];
+  if (allEvents.length === 0) return { title: "closerintime" };
 
-  const sentence = generateSentence(events);
+  const sentence = generateSentence(allEvents);
   const title = sentence || "closerintime";
 
   return {
@@ -37,33 +60,42 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function EventPage({ params }: PageProps) {
   const { ids: rawIds } = await params;
-  const ids = parseIds(rawIds);
+  const parsed = parseSegments(rawIds);
 
-  if (!ids) {
+  if (!parsed) {
     redirect("/");
   }
 
-  // Redirect to sorted ascending order for canonical URLs
-  const sorted = [...ids].sort((a, b) => a - b);
-  if (ids.some((id, i) => id !== sorted[i])) {
-    redirect("/" + sorted.join("/"));
+  // Redirect server IDs to sorted ascending order for canonical URLs
+  const sortedServerIds = [...parsed.serverIds].sort((a, b) => a - b);
+  if (parsed.serverIds.some((id, i) => id !== sortedServerIds[i])) {
+    const canonical = buildShareablePath(
+      sortedServerIds.map((id) => ({ id } as Event)),
+      parsed.customEvents
+    );
+    redirect(canonical);
   }
 
-  const events = getEventsByIds(ids);
-  if (events.length === 0) {
+  const serverEvents = sortedServerIds.length > 0
+    ? getEventsByIds(sortedServerIds)
+    : [];
+
+  if (sortedServerIds.length > 0 && serverEvents.length === 0) {
     redirect("/");
   }
 
+  const allSelectedEvents = [...serverEvents, ...parsed.customEvents];
   const allEvents = getEnabledEvents();
-  const timeline = computeTimeline(events);
-  const sentence = generateSentence(events);
-  const href = "/" + sorted.join("/");
+  const timeline = computeTimeline(allSelectedEvents);
+  const sentence = generateSentence(allSelectedEvents);
+  const href = buildShareablePath(serverEvents, parsed.customEvents);
 
   return (
     <main>
       <Chooser
         allEvents={allEvents}
-        selectedEvents={events}
+        selectedEvents={serverEvents}
+        urlCustomEvents={parsed.customEvents}
         serverTimeline={{ markers: timeline.markers, segments: timeline.segments }}
         serverSentence={sentence}
         serverHref={href}

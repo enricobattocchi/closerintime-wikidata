@@ -7,6 +7,7 @@ import { useLocalEvents } from "@/hooks/useLocalEvents";
 import { useSettings } from "@/hooks/useSettings";
 import { computeTimeline } from "@/lib/timeline-math";
 import { generateSentence } from "@/lib/sentence";
+import { buildShareablePath } from "@/lib/custom-event-url";
 import EventAutocomplete from "./EventAutocomplete";
 import AddEventForm from "./AddEventForm";
 import Timeline from "@/components/Timeline/Timeline";
@@ -18,6 +19,8 @@ import styles from "@/styles/Chooser.module.css";
 interface ChooserProps {
   allEvents: Event[];
   selectedEvents: Event[];
+  /** Custom events decoded from the URL (for sharing) */
+  urlCustomEvents?: Event[];
   /** Server-computed data, used when no local events are selected and format=0 */
   serverTimeline?: { markers: MarkerData[]; segments: SegmentData[] };
   serverSentence?: string;
@@ -27,6 +30,7 @@ interface ChooserProps {
 export default function Chooser({
   allEvents,
   selectedEvents,
+  urlCustomEvents = [],
   serverTimeline,
   serverSentence,
   serverHref,
@@ -34,7 +38,7 @@ export default function Chooser({
   const router = useRouter();
   const { localEvents, addEvent, deleteEvent: deleteLocalEvent } = useLocalEvents();
   const { timespanFormat, updateTimespanFormat } = useSettings();
-  const [selectedLocalEvents, setSelectedLocalEvents] = useState<Event[]>([]);
+  const [selectedLocalEvents, setSelectedLocalEvents] = useState<Event[]>(urlCustomEvents);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
@@ -68,6 +72,7 @@ export default function Chooser({
   const handleSelect = useCallback(
     (slotIndex: number, event: Event) => {
       if (event.id < 0) {
+        // Local events: client-side only, no navigation
         setSelectedLocalEvents((prev) => [...prev, event]);
       } else {
         const serverIds = [
@@ -111,8 +116,8 @@ export default function Chooser({
     const result = computeTimeline(allSelected, timespanFormat);
     timeline = { markers: result.markers, segments: result.segments };
     sentence = generateSentence(allSelected, timespanFormat);
-    const serverIds = selectedEvents.map((e) => e.id).sort((a, b) => a - b);
-    href = serverIds.length > 0 ? "/" + serverIds.join("/") : "/";
+    // Shareable URL includes both server events and custom events
+    href = buildShareablePath(selectedEvents, selectedLocalEvents);
   } else {
     timeline = serverTimeline || { markers: [], segments: [] };
     sentence = serverSentence || "";
