@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState, Fragment } from "react";
+import { useLayoutEffect, useEffect, useRef, useState, Fragment } from "react";
 import type { MarkerData, SegmentData } from "@/lib/types";
 import { formatMonthDayYear, createUTCDate, currentYear } from "@/lib/date-utils";
 import TimelineMarker from "./TimelineMarker";
@@ -21,8 +21,9 @@ const nowMarker: MarkerData = {
   position: 100,
 };
 
-// Survives component remounts during client navigation
+// Module-level: survives component remounts during client navigation
 let prevMarkerPositions: Map<number, number> | null = null;
+let prevTimelineData: { markers: MarkerData[]; segments: SegmentData[] } | null = null;
 
 interface AnimatedTimelineProps extends TimelineProps {
   exit?: boolean;
@@ -60,7 +61,6 @@ function AnimatedTimeline({ markers, segments, exit = false }: AnimatedTimelineP
       ? containerRect.height / 2
       : containerRect.width / 2;
 
-    // Helper: get element center relative to container
     const elCenterPos = (el: HTMLElement) => {
       const r = el.getBoundingClientRect();
       return isVertical
@@ -99,7 +99,6 @@ function AnimatedTimeline({ markers, segments, exit = false }: AnimatedTimelineP
       });
     } else if (!hasPrev) {
       // ── FIRST APPEARANCE: grow from center ──
-      // Markers slide from center to their positions
       markerEls.forEach((el) => {
         el.animate(
           [
@@ -110,7 +109,6 @@ function AnimatedTimeline({ markers, segments, exit = false }: AnimatedTimelineP
         );
       });
 
-      // Segments: translateX + scaleX so line edges track marker positions
       partEls.forEach((el) => {
         el.style.transformOrigin = "center";
         el.animate(
@@ -120,7 +118,6 @@ function AnimatedTimeline({ markers, segments, exit = false }: AnimatedTimelineP
           ],
           { duration, easing: "ease-out" }
         );
-        // Fade in labels after line has grown
         const label = el.querySelector<HTMLElement>(`.${styles.partLabel}`);
         if (label) {
           label.animate(
@@ -154,7 +151,6 @@ function AnimatedTimeline({ markers, segments, exit = false }: AnimatedTimelineP
           );
         }
       });
-      // No segment animation — they just appear at their new proportions
     }
 
     if (!exit) {
@@ -175,44 +171,50 @@ function AnimatedTimeline({ markers, segments, exit = false }: AnimatedTimelineP
 }
 
 export default function Timeline({ markers, segments }: TimelineProps) {
-  const prevDataRef = useRef<{ markers: MarkerData[]; segments: SegmentData[] } | null>(null);
-  const [exiting, setExiting] = useState(false);
-  const exitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
   const hasMarkers = markers.length > 0;
+
+  // Initialize exiting from module-level state (survives remounts)
+  const [exiting, setExiting] = useState(
+    () => !hasMarkers && prevTimelineData !== null
+  );
+  const exitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Store data while we have markers
   if (hasMarkers) {
-    prevDataRef.current = { markers, segments };
+    prevTimelineData = { markers, segments };
   }
 
-  // Detect enter/exit transitions
+  // Handle enter/exit transitions
   useLayoutEffect(() => {
     if (hasMarkers) {
-      // Cancel any ongoing exit
       if (exitTimerRef.current) {
         clearTimeout(exitTimerRef.current);
         exitTimerRef.current = null;
       }
       if (exiting) setExiting(false);
-    } else if (prevDataRef.current && !exiting) {
-      // Start exit animation
-      setExiting(true);
+    } else if (exiting && !exitTimerRef.current) {
       exitTimerRef.current = setTimeout(() => {
         setExiting(false);
         prevMarkerPositions = null;
-        prevDataRef.current = null;
+        prevTimelineData = null;
         exitTimerRef.current = null;
       }, 900);
     }
   }, [hasMarkers, exiting]);
 
-  // Exit animation: show old timeline shrinking
-  if (exiting && prevDataRef.current) {
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (exitTimerRef.current) clearTimeout(exitTimerRef.current);
+    };
+  }, []);
+
+  // Exit: render old timeline with shrink animation
+  if (exiting && prevTimelineData) {
     return (
       <AnimatedTimeline
-        markers={prevDataRef.current.markers}
-        segments={prevDataRef.current.segments}
+        markers={prevTimelineData.markers}
+        segments={prevTimelineData.segments}
         exit
       />
     );
