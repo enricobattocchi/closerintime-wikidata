@@ -68,12 +68,9 @@ function AnimatedTimeline({ markers, segments }: TimelineProps) {
       });
 
       partEls.forEach((el) => {
-        const elRect = el.getBoundingClientRect();
-        const elCenter = isVertical
-          ? elRect.top - containerRect.top + elRect.height / 2
-          : elRect.left - containerRect.left + elRect.width / 2;
-        el.style.transformOrigin = "center";
-        el.style.transform = `translate${axis}(${center - elCenter}px) ${scaleAxis}(0)`;
+        el.style.clipPath = isVertical
+          ? "inset(50% 0 50% 0)"
+          : "inset(0 50% 0 50%)";
         const label = el.querySelector<HTMLElement>(`.${styles.partLabel}`);
         if (label) label.style.opacity = "0";
       });
@@ -86,8 +83,8 @@ function AnimatedTimeline({ markers, segments }: TimelineProps) {
         el.style.transform = "";
       });
       partEls.forEach((el) => {
-        el.style.transition = transition;
-        el.style.transform = "";
+        el.style.transition = "clip-path 1.2s ease-out";
+        el.style.clipPath = "inset(0 0 0 0)";
         const label = el.querySelector<HTMLElement>(`.${styles.partLabel}`);
         if (label) {
           label.style.transition = "opacity 0.6s ease-out 0.6s";
@@ -147,6 +144,7 @@ function AnimatedTimeline({ markers, segments }: TimelineProps) {
         el.style.transition = "";
         el.style.transform = "";
         el.style.transformOrigin = "";
+        el.style.clipPath = "";
         const label = el.querySelector<HTMLElement>(`.${styles.partLabel}`);
         if (label) {
           label.style.transition = "";
