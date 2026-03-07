@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useRef, Fragment } from "react";
+import { useLayoutEffect, useRef, useState, Fragment } from "react";
 import type { MarkerData, SegmentData } from "@/lib/types";
 import { formatMonthDayYear, createUTCDate, currentYear } from "@/lib/date-utils";
 import TimelineMarker from "./TimelineMarker";
@@ -21,10 +21,14 @@ const nowMarker: MarkerData = {
   position: 100,
 };
 
-// Module-level: survives component remounts during client navigation
+// Survives component remounts during client navigation
 let prevMarkerPositions: Map<number, number> | null = null;
 
-function AnimatedTimeline({ markers, segments }: TimelineProps) {
+interface AnimatedTimelineProps extends TimelineProps {
+  exit?: boolean;
+}
+
+function AnimatedTimeline({ markers, segments, exit = false }: AnimatedTimelineProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
@@ -44,117 +48,119 @@ function AnimatedTimeline({ markers, segments }: TimelineProps) {
     const posProp = isVertical ? "offsetTop" : "offsetLeft";
     const axis = isVertical ? "Y" : "X";
     const scaleAxis = isVertical ? "scaleY" : "scaleX";
+    const duration = 1200;
 
-    // Record final positions of all markers
     const currentPositions = new Map<number, number>();
     markers.forEach((marker, i) => {
       currentPositions.set(marker.event.id, markerEls[i][posProp]);
     });
 
     const hasPrev = prevMarkerPositions !== null && prevMarkerPositions.size > 0;
+    const center = isVertical
+      ? containerRect.height / 2
+      : containerRect.width / 2;
 
-    if (!hasPrev) {
-      // ── FIRST APPEARANCE: center-out animation ──
-      const center = isVertical
-        ? containerRect.height / 2
-        : containerRect.width / 2;
+    // Helper: get element center relative to container
+    const elCenterPos = (el: HTMLElement) => {
+      const r = el.getBoundingClientRect();
+      return isVertical
+        ? r.top - containerRect.top + r.height / 2
+        : r.left - containerRect.left + r.width / 2;
+    };
 
+    if (exit) {
+      // ── EXIT: converge to center, line shrinks ──
       markerEls.forEach((el) => {
-        const elRect = el.getBoundingClientRect();
-        const elCenter = isVertical
-          ? elRect.top - containerRect.top + elRect.height / 2
-          : elRect.left - containerRect.left + elRect.width / 2;
-        el.style.transform = `translate${axis}(${center - elCenter}px)`;
+        el.animate(
+          [
+            { transform: `translate${axis}(0)` },
+            { transform: `translate${axis}(${center - elCenterPos(el)}px)` },
+          ],
+          { duration: 800, easing: "ease-in", fill: "forwards" }
+        );
       });
 
       partEls.forEach((el) => {
-        el.style.clipPath = isVertical
-          ? "inset(50% 0 50% 0)"
-          : "inset(0 50% 0 50%)";
-        const label = el.querySelector<HTMLElement>(`.${styles.partLabel}`);
-        if (label) label.style.opacity = "0";
-      });
-
-      container.getBoundingClientRect(); // force reflow
-
-      const transition = "transform 1.2s ease-out";
-      markerEls.forEach((el) => {
-        el.style.transition = transition;
-        el.style.transform = "";
-      });
-      partEls.forEach((el) => {
-        el.style.transition = "clip-path 1.2s ease-out";
-        el.style.clipPath = "inset(0 0 0 0)";
+        el.style.transformOrigin = "center";
+        el.animate(
+          [
+            { transform: `translate${axis}(0) ${scaleAxis}(1)` },
+            { transform: `translate${axis}(${center - elCenterPos(el)}px) ${scaleAxis}(0)` },
+          ],
+          { duration: 800, easing: "ease-in", fill: "forwards" }
+        );
         const label = el.querySelector<HTMLElement>(`.${styles.partLabel}`);
         if (label) {
-          label.style.transition = "opacity 0.6s ease-out 0.6s";
-          label.style.opacity = "";
+          label.animate(
+            [{ opacity: 1 }, { opacity: 0 }],
+            { duration: 200, easing: "ease-in", fill: "forwards" }
+          );
+        }
+      });
+    } else if (!hasPrev) {
+      // ── FIRST APPEARANCE: grow from center ──
+      // Markers slide from center to their positions
+      markerEls.forEach((el) => {
+        el.animate(
+          [
+            { transform: `translate${axis}(${center - elCenterPos(el)}px)` },
+            { transform: `translate${axis}(0)` },
+          ],
+          { duration, easing: "ease-out" }
+        );
+      });
+
+      // Segments: translateX + scaleX so line edges track marker positions
+      partEls.forEach((el) => {
+        el.style.transformOrigin = "center";
+        el.animate(
+          [
+            { transform: `translate${axis}(${center - elCenterPos(el)}px) ${scaleAxis}(0)` },
+            { transform: `translate${axis}(0) ${scaleAxis}(1)` },
+          ],
+          { duration, easing: "ease-out" }
+        );
+        // Fade in labels after line has grown
+        const label = el.querySelector<HTMLElement>(`.${styles.partLabel}`);
+        if (label) {
+          label.animate(
+            [{ opacity: 0 }, { opacity: 1 }],
+            { duration: 600, delay: 600, easing: "ease-out", fill: "backwards" }
+          );
         }
       });
     } else {
-      // ── SUBSEQUENT: new markers slide from Now, existing markers FLIP ──
+      // ── SUBSEQUENT: new markers slide from Now, existing FLIP ──
       const nowPos = markerEls[markerEls.length - 1][posProp];
 
       markers.forEach((marker, i) => {
         const el = markerEls[i];
         const currentPos = el[posProp];
+        let offset = 0;
 
         if (prevMarkerPositions!.has(marker.event.id)) {
-          // Existing marker — FLIP from old position
-          const diff = prevMarkerPositions!.get(marker.event.id)! - currentPos;
-          if (Math.abs(diff) > 1) {
-            el.style.transform = `translate${axis}(${diff}px)`;
-          }
+          offset = prevMarkerPositions!.get(marker.event.id)! - currentPos;
         } else {
-          // New marker — start at Now position
-          el.style.transform = `translate${axis}(${nowPos - currentPos}px)`;
+          offset = nowPos - currentPos;
+        }
+
+        if (Math.abs(offset) > 1) {
+          el.animate(
+            [
+              { transform: `translate${axis}(${offset}px)` },
+              { transform: `translate${axis}(0)` },
+            ],
+            { duration, easing: "ease-out" }
+          );
         }
       });
-
-      // Hide segments and labels
-      partEls.forEach((el) => {
-        el.style.opacity = "0";
-        const label = el.querySelector<HTMLElement>(`.${styles.partLabel}`);
-        if (label) label.style.opacity = "0";
-      });
-
-      container.getBoundingClientRect(); // force reflow
-
-      markerEls.forEach((el) => {
-        el.style.transition = "transform 1.2s ease-out";
-        el.style.transform = "";
-      });
-      partEls.forEach((el) => {
-        el.style.transition = "opacity 0.5s ease-out 0.3s";
-        el.style.opacity = "";
-        const label = el.querySelector<HTMLElement>(`.${styles.partLabel}`);
-        if (label) {
-          label.style.transition = "opacity 0.4s ease-out 0.8s";
-          label.style.opacity = "";
-        }
-      });
+      // No segment animation — they just appear at their new proportions
     }
 
-    // Store for next render
-    prevMarkerPositions = currentPositions;
-
-    // Clean up inline styles after animation
-    const cleanup = setTimeout(() => {
-      [...markerEls, ...partEls].forEach((el) => {
-        el.style.transition = "";
-        el.style.transform = "";
-        el.style.transformOrigin = "";
-        el.style.clipPath = "";
-        const label = el.querySelector<HTMLElement>(`.${styles.partLabel}`);
-        if (label) {
-          label.style.transition = "";
-          label.style.opacity = "";
-        }
-      });
-    }, 1500);
-
-    return () => clearTimeout(cleanup);
-  }, [markers, segments]);
+    if (!exit) {
+      prevMarkerPositions = currentPositions;
+    }
+  }, [markers, segments, exit]);
 
   return (
     <div ref={containerRef} className={styles.timeline}>
@@ -169,8 +175,51 @@ function AnimatedTimeline({ markers, segments }: TimelineProps) {
 }
 
 export default function Timeline({ markers, segments }: TimelineProps) {
-  if (markers.length === 0) {
-    // Reset so next appearance uses center-out animation
+  const prevDataRef = useRef<{ markers: MarkerData[]; segments: SegmentData[] } | null>(null);
+  const [exiting, setExiting] = useState(false);
+  const exitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const hasMarkers = markers.length > 0;
+
+  // Store data while we have markers
+  if (hasMarkers) {
+    prevDataRef.current = { markers, segments };
+  }
+
+  // Detect enter/exit transitions
+  useLayoutEffect(() => {
+    if (hasMarkers) {
+      // Cancel any ongoing exit
+      if (exitTimerRef.current) {
+        clearTimeout(exitTimerRef.current);
+        exitTimerRef.current = null;
+      }
+      if (exiting) setExiting(false);
+    } else if (prevDataRef.current && !exiting) {
+      // Start exit animation
+      setExiting(true);
+      exitTimerRef.current = setTimeout(() => {
+        setExiting(false);
+        prevMarkerPositions = null;
+        prevDataRef.current = null;
+        exitTimerRef.current = null;
+      }, 900);
+    }
+  }, [hasMarkers, exiting]);
+
+  // Exit animation: show old timeline shrinking
+  if (exiting && prevDataRef.current) {
+    return (
+      <AnimatedTimeline
+        markers={prevDataRef.current.markers}
+        segments={prevDataRef.current.segments}
+        exit
+      />
+    );
+  }
+
+  // Empty state
+  if (!hasMarkers) {
     prevMarkerPositions = null;
     return (
       <div className={`${styles.timeline} ${styles.timelineEmpty}`}>
