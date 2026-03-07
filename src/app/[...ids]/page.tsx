@@ -51,12 +51,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const sentence = generateSentence(allEvents);
   const title = sentence || "closerintime";
+  const ogTitle = sentence ? `${sentence} #closerintime` : "#closerintime";
+  const description = "Visualize the time between historical events.";
 
   return {
     title,
-    description: title,
-    openGraph: { title, description: title },
-    twitter: { card: "summary", title, description: title },
+    description,
+    openGraph: { title: ogTitle, description },
+    twitter: { card: "summary", title: ogTitle, description },
   };
 }
 
