@@ -8,6 +8,8 @@ const withPWA = withPWAInit({
 
 const nextConfig: NextConfig = {
   turbopack: {},
+  compress: true,
+  poweredByHeader: false,
 };
 
 export default withPWA(nextConfig);
