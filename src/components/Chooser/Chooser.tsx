@@ -12,8 +12,9 @@ import { computeTimeline } from "@/lib/timeline-math";
 import { generateSentence } from "@/lib/sentence";
 import { buildShareablePath } from "@/lib/custom-event-url";
 import EventAutocomplete from "./EventAutocomplete";
-import AddEventForm from "./AddEventForm";
 import Timeline from "@/components/Timeline/Timeline";
+
+const AddEventForm = dynamic(() => import("./AddEventForm"));
 import Sentence from "@/components/Sentence";
 import { HelpOutline, SettingsOutlined } from "@/components/Icon";
 import styles from "@/styles/Chooser.module.css";

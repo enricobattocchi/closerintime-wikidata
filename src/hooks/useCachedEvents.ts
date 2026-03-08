@@ -1,40 +1,44 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Dexie from "dexie";
 import type { Event } from "@/lib/types";
 
-class CacheDB extends Dexie {
-  cachedEvents!: Dexie.Table<Event, number>;
+type DexieTable = {
+  bulkPut(items: Event[]): Promise<void>;
+  toArray(): Promise<Event[]>;
+};
 
-  constructor() {
-    super("closerintime-cache");
-    this.version(1).stores({
-      cachedEvents: "id",
+let cacheDbPromise: Promise<{ cachedEvents: DexieTable }> | null = null;
+
+function getCacheDb(): Promise<{ cachedEvents: DexieTable }> {
+  if (!cacheDbPromise) {
+    cacheDbPromise = import("dexie").then(({ default: Dexie }) => {
+      const db = new Dexie("closerintime-cache") as typeof Dexie.prototype & {
+        cachedEvents: DexieTable;
+      };
+      db.version(1).stores({
+        cachedEvents: "id",
+      });
+      return db as unknown as { cachedEvents: DexieTable };
     });
   }
-}
-
-let cacheDb: CacheDB | null = null;
-function getCacheDb() {
-  if (!cacheDb) cacheDb = new CacheDB();
-  return cacheDb;
+  return cacheDbPromise;
 }
 
 export function useCachedEvents(serverEvents: Event[]): Event[] {
   const [events, setEvents] = useState(serverEvents);
 
   useEffect(() => {
-    const db = getCacheDb();
-
     if (serverEvents.length > 0) {
       // Cache the server events (non-blocking)
-      db.cachedEvents.bulkPut(serverEvents).catch(() => {});
+      getCacheDb()
+        .then((db) => db.cachedEvents.bulkPut(serverEvents))
+        .catch(() => {});
       setEvents(serverEvents);
     } else {
       // Offline — try to load from cache
-      db.cachedEvents
-        .toArray()
+      getCacheDb()
+        .then((db) => db.cachedEvents.toArray())
         .then((cached) => {
           if (cached.length > 0) setEvents(cached);
         })
