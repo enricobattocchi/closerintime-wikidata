@@ -109,6 +109,21 @@ export default function Chooser({
     };
   }, [offlineServerEvents, selectedEvents, selectedLocalEvents, navigate]);
 
+  // Pick up pending event selection from browse page (offline navigation)
+  useEffect(() => {
+    const pendingId = sessionStorage.getItem("pendingEventId");
+    if (!pendingId) return;
+    sessionStorage.removeItem("pendingEventId");
+    const eventId = parseInt(pendingId, 10);
+    if (isNaN(eventId)) return;
+    // Wait for cachedEvents to be populated
+    const event = cachedEvents.find((e) => e.id === eventId);
+    if (event) {
+      setOfflineServerEvents((prev) => [...prev, event]);
+      updateUrl([...selectedEvents, ...offlineServerEvents, event], selectedLocalEvents);
+    }
+  }, [cachedEvents]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleSelect = useCallback(
     (slotIndex: number, event: Event) => {
       if (event.id < 0) {

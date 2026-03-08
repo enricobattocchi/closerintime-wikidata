@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { Event } from "@/lib/types";
 import { EVENT_TYPES } from "@/lib/types";
@@ -36,7 +37,22 @@ function buildErasFromEvents(events: Event[]): EraData[] {
 }
 
 export default function BrowseClient({ eras: serverEras }: BrowseClientProps) {
+  const router = useRouter();
   const [eras, setEras] = useState(serverEras);
+  const [isOffline, setIsOffline] = useState(false);
+
+  // Track offline state
+  useEffect(() => {
+    if (!navigator.onLine) setIsOffline(true);
+    const goOffline = () => setIsOffline(true);
+    const goOnline = () => setIsOffline(false);
+    window.addEventListener("offline", goOffline);
+    window.addEventListener("online", goOnline);
+    return () => {
+      window.removeEventListener("offline", goOffline);
+      window.removeEventListener("online", goOnline);
+    };
+  }, []);
 
   // Fall back to cached events when server returned nothing (offline)
   useEffect(() => {
@@ -52,6 +68,18 @@ export default function BrowseClient({ eras: serverEras }: BrowseClientProps) {
         .catch(() => {});
     }
   }, [serverEras]);
+
+  // When offline, store event ID and navigate to cached home page
+  const handleEventClick = useCallback(
+    (e: React.MouseEvent, eventId: number) => {
+      if (!isOffline) return; // let normal Link navigation proceed
+      e.preventDefault();
+      sessionStorage.setItem("pendingEventId", String(eventId));
+      window.location.href = "/";
+    },
+    [isOffline]
+  );
+
   const [openEras, setOpenEras] = useState<Set<string>>(() => new Set());
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
 
@@ -136,6 +164,7 @@ export default function BrowseClient({ eras: serverEras }: BrowseClientProps) {
                       href={`/${event.id}`}
                       className={styles.eventItem}
                       role="listitem"
+                      onClick={(e) => handleEventClick(e, event.id)}
                     >
                       <span className={styles.eventIcon}>
                         <CategoryIcon type={event.type} size={20} />
