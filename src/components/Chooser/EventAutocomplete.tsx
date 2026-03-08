@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import type { Event } from "@/lib/types";
 import { formatYear } from "@/lib/date-utils";
 import CategoryIcon from "@/components/CategoryIcon";
-import { SearchIcon, AddCircleOutline, CloseIcon, DeleteIcon } from "@/components/Icon";
+import { SearchIcon, AddCircleOutline, CloseIcon, EditIcon } from "@/components/Icon";
 import styles from "@/styles/Chooser.module.css";
 
 interface EventAutocompleteProps {
@@ -14,7 +14,7 @@ interface EventAutocompleteProps {
   onSelect: (event: Event) => void;
   onClear: () => void;
   isLocal?: boolean;
-  onDelete?: () => void;
+  onEdit?: () => void;
   onAdd?: () => void;
   showingAddForm?: boolean;
 }
@@ -50,7 +50,7 @@ export default function EventAutocomplete({
   onSelect,
   onClear,
   isLocal,
-  onDelete,
+  onEdit,
   onAdd,
   showingAddForm,
 }: EventAutocompleteProps) {
@@ -164,14 +164,14 @@ export default function EventAutocomplete({
             <img src="/icons/wikipedia-w.svg" alt="Wikipedia" width={18} height={18} />
           </a>
         )}
-        {isLocal && onDelete && (
+        {isLocal && onEdit && (
           <button
-            className={styles.deleteButton}
-            onClick={onDelete}
-            aria-label="Delete local event"
-            title="Delete this local event"
+            className={styles.editButton}
+            onClick={onEdit}
+            aria-label="Edit local event"
+            title="Edit this event"
           >
-            <DeleteIcon size={18} />
+            <EditIcon size={18} />
           </button>
         )}
         <button className={styles.cancelButton} onClick={onClear} aria-label="Remove event">

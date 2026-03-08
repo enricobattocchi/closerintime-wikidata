@@ -43,10 +43,11 @@ export default function Chooser({
 }: ChooserProps) {
   const router = useRouter();
   const cachedEvents = useCachedEvents(allEvents);
-  const { localEvents, addEvent, deleteEvent: deleteLocalEvent } = useLocalEvents();
+  const { localEvents, addEvent, updateEvent: updateLocalEvent, deleteEvent: deleteLocalEvent } = useLocalEvents();
   const { timespanFormat, updateTimespanFormat, theme, updateTheme } = useSettings();
   const [selectedLocalEvents, setSelectedLocalEvents] = useState<Event[]>(urlCustomEvents);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingSlot, setEditingSlot] = useState<number | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
 
@@ -72,18 +73,27 @@ export default function Chooser({
     [router]
   );
 
+  // Update URL without server navigation (avoids re-render + double animation)
+  const updateUrl = useCallback(
+    (serverEvts: Event[], customEvts: Event[]) => {
+      const path = buildShareablePath(serverEvts, customEvts);
+      window.history.replaceState(window.history.state, "", path);
+    },
+    []
+  );
+
   const handleSelect = useCallback(
     (slotIndex: number, event: Event) => {
       if (event.id < 0) {
         const nextCustom = [...selectedLocalEvents, event];
         setSelectedLocalEvents(nextCustom);
-        navigate(selectedEvents, nextCustom);
+        updateUrl(selectedEvents, nextCustom);
       } else {
         const serverEvts = [...selectedEvents, event];
         navigate(serverEvts, selectedLocalEvents);
       }
     },
-    [selectedEvents, selectedLocalEvents, navigate]
+    [selectedEvents, selectedLocalEvents, navigate, updateUrl]
   );
 
   const handleClear = useCallback(
@@ -95,7 +105,7 @@ export default function Chooser({
         const remainingCustom = selectedLocalEvents.filter((e) => e.id !== event.id);
         setSelectedLocalEvents(remainingCustom);
         if (selectedEvents.length > 0 || remainingCustom.length > 0) {
-          navigate(selectedEvents, remainingCustom);
+          updateUrl(selectedEvents, remainingCustom);
         } else {
           router.push("/");
         }
@@ -108,7 +118,7 @@ export default function Chooser({
         }
       }
     },
-    [allSelected, selectedEvents, selectedLocalEvents, navigate, router]
+    [allSelected, selectedEvents, selectedLocalEvents, navigate, updateUrl, router]
   );
 
   // Recompute client-side when local events are selected OR settings differ from default
@@ -187,27 +197,77 @@ export default function Chooser({
               onSelect={(e) => handleSelect(i, e)}
               onClear={() => handleClear(i)}
               isLocal={isLocalEvent(event)}
-              onDelete={
-                isLocalEvent(event)
-                  ? () => {
-                      if (!confirm(`Delete "${event!.name}"?`)) return;
-                      const dbId = -(event!.id);
-                      deleteLocalEvent(dbId);
-                      const remainingCustom = selectedLocalEvents.filter(
-                        (e) => e.id !== event!.id
-                      );
-                      setSelectedLocalEvents(remainingCustom);
-                      if (selectedEvents.length > 0 || remainingCustom.length > 0) {
-                        navigate(selectedEvents, remainingCustom);
-                      } else {
-                        router.push("/");
-                      }
-                    }
-                  : undefined
-              }
+              onEdit={isLocalEvent(event) ? () => setEditingSlot(i) : undefined}
               onAdd={!event ? () => setShowAddForm(!showAddForm) : undefined}
               showingAddForm={!event ? showAddForm : false}
             />
+            {editingSlot === i && event && (
+              <AddEventForm
+                initialValues={{
+                  name: event.name,
+                  year: event.year,
+                  month: event.month,
+                  day: event.day,
+                  type: event.type,
+                  plural: event.plural,
+                  link: event.link,
+                }}
+                onSave={async (updated) => {
+                  // Find the matching Dexie event by name+year (URL-decoded IDs differ from Dexie IDs)
+                  const match = localEvents.find(
+                    (e) => e.name === event.name && e.year === event.year
+                  );
+                  if (match) {
+                    await updateLocalEvent(-(match.id), {
+                      name: updated.name,
+                      year: updated.year,
+                      month: updated.month,
+                      day: updated.day,
+                      type: updated.type,
+                      plural: updated.plural,
+                      link: updated.link,
+                    });
+                  }
+                  // Update in selected list and navigate to reflect changes
+                  const updatedEvent: Event = {
+                    ...event,
+                    name: updated.name,
+                    year: updated.year,
+                    month: updated.month,
+                    day: updated.day,
+                    type: updated.type,
+                    plural: updated.plural,
+                    link: updated.link,
+                  };
+                  const nextCustom = selectedLocalEvents.map((e) =>
+                    e.id === event.id ? updatedEvent : e
+                  );
+                  setSelectedLocalEvents(nextCustom);
+                  setEditingSlot(null);
+                  updateUrl(selectedEvents, nextCustom);
+                }}
+                onCancel={() => setEditingSlot(null)}
+                onDelete={async () => {
+                  // Find the matching Dexie event by name+year (URL-decoded IDs differ from Dexie IDs)
+                  const match = localEvents.find(
+                    (e) => e.name === event.name && e.year === event.year
+                  );
+                  if (match) {
+                    await deleteLocalEvent(-(match.id));
+                  }
+                  const remainingCustom = selectedLocalEvents.filter(
+                    (e) => e.id !== event.id
+                  );
+                  setSelectedLocalEvents(remainingCustom);
+                  setEditingSlot(null);
+                  if (selectedEvents.length > 0 || remainingCustom.length > 0) {
+                    updateUrl(selectedEvents, remainingCustom);
+                  } else {
+                    router.push("/");
+                  }
+                }}
+              />
+            )}
           </div>
         ))}
         {showAddForm && (

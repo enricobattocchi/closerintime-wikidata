@@ -16,6 +16,7 @@ interface LocalEvent {
 type DexieTable = {
   toArray(): Promise<LocalEvent[]>;
   add(event: Omit<LocalEvent, "id">): Promise<number>;
+  update(id: number, changes: Partial<Omit<LocalEvent, "id">>): Promise<number>;
   delete(id: number): Promise<void>;
 };
 
@@ -64,6 +65,15 @@ export function useLocalEvents() {
     [refresh]
   );
 
+  const updateEvent = useCallback(
+    async (id: number, changes: Omit<LocalEvent, "id">) => {
+      const db = await getDb();
+      await db.localevents.update(id, changes);
+      await refresh();
+    },
+    [refresh]
+  );
+
   const deleteEvent = useCallback(
     async (id: number) => {
       const db = await getDb();
@@ -86,5 +96,5 @@ export function useLocalEvents() {
     link: e.link,
   }));
 
-  return { localEvents: asEvents, addEvent, deleteEvent };
+  return { localEvents: asEvents, addEvent, updateEvent, deleteEvent };
 }

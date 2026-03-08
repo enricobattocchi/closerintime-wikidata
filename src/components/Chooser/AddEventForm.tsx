@@ -4,17 +4,23 @@ import { useState } from "react";
 import { currentYear, daysInMonth } from "@/lib/date-utils";
 import styles from "@/styles/AddEventForm.module.css";
 
+export interface EventFormData {
+  name: string;
+  year: number;
+  month: number | null;
+  day: number | null;
+  type: string;
+  plural: number;
+  link: string | null;
+}
+
 interface AddEventFormProps {
-  onSave: (event: {
-    name: string;
-    year: number;
-    month: number | null;
-    day: number | null;
-    type: string;
-    plural: number;
-    link: string | null;
-  }) => void;
+  onSave: (event: EventFormData) => void;
   onCancel: () => void;
+  /** Pre-populate fields for editing an existing event */
+  initialValues?: EventFormData;
+  /** If provided, shows a delete button in the form */
+  onDelete?: () => void;
 }
 
 const months = [
@@ -29,13 +35,17 @@ const EVENT_TYPES = [
 
 const WIKIPEDIA_RE = /^https:\/\/[a-z]{2,}\.wikipedia\.org\/wiki\/.+$/;
 
-export default function AddEventForm({ onSave, onCancel }: AddEventFormProps) {
-  const [name, setName] = useState("");
-  const [year, setYear] = useState("");
-  const [era, setEra] = useState<"AD" | "BC">("AD");
-  const [month, setMonth] = useState("");
-  const [day, setDay] = useState("");
-  const [plural, setPlural] = useState(0);
+export default function AddEventForm({ onSave, onCancel, initialValues, onDelete }: AddEventFormProps) {
+  const isEdit = !!initialValues;
+  const initYear = initialValues ? Math.abs(initialValues.year) : undefined;
+  const initEra = initialValues && initialValues.year < 0 ? "BC" : "AD";
+
+  const [name, setName] = useState(initialValues?.name ?? "");
+  const [year, setYear] = useState(initYear !== undefined ? String(initYear) : "");
+  const [era, setEra] = useState<"AD" | "BC">(initEra);
+  const [month, setMonth] = useState(initialValues?.month ? String(initialValues.month) : "");
+  const [day, setDay] = useState(initialValues?.day ? String(initialValues.day) : "");
+  const [plural, setPlural] = useState(initialValues?.plural ?? 0);
   const [error, setError] = useState("");
   const [submitForEveryone, setSubmitForEveryone] = useState(false);
   const [type, setType] = useState("history");
@@ -221,16 +231,18 @@ export default function AddEventForm({ onSave, onCancel }: AddEventFormProps) {
         </div>
       </div>
 
-      <div className={styles.field}>
-        <label className={styles.toggleLabel}>
-          <input
-            type="checkbox"
-            checked={submitForEveryone}
-            onChange={(e) => setSubmitForEveryone(e.target.checked)}
-          />
-          Submit for everyone
-        </label>
-      </div>
+      {!isEdit && (
+        <div className={styles.field}>
+          <label className={styles.toggleLabel}>
+            <input
+              type="checkbox"
+              checked={submitForEveryone}
+              onChange={(e) => setSubmitForEveryone(e.target.checked)}
+            />
+            Submit for everyone
+          </label>
+        </div>
+      )}
 
       {submitForEveryone && (
         <>
@@ -262,6 +274,18 @@ export default function AddEventForm({ onSave, onCancel }: AddEventFormProps) {
 
       {error && <p className={styles.error} role="alert">{error}</p>}
       <div className={styles.actions}>
+        {isEdit && onDelete && (
+          <button
+            className={styles.deleteBtn}
+            onClick={() => {
+              if (confirm(`Delete "${name.trim() || "this event"}"?`)) {
+                onDelete();
+              }
+            }}
+          >
+            Delete
+          </button>
+        )}
         <button className={styles.cancelBtn} onClick={onCancel}>
           Cancel
         </button>

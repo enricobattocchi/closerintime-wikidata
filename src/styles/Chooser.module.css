@@ -176,7 +176,7 @@
   color: var(--color-text-light);
 }
 
-.deleteButton {
+.editButton {
   display: flex;
   align-items: center;
   background: none;
@@ -186,8 +186,8 @@
   color: var(--color-text-light);
 }
 
-.deleteButton:hover {
-  color: var(--color-text);
+.editButton:hover {
+  color: var(--color-primary);
 }
 
 .addIconButton {
