@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import Dexie from "dexie";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 interface LocalEvent {
   id?: number;
@@ -14,38 +13,51 @@ interface LocalEvent {
   link: string | null;
 }
 
-class CloserintimeDB extends Dexie {
-  localevents!: Dexie.Table<LocalEvent, number>;
+type DexieTable = {
+  toArray(): Promise<LocalEvent[]>;
+  add(event: Omit<LocalEvent, "id">): Promise<number>;
+  delete(id: number): Promise<void>;
+};
 
-  constructor() {
-    super("closerintime-local");
-    this.version(1).stores({
-      localevents: "++id, name, year",
+let dbPromise: Promise<{ localevents: DexieTable }> | null = null;
+
+function getDb(): Promise<{ localevents: DexieTable }> {
+  if (!dbPromise) {
+    dbPromise = import("dexie").then(({ default: Dexie }) => {
+      const db = new Dexie("closerintime-local") as typeof Dexie.prototype & {
+        localevents: DexieTable;
+      };
+      db.version(1).stores({
+        localevents: "++id, name, year",
+      });
+      return db as unknown as { localevents: DexieTable };
     });
   }
-}
-
-let db: CloserintimeDB | null = null;
-function getDb() {
-  if (!db) db = new CloserintimeDB();
-  return db;
+  return dbPromise;
 }
 
 export function useLocalEvents() {
   const [localEvents, setLocalEvents] = useState<LocalEvent[]>([]);
+  const mounted = useRef(true);
 
   const refresh = useCallback(async () => {
-    const all = await getDb().localevents.toArray();
-    setLocalEvents(all);
+    const db = await getDb();
+    const all = await db.localevents.toArray();
+    if (mounted.current) setLocalEvents(all);
   }, []);
 
   useEffect(() => {
+    mounted.current = true;
     refresh();
+    return () => {
+      mounted.current = false;
+    };
   }, [refresh]);
 
   const addEvent = useCallback(
     async (event: Omit<LocalEvent, "id">) => {
-      const dbId = await getDb().localevents.add(event);
+      const db = await getDb();
+      const dbId = await db.localevents.add(event);
       await refresh();
       return dbId as number;
     },
@@ -54,7 +66,8 @@ export function useLocalEvents() {
 
   const deleteEvent = useCallback(
     async (id: number) => {
-      await getDb().localevents.delete(id);
+      const db = await getDb();
+      await db.localevents.delete(id);
       await refresh();
     },
     [refresh]

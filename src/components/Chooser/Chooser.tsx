@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useMemo, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import type { Event, MarkerData, SegmentData } from "@/lib/types";
 import { useLocalEvents } from "@/hooks/useLocalEvents";
@@ -11,13 +12,15 @@ import { computeTimeline } from "@/lib/timeline-math";
 import { generateSentence } from "@/lib/sentence";
 import { buildShareablePath } from "@/lib/custom-event-url";
 import EventAutocomplete from "./EventAutocomplete";
-import AddEventForm from "./AddEventForm";
 import Timeline from "@/components/Timeline/Timeline";
+
+const AddEventForm = dynamic(() => import("./AddEventForm"));
 import Sentence from "@/components/Sentence";
-import SettingsModal from "@/components/SettingsModal";
 import { HelpOutline, SettingsOutlined } from "@/components/Icon";
-import HelpModal from "@/components/HelpModal";
 import styles from "@/styles/Chooser.module.css";
+
+const HelpModal = dynamic(() => import("@/components/HelpModal"));
+const SettingsModal = dynamic(() => import("@/components/SettingsModal"));
 
 interface ChooserProps {
   allEvents: Event[];
