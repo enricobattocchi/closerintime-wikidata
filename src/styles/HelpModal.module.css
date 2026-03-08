@@ -21,6 +21,10 @@
   overflow-y: auto;
 }
 
+.modal:focus {
+  outline: none;
+}
+
 .header {
   display: flex;
   align-items: center;

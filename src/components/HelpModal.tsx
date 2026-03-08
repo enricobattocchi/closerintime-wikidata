@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import {
   AccountBalance, MusicNote, Movie, Domain, MenuBook,
   ScienceIcon, PaletteIcon, MemoryIcon, SportsSoccer,
@@ -27,19 +27,45 @@ const categories = [
 ];
 
 export default function HelpModal({ onClose }: HelpModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
+      if (e.key === "Tab" && modalRef.current) {
+        const focusable = modalRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
     }
     document.addEventListener("keydown", handleKey);
+    modalRef.current?.focus();
     return () => document.removeEventListener("keydown", handleKey);
   }, [onClose]);
 
   return (
-    <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+    <div className={styles.overlay} onClick={onClose} role="presentation">
+      <div
+        ref={modalRef}
+        className={styles.modal}
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="help-title"
+        tabIndex={-1}
+      >
         <div className={styles.header}>
-          <h3 className={styles.title}>How it works</h3>
+          <h3 id="help-title" className={styles.title}>How it works</h3>
           <button
             className={styles.closeButton}
             onClick={onClose}

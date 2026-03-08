@@ -19,6 +19,10 @@
   width: 90%;
 }
 
+.modal:focus {
+  outline: none;
+}
+
 .title {
   margin-bottom: 16px;
 }

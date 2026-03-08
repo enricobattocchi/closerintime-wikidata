@@ -77,12 +77,18 @@ a.marker {
   color: inherit;
 }
 
-a.marker:hover .markerCircle {
+a.marker:hover .markerCircle,
+a.marker:focus-visible .markerCircle {
   box-shadow: 0 0 0 3px var(--color-primary-shadow);
 }
 
-a.marker:hover .markerName {
+a.marker:hover .markerName,
+a.marker:focus-visible .markerName {
   text-decoration: underline;
+}
+
+a.marker:focus-visible {
+  outline: none;
 }
 
 .part {

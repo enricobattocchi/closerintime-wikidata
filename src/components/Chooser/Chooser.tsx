@@ -232,7 +232,7 @@ export default function Chooser({
           />
         )}
       </div>
-      <div ref={exportRef} className={styles.exportArea}>
+      <div ref={exportRef} className={styles.exportArea} aria-live="polite" aria-atomic="true">
         {allSelected.length > 0 && (
           <Sentence
             text={sentence}

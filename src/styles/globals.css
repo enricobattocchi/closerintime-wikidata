@@ -65,6 +65,34 @@ a {
   text-decoration: none;
 }
 
+/* Skip-to-content link */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 9999;
+  padding: 8px 16px;
+  background: var(--color-primary);
+  color: white;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  left: 0;
+}
+
+/* Visible focus rings for keyboard navigation */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Remove default outlines only when not keyboard-navigating */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
 @media (prefers-color-scheme: dark) {
   html:not([data-theme="light"]) img[src*="wikipedia"] {
     filter: invert(1);

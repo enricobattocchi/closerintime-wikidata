@@ -74,7 +74,7 @@ export default function Sentence({ text, href, onExport }: SentenceProps) {
           </button>
         )}
       </span>
-      {showToast && <div className={styles.toast}>Link copied!</div>}
+      {showToast && <div className={styles.toast} role="status" aria-live="polite">Link copied!</div>}
     </div>
   );
 }

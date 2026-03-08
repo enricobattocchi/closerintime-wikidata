@@ -128,8 +128,9 @@ export default function AddEventForm({ onSave, onCancel }: AddEventFormProps) {
   return (
     <div className={styles.form}>
       <div className={styles.field}>
-        <label className={styles.label}>Event name *</label>
+        <label htmlFor="add-event-name" className={styles.label}>Event name *</label>
         <input
+          id="add-event-name"
           className={styles.input}
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -138,9 +139,10 @@ export default function AddEventForm({ onSave, onCancel }: AddEventFormProps) {
       </div>
       <div className={styles.row}>
         <div className={styles.field}>
-          <label className={styles.label}>Year *</label>
+          <label htmlFor="add-event-year" className={styles.label}>Year *</label>
           <div className={styles.yearRow}>
             <input
+              id="add-event-year"
               className={styles.input}
               type="number"
               min="1"
@@ -152,6 +154,7 @@ export default function AddEventForm({ onSave, onCancel }: AddEventFormProps) {
               className={styles.eraSelect}
               value={era}
               onChange={(e) => setEra(e.target.value as "AD" | "BC")}
+              aria-label="Era"
             >
               <option value="AD">A.D.</option>
               <option value="BC">B.C.</option>
@@ -159,8 +162,9 @@ export default function AddEventForm({ onSave, onCancel }: AddEventFormProps) {
           </div>
         </div>
         <div className={styles.field}>
-          <label className={styles.label}>Month</label>
+          <label htmlFor="add-event-month" className={styles.label}>Month</label>
           <select
+            id="add-event-month"
             className={styles.input}
             value={month}
             onChange={(e) => {
@@ -178,8 +182,9 @@ export default function AddEventForm({ onSave, onCancel }: AddEventFormProps) {
           </select>
         </div>
         <div className={styles.field}>
-          <label className={styles.label}>Day</label>
+          <label htmlFor="add-event-day" className={styles.label}>Day</label>
           <select
+            id="add-event-day"
             className={styles.input}
             value={day}
             onChange={(e) => setDay(e.target.value)}
@@ -230,8 +235,9 @@ export default function AddEventForm({ onSave, onCancel }: AddEventFormProps) {
       {submitForEveryone && (
         <>
           <div className={styles.field}>
-            <label className={styles.label}>Category *</label>
+            <label htmlFor="add-event-category" className={styles.label}>Category *</label>
             <select
+              id="add-event-category"
               className={styles.input}
               value={type}
               onChange={(e) => setType(e.target.value)}
@@ -242,8 +248,9 @@ export default function AddEventForm({ onSave, onCancel }: AddEventFormProps) {
             </select>
           </div>
           <div className={styles.field}>
-            <label className={styles.label}>Wikipedia link *</label>
+            <label htmlFor="add-event-link" className={styles.label}>Wikipedia link *</label>
             <input
+              id="add-event-link"
               className={styles.input}
               value={link}
               onChange={(e) => setLink(e.target.value)}
@@ -253,7 +260,7 @@ export default function AddEventForm({ onSave, onCancel }: AddEventFormProps) {
         </>
       )}
 
-      {error && <p className={styles.error}>{error}</p>}
+      {error && <p className={styles.error} role="alert">{error}</p>}
       <div className={styles.actions}>
         <button className={styles.cancelBtn} onClick={onCancel}>
           Cancel

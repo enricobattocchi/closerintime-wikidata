@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { TimespanFormat } from "@/lib/types";
 import type { Theme } from "@/hooks/useSettings";
 import styles from "@/styles/Settings.module.css";
@@ -22,19 +22,45 @@ export default function SettingsModal({
 }: SettingsModalProps) {
   const [format, setFormat] = useState<TimespanFormat>(timespanFormat);
   const [selectedTheme, setSelectedTheme] = useState<Theme>(theme);
+  const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
+      if (e.key === "Tab" && modalRef.current) {
+        const focusable = modalRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
     }
     document.addEventListener("keydown", handleKey);
+    // Focus the modal on open
+    modalRef.current?.focus();
     return () => document.removeEventListener("keydown", handleKey);
   }, [onClose]);
 
   return (
-    <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <h3 className={styles.title}>Settings</h3>
+    <div className={styles.overlay} onClick={onClose} role="presentation">
+      <div
+        ref={modalRef}
+        className={styles.modal}
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="settings-title"
+        tabIndex={-1}
+      >
+        <h3 id="settings-title" className={styles.title}>Settings</h3>
         <fieldset className={styles.fieldset}>
           <legend>Theme</legend>
           <label className={styles.radio}>

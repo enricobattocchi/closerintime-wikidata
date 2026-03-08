@@ -55,8 +55,9 @@ export default function RootLayout({
             __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)}catch(e){}})()`,
           }}
         />
+        <a href="#main-content" className="skip-link">Skip to content</a>
         <Header />
-        {children}
+        <main id="main-content">{children}</main>
         <footer
           style={{
             textAlign: "center",
