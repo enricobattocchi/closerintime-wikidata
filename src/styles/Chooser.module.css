@@ -100,7 +100,7 @@
   border: 1px solid var(--color-border);
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  max-height: 300px;
+  max-height: 380px;
   overflow-y: auto;
   z-index: 200;
   margin-top: 2px;
@@ -171,6 +171,58 @@
 
 .addIconButton:hover {
   color: var(--color-primary);
+}
+
+/* Category filter chips */
+.categoryChips {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 8px 10px 4px;
+  scrollbar-width: thin;
+}
+
+@media (pointer: coarse) {
+  .categoryChips {
+    scrollbar-width: none;
+  }
+
+  .categoryChips::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.categoryChip {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: var(--color-bg-surface);
+  color: var(--color-text-light);
+  font-size: 0.75rem;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.categoryChip:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.categoryChipActive {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
+}
+
+.categoryChipActive:hover {
+  color: white;
 }
 
 /* Bottom padding so exported image has breathing room */

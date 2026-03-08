@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSubmissionsStore } from "@/lib/db";
+import { EVENT_TYPES } from "@/lib/types";
 import type { Submission } from "@/lib/types";
 
 const WIKIPEDIA_RE = /^https:\/\/[a-z]{2,}\.wikipedia\.org\/wiki\/.+$/;
@@ -47,8 +48,7 @@ export async function POST(request: NextRequest) {
   if (day !== null && (typeof day !== "number" || day < 1 || day > 31)) {
     return NextResponse.json({ error: "Invalid day" }, { status: 400 });
   }
-  const validTypes = ["art", "book", "building", "computer", "film", "history", "music", "pop culture", "science", "sport"];
-  if (typeof type !== "string" || !validTypes.includes(type)) {
+  if (typeof type !== "string" || !EVENT_TYPES.includes(type as typeof EVENT_TYPES[number])) {
     return NextResponse.json({ error: "Invalid event type" }, { status: 400 });
   }
   if (typeof link !== "string" || !WIKIPEDIA_RE.test(link)) {

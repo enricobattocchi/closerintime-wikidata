@@ -34,6 +34,11 @@ export interface TimelineResult {
 
 export type TimespanFormat = 0 | 1 | 2; // 0=days, 1=years only, 2=precise
 
+export const EVENT_TYPES = [
+  "art", "book", "building", "computer", "film",
+  "history", "music", "pop culture", "science", "sport",
+] as const;
+
 export interface Submission {
   name: string;
   year: number;

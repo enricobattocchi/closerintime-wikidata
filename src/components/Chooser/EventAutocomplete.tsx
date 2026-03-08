@@ -5,6 +5,7 @@ import type { Event } from "@/lib/types";
 import { formatYear } from "@/lib/date-utils";
 import CategoryIcon from "@/components/CategoryIcon";
 import { SearchIcon, AddCircleOutline, CloseIcon, DeleteIcon } from "@/components/Icon";
+import CategoryFilter from "./CategoryFilter";
 import styles from "@/styles/Chooser.module.css";
 
 interface EventAutocompleteProps {
@@ -58,6 +59,7 @@ export default function EventAutocomplete({
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const [randomEvents] = useState(() => getRandomEvents(events, 10));
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -77,16 +79,25 @@ export default function EventAutocomplete({
     [events, selectedIds]
   );
   const filtered = useMemo(
-    () => query
-      ? available.filter((e) => matchesQuery(e, query)).slice(0, 10)
-      : randomEvents.filter((e) => !selectedIds.includes(e.id)).slice(0, 10),
-    [available, query, randomEvents, selectedIds]
+    () => {
+      if (categoryFilter) {
+        const base = query
+          ? available.filter((e) => e.type === categoryFilter && matchesQuery(e, query))
+          : available.filter((e) => e.type === categoryFilter);
+        return base.slice(0, 10);
+      }
+      const base = query
+        ? available.filter((e) => matchesQuery(e, query))
+        : randomEvents.filter((e) => !selectedIds.includes(e.id));
+      return base.slice(0, 10);
+    },
+    [available, query, randomEvents, selectedIds, categoryFilter]
   );
 
-  // Reset highlight when query or filtered list changes
+  // Reset highlight when query or category filter changes
   useEffect(() => {
     setHighlightedIndex(-1);
-  }, [query]);
+  }, [query, categoryFilter]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -117,6 +128,7 @@ export default function EventAutocomplete({
             onSelect(filtered[highlightedIndex]);
             setQuery("");
             setIsOpen(false);
+            setCategoryFilter(null);
           }
           break;
         case "Escape":
@@ -218,35 +230,39 @@ export default function EventAutocomplete({
         )}
       </div>
       {isOpen && (
-        <div className={styles.dropdown} role="listbox" id={listboxId} ref={listRef}>
-          {filtered.length === 0 ? (
-            <div className={styles.noResults}>No events found</div>
-          ) : (
-            filtered.map((event, index) => (
-              <div
-                key={event.id}
-                id={`option-${event.id}`}
-                role="option"
-                aria-selected={index === highlightedIndex}
-                className={`${styles.option}${index === highlightedIndex ? ` ${styles.optionHighlighted}` : ""}`}
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  onSelect(event);
-                  setQuery("");
-                  setIsOpen(false);
-                }}
-                onMouseEnter={() => setHighlightedIndex(index)}
-              >
-                <span className={styles.optionIcon}>
-                  <CategoryIcon type={event.type} size={20} />
-                </span>
-                <span className={styles.optionName}>{capitalize(event.name)}</span>
-                <span className={styles.optionYear}>
-                  {formatYear(event.year)}
-                </span>
-              </div>
-            ))
-          )}
+        <div className={styles.dropdown}>
+          <CategoryFilter selected={categoryFilter} onSelect={setCategoryFilter} />
+          <div role="listbox" id={listboxId} ref={listRef}>
+            {filtered.length === 0 ? (
+              <div className={styles.noResults}>No events found</div>
+            ) : (
+              filtered.map((event, index) => (
+                <div
+                  key={event.id}
+                  id={`option-${event.id}`}
+                  role="option"
+                  aria-selected={index === highlightedIndex}
+                  className={`${styles.option}${index === highlightedIndex ? ` ${styles.optionHighlighted}` : ""}`}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    onSelect(event);
+                    setQuery("");
+                    setIsOpen(false);
+                    setCategoryFilter(null);
+                  }}
+                  onMouseEnter={() => setHighlightedIndex(index)}
+                >
+                  <span className={styles.optionIcon}>
+                    <CategoryIcon type={event.type} size={20} />
+                  </span>
+                  <span className={styles.optionName}>{capitalize(event.name)}</span>
+                  <span className={styles.optionYear}>
+                    {formatYear(event.year)}
+                  </span>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       )}
     </div>
