@@ -41,7 +41,7 @@ export default function Sentence({ text, href, onExport }: SentenceProps) {
       <a href={href} className={styles.sentence}>
         {text}
       </a>
-      <span className={styles.iconGroup}>
+      <div className={styles.iconGroup}>
         <button
           className={styles.copyButton}
           onClick={handleCopy}
@@ -73,7 +73,7 @@ export default function Sentence({ text, href, onExport }: SentenceProps) {
             <DownloadIcon size={18} />
           </button>
         )}
-      </span>
+      </div>
       {showToast && <div className={styles.toast} role="status" aria-live="polite">Link copied!</div>}
     </div>
   );
