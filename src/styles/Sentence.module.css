@@ -17,7 +17,8 @@
 
 .iconGroup {
   white-space: nowrap;
-  display: inline;
+  display: block;
+  margin-top: 8px;
 }
 
 .copyButton {
@@ -26,12 +27,9 @@
   cursor: pointer;
   color: var(--color-text-light);
   padding: 4px 8px;
-  margin-left: 4px;
-  vertical-align: baseline;
+  margin: 0 4px;
   display: inline-flex;
   align-items: center;
-  position: relative;
-  top: 0.15em;
 }
 
 .copyButton:hover {
