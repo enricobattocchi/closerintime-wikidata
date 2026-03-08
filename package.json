@@ -5,13 +5,15 @@
   "main": "index.js",
   "scripts": {
     "dev": "netlify dev",
-    "dev:next": "next dev",
+    "dev:next": "next dev --webpack",
     "build": "next build --webpack",
+    "build:watch": "nodemon --watch src --watch public -e ts,tsx,css,json --exec \"npm run build\"",
     "start": "next start",
     "lint": "next lint",
     "seed:blobs": "tsx scripts/seed-blobs.ts",
     "backup": "tsx scripts/backup-blobs.ts",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "keywords": [],
   "author": "",
@@ -34,6 +36,7 @@
     "eslint": "^9.39.4",
     "eslint-config-next": "^16.1.6",
     "jsdom": "^28.1.0",
+    "nodemon": "^3.1.14",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"
