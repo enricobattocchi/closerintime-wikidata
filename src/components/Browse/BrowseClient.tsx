@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import type { Event } from "@/lib/types";
+import { EVENT_TYPES } from "@/lib/types";
 import { formatYear } from "@/lib/date-utils";
 import CategoryIcon from "@/components/CategoryIcon";
 import styles from "@/styles/Browse.module.css";
@@ -23,6 +24,27 @@ function capitalize(s: string): string {
 
 export default function BrowseClient({ eras }: BrowseClientProps) {
   const [openEras, setOpenEras] = useState<Set<string>>(() => new Set());
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+
+  const allEvents = useMemo(() => eras.flatMap((e) => e.events), [eras]);
+
+  const categoryCounts = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const e of allEvents) {
+      map.set(e.type, (map.get(e.type) || 0) + 1);
+    }
+    return map;
+  }, [allEvents]);
+
+  const filteredEras = useMemo(() => {
+    if (!categoryFilter) return eras;
+    return eras.map((era) => ({
+      ...era,
+      events: era.events.filter((e) => e.type === categoryFilter),
+    }));
+  }, [eras, categoryFilter]);
+
+  const totalFiltered = filteredEras.reduce((sum, e) => sum + e.events.length, 0);
 
   const toggle = (id: string) => {
     setOpenEras((prev) => {
@@ -37,11 +59,28 @@ export default function BrowseClient({ eras }: BrowseClientProps) {
     <div className={styles.container}>
       <h1 className={styles.title}>Browse by era</h1>
       <p className={styles.subtitle}>
-        Explore {eras.reduce((sum, e) => sum + e.events.length, 0)} events across history.
-        Click an event to add it to your timeline.
+        {categoryFilter
+          ? `${totalFiltered} ${categoryFilter} events across history.`
+          : `Explore ${totalFiltered} events across history.`}
+        {" "}Click an event to add it to your timeline.
       </p>
+      <div className={styles.chips}>
+        {EVENT_TYPES.map((type) => (
+          <button
+            key={type}
+            className={`${styles.chip}${categoryFilter === type ? ` ${styles.chipActive}` : ""}`}
+            onClick={() => setCategoryFilter(categoryFilter === type ? null : type)}
+            aria-pressed={categoryFilter === type}
+            title={capitalize(type)}
+          >
+            <CategoryIcon type={type} size={16} />
+            <span>{capitalize(type)} ({categoryCounts.get(type) || 0})</span>
+          </button>
+        ))}
+      </div>
       <div className={styles.eras}>
-        {eras.map((era) => {
+        {filteredEras.map((era) => {
+          if (era.events.length === 0) return null;
           const isOpen = openEras.has(era.id);
           return (
             <div key={era.id} className={styles.era}>
