@@ -32,6 +32,7 @@ const WIKIPEDIA_RE = /^https:\/\/[a-z]{2,}\.wikipedia\.org\/wiki\/.+$/;
 export default function AddEventForm({ onSave, onCancel }: AddEventFormProps) {
   const [name, setName] = useState("");
   const [year, setYear] = useState("");
+  const [era, setEra] = useState<"AD" | "BC">("AD");
   const [month, setMonth] = useState("");
   const [day, setDay] = useState("");
   const [plural, setPlural] = useState(0);
@@ -42,8 +43,9 @@ export default function AddEventForm({ onSave, onCancel }: AddEventFormProps) {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  const yearNum = parseInt(year);
-  const monthNum = parseInt(month);
+  const yearInput = parseInt(year, 10);
+  const yearNum = era === "BC" ? -yearInput : yearInput;
+  const monthNum = parseInt(month, 10);
   const maxDay =
     year && month
       ? daysInMonth(yearNum, monthNum - 1)
@@ -54,12 +56,8 @@ export default function AddEventForm({ onSave, onCancel }: AddEventFormProps) {
       setError("Name is required");
       return;
     }
-    if (!year || isNaN(yearNum)) {
-      setError("Valid year is required");
-      return;
-    }
-    if (yearNum === 0) {
-      setError("Year 0 does not exist");
+    if (!year || isNaN(yearInput) || yearInput < 1) {
+      setError("Valid year is required (minimum 1)");
       return;
     }
     if (yearNum >= currentYear()) {
@@ -141,13 +139,24 @@ export default function AddEventForm({ onSave, onCancel }: AddEventFormProps) {
       <div className={styles.row}>
         <div className={styles.field}>
           <label className={styles.label}>Year *</label>
-          <input
-            className={styles.input}
-            type="number"
-            value={year}
-            onChange={(e) => setYear(e.target.value)}
-            placeholder="e.g. 1990"
-          />
+          <div className={styles.yearRow}>
+            <input
+              className={styles.input}
+              type="number"
+              min="1"
+              value={year}
+              onChange={(e) => setYear(e.target.value)}
+              placeholder="e.g. 1990"
+            />
+            <select
+              className={styles.eraSelect}
+              value={era}
+              onChange={(e) => setEra(e.target.value as "AD" | "BC")}
+            >
+              <option value="AD">A.D.</option>
+              <option value="BC">B.C.</option>
+            </select>
+          </div>
         </div>
         <div className={styles.field}>
           <label className={styles.label}>Month</label>

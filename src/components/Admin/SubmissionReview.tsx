@@ -100,12 +100,29 @@ export default function SubmissionReview({ token }: SubmissionReviewProps) {
             <div className={styles.fieldRow}>
               <div className={styles.field}>
                 <label className={styles.fieldLabel}>Year</label>
-                <input
-                  className={styles.fieldInput}
-                  type="number"
-                  value={edited.year}
-                  onChange={(e) => setField(sub.key, "year", parseInt(e.target.value) || 0)}
-                />
+                <div className={styles.yearRow}>
+                  <input
+                    className={styles.fieldInput}
+                    type="number"
+                    min="1"
+                    value={Math.abs(edited.year)}
+                    onChange={(e) => {
+                      const abs = Math.abs(parseInt(e.target.value) || 1);
+                      setField(sub.key, "year", edited.year < 0 ? -abs : abs);
+                    }}
+                  />
+                  <select
+                    className={styles.eraSelect}
+                    value={edited.year < 0 ? "BC" : "AD"}
+                    onChange={(e) => {
+                      const abs = Math.abs(edited.year);
+                      setField(sub.key, "year", e.target.value === "BC" ? -abs : abs);
+                    }}
+                  >
+                    <option value="AD">A.D.</option>
+                    <option value="BC">B.C.</option>
+                  </select>
+                </div>
               </div>
               <div className={styles.field}>
                 <label className={styles.fieldLabel}>Month</label>

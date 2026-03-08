@@ -35,6 +35,31 @@
   background: var(--color-bg-disabled);
 }
 
+.yearRow {
+  display: flex;
+  gap: 6px;
+}
+
+.yearRow .input {
+  flex: 1;
+  min-width: 0;
+}
+
+.eraSelect {
+  width: 60px;
+  padding: 8px 4px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  outline: none;
+  flex-shrink: 0;
+}
+
+.eraSelect:focus {
+  border-color: var(--color-primary);
+}
+
 .row {
   display: flex;
   gap: 12px;

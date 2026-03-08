@@ -171,12 +171,29 @@ export default function EventManager({ token }: EventManagerProps) {
             <div className={styles.fieldRow}>
               <div className={styles.field}>
                 <label className={styles.fieldLabel}>Year</label>
-                <input
-                  className={styles.fieldInput}
-                  type="number"
-                  value={edited.year}
-                  onChange={(e) => setField(event.id, "year", parseInt(e.target.value) || 0)}
-                />
+                <div className={styles.yearRow}>
+                  <input
+                    className={styles.fieldInput}
+                    type="number"
+                    min="1"
+                    value={Math.abs(edited.year)}
+                    onChange={(e) => {
+                      const abs = Math.abs(parseInt(e.target.value) || 1);
+                      setField(event.id, "year", edited.year < 0 ? -abs : abs);
+                    }}
+                  />
+                  <select
+                    className={styles.eraSelect}
+                    value={edited.year < 0 ? "BC" : "AD"}
+                    onChange={(e) => {
+                      const abs = Math.abs(edited.year);
+                      setField(event.id, "year", e.target.value === "BC" ? -abs : abs);
+                    }}
+                  >
+                    <option value="AD">A.D.</option>
+                    <option value="BC">B.C.</option>
+                  </select>
+                </div>
               </div>
               <div className={styles.field}>
                 <label className={styles.fieldLabel}>Month</label>
