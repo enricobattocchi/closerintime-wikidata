@@ -51,10 +51,17 @@ function AnimatedTimeline({ markers, segments, exit = false }: AnimatedTimelineP
     const scaleAxis = isVertical ? "scaleY" : "scaleX";
     const duration = 1200;
 
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
     const currentPositions = new Map<number, number>();
     markers.forEach((marker, i) => {
       currentPositions.set(marker.event.id, markerEls[i][posProp]);
     });
+
+    if (prefersReducedMotion) {
+      if (!exit) prevMarkerPositions = currentPositions;
+      return;
+    }
 
     const hasPrev = prevMarkerPositions !== null && prevMarkerPositions.size > 0;
     const center = isVertical
@@ -193,12 +200,13 @@ export default function Timeline({ markers, segments }: TimelineProps) {
       }
       if (exiting) setExiting(false);
     } else if (exiting && !exitTimerRef.current) {
+      const exitDuration = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 900;
       exitTimerRef.current = setTimeout(() => {
         setExiting(false);
         prevMarkerPositions = null;
         prevTimelineData = null;
         exitTimerRef.current = null;
-      }, 900);
+      }, exitDuration);
     }
   }, [hasMarkers, exiting]);
 
