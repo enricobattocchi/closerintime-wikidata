@@ -36,4 +36,16 @@ describe("Sentence", () => {
     render(<Sentence text="Hello" href="/test" />);
     expect(screen.queryByLabelText("Download as image")).not.toBeInTheDocument();
   });
+
+  it("shows share button when navigator.share is available", () => {
+    Object.assign(navigator, { share: vi.fn() });
+    render(<Sentence text="Hello" href="/test" />);
+    expect(screen.getByLabelText("Share")).toBeInTheDocument();
+  });
+
+  it("hides share button when navigator.share is unavailable", () => {
+    Object.defineProperty(navigator, "share", { value: undefined, configurable: true });
+    render(<Sentence text="Hello" href="/test" />);
+    expect(screen.queryByLabelText("Share")).not.toBeInTheDocument();
+  });
 });

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { ContentCopy, DownloadIcon } from "@/components/Icon";
+import { useState, useCallback, useEffect } from "react";
+import { ContentCopy, DownloadIcon, ShareIcon } from "@/components/Icon";
 import styles from "@/styles/Sentence.module.css";
 
 interface SentenceProps {
@@ -12,6 +12,11 @@ interface SentenceProps {
 
 export default function Sentence({ text, href, onExport }: SentenceProps) {
   const [showToast, setShowToast] = useState(false);
+  const [canShare, setCanShare] = useState(false);
+
+  useEffect(() => {
+    setCanShare(typeof navigator.share === "function");
+  }, []);
 
   const handleCopy = useCallback(async () => {
     const url = window.location.origin + href;
@@ -19,6 +24,15 @@ export default function Sentence({ text, href, onExport }: SentenceProps) {
     setShowToast(true);
     setTimeout(() => setShowToast(false), 2000);
   }, [href]);
+
+  const handleShare = useCallback(async () => {
+    const url = window.location.origin + href;
+    try {
+      await navigator.share({ title: text, url });
+    } catch {
+      // User cancelled or share failed — ignore
+    }
+  }, [text, href]);
 
   if (!text) return null;
 
@@ -37,6 +51,17 @@ export default function Sentence({ text, href, onExport }: SentenceProps) {
         >
           <ContentCopy size={18} />
         </button>
+        {canShare && (
+          <button
+            className={styles.copyButton}
+            onClick={handleShare}
+            aria-label="Share"
+            title="Share"
+            data-hide-on-export
+          >
+            <ShareIcon size={18} />
+          </button>
+        )}
         {onExport && (
           <button
             className={styles.copyButton}
