@@ -6,9 +6,5 @@ export const dynamic = "force-dynamic";
 export default async function Home() {
   const allEvents = await getEnabledEvents();
 
-  return (
-    <main>
-      <Chooser allEvents={allEvents} selectedEvents={[]} />
-    </main>
-  );
+  return <Chooser allEvents={allEvents} selectedEvents={[]} />;
 }

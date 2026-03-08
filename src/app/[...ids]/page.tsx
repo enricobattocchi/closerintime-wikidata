@@ -72,15 +72,13 @@ export default async function EventPage({ params }: PageProps) {
   const href = buildShareablePath(serverEvents, parsed.customEvents);
 
   return (
-    <main>
-      <Chooser
-        allEvents={allEvents}
-        selectedEvents={serverEvents}
-        urlCustomEvents={parsed.customEvents}
-        serverTimeline={{ markers: timeline.markers, segments: timeline.segments }}
-        serverSentence={sentence}
-        serverHref={href}
-      />
-    </main>
+    <Chooser
+      allEvents={allEvents}
+      selectedEvents={serverEvents}
+      urlCustomEvents={parsed.customEvents}
+      serverTimeline={{ markers: timeline.markers, segments: timeline.segments }}
+      serverSentence={sentence}
+      serverHref={href}
+    />
   );
 }

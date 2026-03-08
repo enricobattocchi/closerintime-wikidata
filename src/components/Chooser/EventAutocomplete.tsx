@@ -5,7 +5,6 @@ import type { Event } from "@/lib/types";
 import { formatYear } from "@/lib/date-utils";
 import CategoryIcon from "@/components/CategoryIcon";
 import { SearchIcon, AddCircleOutline, CloseIcon, DeleteIcon } from "@/components/Icon";
-import CategoryFilter from "./CategoryFilter";
 import styles from "@/styles/Chooser.module.css";
 
 interface EventAutocompleteProps {
@@ -59,7 +58,6 @@ export default function EventAutocomplete({
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const [randomEvents] = useState(() => getRandomEvents(events, 10));
-  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -80,24 +78,18 @@ export default function EventAutocomplete({
   );
   const filtered = useMemo(
     () => {
-      if (categoryFilter) {
-        const base = query
-          ? available.filter((e) => e.type === categoryFilter && matchesQuery(e, query))
-          : available.filter((e) => e.type === categoryFilter);
-        return base.slice(0, 10);
-      }
       const base = query
         ? available.filter((e) => matchesQuery(e, query))
         : randomEvents.filter((e) => !selectedIds.includes(e.id));
       return base.slice(0, 10);
     },
-    [available, query, randomEvents, selectedIds, categoryFilter]
+    [available, query, randomEvents, selectedIds]
   );
 
-  // Reset highlight when query or category filter changes
+  // Reset highlight when query changes
   useEffect(() => {
     setHighlightedIndex(-1);
-  }, [query, categoryFilter]);
+  }, [query]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -128,7 +120,6 @@ export default function EventAutocomplete({
             onSelect(filtered[highlightedIndex]);
             setQuery("");
             setIsOpen(false);
-            setCategoryFilter(null);
           }
           break;
         case "Escape":
@@ -202,23 +193,38 @@ export default function EventAutocomplete({
         <span className={styles.selectedIcon}>
           <SearchIcon size={20} />
         </span>
-        <input
-          ref={inputRef}
-          className={styles.input}
-          placeholder="Search for an event..."
-          value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setIsOpen(true);
-          }}
-          onFocus={() => setIsOpen(true)}
-          onKeyDown={handleKeyDown}
-          role="combobox"
-          aria-expanded={isOpen}
-          aria-controls={listboxId}
-          aria-activedescendant={activeDescendant}
-          aria-autocomplete="list"
-        />
+        <div className={styles.inputInner}>
+          <input
+            ref={inputRef}
+            className={`${styles.input}${query ? ` ${styles.inputWithClear}` : ""}`}
+            placeholder="Search for an event..."
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setIsOpen(true);
+            }}
+            onFocus={() => setIsOpen(true)}
+            onKeyDown={handleKeyDown}
+            role="combobox"
+            aria-expanded={isOpen}
+            aria-controls={listboxId}
+            aria-activedescendant={activeDescendant}
+            aria-autocomplete="list"
+          />
+          {query && (
+            <button
+              className={styles.clearButton}
+              onClick={() => {
+                setQuery("");
+                inputRef.current?.focus();
+              }}
+              aria-label="Clear search"
+              title="Clear search"
+            >
+              <CloseIcon size={16} />
+            </button>
+          )}
+        </div>
         {onAdd && (
           <button
             className={styles.addIconButton}
@@ -232,7 +238,6 @@ export default function EventAutocomplete({
       </div>
       {isOpen && (
         <div className={styles.dropdown}>
-          <CategoryFilter selected={categoryFilter} onSelect={setCategoryFilter} events={available} />
           <div role="listbox" id={listboxId} ref={listRef}>
             {filtered.length === 0 ? (
               <div className={styles.noResults}>No events found</div>
@@ -249,7 +254,6 @@ export default function EventAutocomplete({
                     onSelect(event);
                     setQuery("");
                     setIsOpen(false);
-                    setCategoryFilter(null);
                   }}
                   onMouseEnter={() => setHighlightedIndex(index)}
                 >

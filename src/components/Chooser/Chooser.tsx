@@ -160,7 +160,7 @@ export default function Chooser({
     <>
       <div className={styles.chooser}>
         <div className={styles.headingRow}>
-          <p className={styles.heading}>Pick some events</p>
+          <p className={styles.heading}>Pick some events or <a href="/browse" className={styles.browseLink}>browse</a></p>
           <button
             className={styles.iconButton}
             onClick={() => setShowHelp(true)}
