@@ -19,9 +19,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const parsed = parseSegments(rawIds);
   if (!parsed) return { title: "closerintime" };
 
-  const serverEvents = parsed.serverIds.length > 0
-    ? await getEventsByIds(parsed.serverIds)
-    : [];
+  let serverEvents: Event[] = [];
+  try {
+    serverEvents = parsed.serverIds.length > 0
+      ? await getEventsByIds(parsed.serverIds)
+      : [];
+  } catch {
+    // Offline — metadata will use defaults
+  }
   const allEvents = [...serverEvents, ...parsed.customEvents];
   if (allEvents.length === 0) return { title: "closerintime" };
 
@@ -57,16 +62,23 @@ export default async function EventPage({ params }: PageProps) {
     redirect(canonical);
   }
 
-  const serverEvents = sortedServerIds.length > 0
-    ? await getEventsByIds(sortedServerIds)
-    : [];
+  let serverEvents: Event[] = [];
+  let allEvents: Event[] = [];
+  try {
+    serverEvents = sortedServerIds.length > 0
+      ? await getEventsByIds(sortedServerIds)
+      : [];
+    allEvents = await getEnabledEvents();
+  } catch {
+    // Offline — Chooser will fall back to IndexedDB cached events
+  }
 
-  if (sortedServerIds.length > 0 && serverEvents.length === 0) {
+  if (sortedServerIds.length > 0 && serverEvents.length === 0 && allEvents.length > 0) {
+    // Only redirect if we're online (have events) but IDs are invalid
     redirect("/");
   }
 
   const allSelectedEvents = [...serverEvents, ...parsed.customEvents];
-  const allEvents = await getEnabledEvents();
   const timeline = computeTimeline(allSelectedEvents);
   const sentence = generateSentence(allSelectedEvents);
   const href = buildShareablePath(serverEvents, parsed.customEvents);

@@ -131,7 +131,7 @@ export default function BrowseClient({ eras: serverEras }: BrowseClientProps) {
               {isOpen && (
                 <div id={`era-${era.id}`} className={styles.eventList} role="list">
                   {era.events.map((event) => (
-                    <a
+                    <Link
                       key={event.id}
                       href={`/${event.id}`}
                       className={styles.eventItem}
@@ -142,7 +142,7 @@ export default function BrowseClient({ eras: serverEras }: BrowseClientProps) {
                       </span>
                       <span className={styles.eventName}>{capitalize(event.name)}</span>
                       <span className={styles.eventYear}>{formatYear(event.year)}</span>
-                    </a>
+                    </Link>
                   ))}
                 </div>
               )}
