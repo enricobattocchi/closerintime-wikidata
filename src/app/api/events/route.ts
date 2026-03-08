@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getEnabledEvents } from "@/lib/events";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export async function GET() {
   const events = await getEnabledEvents();

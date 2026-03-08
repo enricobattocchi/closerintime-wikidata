@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getEventsStore, getSubmissionsStore } from "@/lib/db";
 import type { Event, Submission } from "@/lib/types";
 
@@ -86,6 +87,7 @@ export async function PATCH(request: NextRequest) {
   allEvents.push(newEvent);
   await eventsStore.setJSON("all", allEvents);
   await subStore.setJSON(key, { ...submission, status: "approved" });
+  revalidatePath("/", "layout");
 
   return NextResponse.json({ message: "Submission approved", event: newEvent });
 }

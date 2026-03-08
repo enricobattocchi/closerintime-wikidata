@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 import type { Event } from "@/lib/types";
 import { getEventsByIds, getEnabledEvents } from "@/lib/events";
 import { computeTimeline } from "@/lib/timeline-math";

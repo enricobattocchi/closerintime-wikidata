@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useCallback, useMemo, useEffect, useRef } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { Event, MarkerData, SegmentData } from "@/lib/types";
 import { useLocalEvents } from "@/hooks/useLocalEvents";
 import { useCachedEvents } from "@/hooks/useCachedEvents";
 import { useSettings } from "@/hooks/useSettings";
+import { useExport } from "@/hooks/useExport";
 import { computeTimeline } from "@/lib/timeline-math";
 import { generateSentence } from "@/lib/sentence";
 import { buildShareablePath } from "@/lib/custom-event-url";
@@ -40,7 +41,7 @@ export default function Chooser({
   const router = useRouter();
   const cachedEvents = useCachedEvents(allEvents);
   const { localEvents, addEvent, deleteEvent: deleteLocalEvent } = useLocalEvents();
-  const { timespanFormat, updateTimespanFormat } = useSettings();
+  const { timespanFormat, updateTimespanFormat, theme, updateTheme } = useSettings();
   const [selectedLocalEvents, setSelectedLocalEvents] = useState<Event[]>(urlCustomEvents);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -135,34 +136,7 @@ export default function Chooser({
 
   const isLocalEvent = (event: Event | null) => event !== null && event.id < 0;
 
-  const exportRef = useRef<HTMLDivElement>(null);
-
-  const handleExport = useCallback(async () => {
-    const container = exportRef.current;
-    if (!container) return;
-    const html2canvas = (await import("html2canvas")).default;
-    const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    // Hide elements that shouldn't appear in the image
-    container.classList.add(styles.exporting);
-    // Force 1200px width off-screen for consistent export size
-    const origStyles = container.style.cssText;
-    container.style.width = "1200px";
-    container.style.position = "absolute";
-    container.style.left = "-9999px";
-    const canvas = await html2canvas(container, {
-      scale: 2,
-      backgroundColor: isDark ? "#1a1a1a" : "#ffffff",
-    });
-    container.style.cssText = origStyles;
-    container.classList.remove(styles.exporting);
-    const link = document.createElement("a");
-    const names = allSelected
-      .map((e) => e.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-+$/, ""))
-      .join("-");
-    link.download = `closerintime-${names || "timeline"}.png`;
-    link.href = canvas.toDataURL("image/png");
-    link.click();
-  }, [allSelected]);
+  const { exportRef, handleExport } = useExport(allSelected);
 
   // Global "/" shortcut to focus first empty search input
   useEffect(() => {
@@ -273,6 +247,8 @@ export default function Chooser({
         <SettingsModal
           timespanFormat={timespanFormat}
           onSave={updateTimespanFormat}
+          theme={theme}
+          onThemeChange={updateTheme}
           onClose={() => setShowSettings(false)}
         />
       )}

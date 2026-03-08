@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getEventsStore } from "@/lib/db";
 import type { Event } from "@/lib/types";
 
@@ -60,6 +61,7 @@ export async function PATCH(request: NextRequest) {
 
   events[idx] = updated;
   await store.setJSON("all", events);
+  revalidatePath("/", "layout");
 
   return NextResponse.json({ message: "Event updated", event: updated });
 }
@@ -91,5 +93,6 @@ export async function DELETE(request: NextRequest) {
   }
 
   await store.setJSON("all", filtered);
+  revalidatePath("/", "layout");
   return NextResponse.json({ message: "Event deleted" });
 }

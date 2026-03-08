@@ -50,6 +50,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={sourceSerif.variable}>
       <body>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)}catch(e){}})()`,
+          }}
+        />
         <Header />
         {children}
         <footer

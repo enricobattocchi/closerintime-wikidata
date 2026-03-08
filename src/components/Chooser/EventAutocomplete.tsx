@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import type { Event } from "@/lib/types";
 import { formatYear } from "@/lib/date-utils";
 import CategoryIcon from "@/components/CategoryIcon";
@@ -72,10 +72,16 @@ export default function EventAutocomplete({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const available = events.filter((e) => !selectedIds.includes(e.id));
-  const filtered = query
-    ? available.filter((e) => matchesQuery(e, query)).slice(0, 10)
-    : randomEvents.filter((e) => !selectedIds.includes(e.id)).slice(0, 10);
+  const available = useMemo(
+    () => events.filter((e) => !selectedIds.includes(e.id)),
+    [events, selectedIds]
+  );
+  const filtered = useMemo(
+    () => query
+      ? available.filter((e) => matchesQuery(e, query)).slice(0, 10)
+      : randomEvents.filter((e) => !selectedIds.includes(e.id)).slice(0, 10),
+    [available, query, randomEvents, selectedIds]
+  );
 
   // Reset highlight when query or filtered list changes
   useEffect(() => {

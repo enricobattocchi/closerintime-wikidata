@@ -179,6 +179,6 @@
 }
 
 /* Hide action buttons during image export */
-.exporting [data-hide-on-export] {
+.exportArea[data-exporting] [data-hide-on-export] {
   display: none !important;
 }
