@@ -193,36 +193,38 @@ export default function EventAutocomplete({
         <span className={styles.selectedIcon}>
           <SearchIcon size={20} />
         </span>
-        <input
-          ref={inputRef}
-          className={styles.input}
-          placeholder="Search for an event..."
-          value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setIsOpen(true);
-          }}
-          onFocus={() => setIsOpen(true)}
-          onKeyDown={handleKeyDown}
-          role="combobox"
-          aria-expanded={isOpen}
-          aria-controls={listboxId}
-          aria-activedescendant={activeDescendant}
-          aria-autocomplete="list"
-        />
-        {query && (
-          <button
-            className={styles.clearButton}
-            onClick={() => {
-              setQuery("");
-              inputRef.current?.focus();
+        <div className={styles.inputInner}>
+          <input
+            ref={inputRef}
+            className={`${styles.input}${query ? ` ${styles.inputWithClear}` : ""}`}
+            placeholder="Search for an event..."
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setIsOpen(true);
             }}
-            aria-label="Clear search"
-            title="Clear search"
-          >
-            <CloseIcon size={16} />
-          </button>
-        )}
+            onFocus={() => setIsOpen(true)}
+            onKeyDown={handleKeyDown}
+            role="combobox"
+            aria-expanded={isOpen}
+            aria-controls={listboxId}
+            aria-activedescendant={activeDescendant}
+            aria-autocomplete="list"
+          />
+          {query && (
+            <button
+              className={styles.clearButton}
+              onClick={() => {
+                setQuery("");
+                inputRef.current?.focus();
+              }}
+              aria-label="Clear search"
+              title="Clear search"
+            >
+              <CloseIcon size={16} />
+            </button>
+          )}
+        </div>
         {onAdd && (
           <button
             className={styles.addIconButton}
