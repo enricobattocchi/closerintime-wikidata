@@ -19,8 +19,21 @@ export function currentYear(): number {
   return new Date().getUTCFullYear();
 }
 
+/**
+ * Returns true if years span the BC/AD boundary (one is <= 0, the other > 0).
+ * Year 0 doesn't exist historically, so crossing from non-positive to positive
+ * means the mathematical difference overcounts by 1.
+ */
+function spansBCBoundary(y1: number, y2: number): boolean {
+  return (y1 <= 0 && y2 > 0) || (y2 <= 0 && y1 > 0);
+}
+
 export function diffYears(d1: Date, d2: Date): number {
-  return Math.abs(d1.getUTCFullYear() - d2.getUTCFullYear());
+  const y1 = d1.getUTCFullYear();
+  const y2 = d2.getUTCFullYear();
+  let diff = Math.abs(y1 - y2);
+  if (spansBCBoundary(y1, y2)) diff--;
+  return diff;
 }
 
 export function diffDays(d1: Date, d2: Date): number {
@@ -52,6 +65,8 @@ export function preciseDiff(d1: Date, d2: Date): string {
   }
 
   let yDiff = m2.getUTCFullYear() - m1.getUTCFullYear();
+  // Year 0 doesn't exist historically; adjust when crossing BC/AD boundary
+  if (spansBCBoundary(m1.getUTCFullYear(), m2.getUTCFullYear())) yDiff--;
   let mDiff = m2.getUTCMonth() - m1.getUTCMonth();
   let dDiff = m2.getUTCDate() - m1.getUTCDate();
   let hourDiff = m2.getUTCHours() - m1.getUTCHours();
@@ -93,6 +108,7 @@ export function formatMonthDayYear(d: Date): string {
 
 export function formatYear(year: number): string {
   if (year < 0) return Math.abs(year) + " B.C.";
+  if (year === 0) return "1 B.C.";
   return String(year);
 }
 

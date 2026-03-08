@@ -61,10 +61,16 @@ describe("diffYears", () => {
     expect(diffYears(d1, d2)).toBe(0);
   });
 
-  it("handles B.C. to A.D. span", () => {
+  it("handles B.C. to A.D. span (no year 0)", () => {
     const d1 = createUTCDate(-100, 0, 1);
     const d2 = createUTCDate(100, 0, 1);
-    expect(diffYears(d1, d2)).toBe(200);
+    expect(diffYears(d1, d2)).toBe(199);
+  });
+
+  it("handles 1 B.C. to 1 A.D. as consecutive years", () => {
+    const d1 = createUTCDate(-1, 0, 1);
+    const d2 = createUTCDate(1, 0, 1);
+    expect(diffYears(d1, d2)).toBe(1);
   });
 });
 
@@ -204,8 +210,8 @@ describe("formatYear", () => {
     expect(formatYear(-500)).toBe("500 B.C.");
   });
 
-  it("formats year 0", () => {
-    expect(formatYear(0)).toBe("0");
+  it("formats year 0 as 1 B.C. (year 0 does not exist historically)", () => {
+    expect(formatYear(0)).toBe("1 B.C.");
   });
 });
 
