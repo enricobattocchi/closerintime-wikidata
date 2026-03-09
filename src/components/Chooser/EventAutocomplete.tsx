@@ -188,7 +188,15 @@ export default function EventAutocomplete({
       : undefined;
 
   return (
-    <div className={styles.slot} ref={wrapperRef}>
+    <div
+      className={styles.slot}
+      ref={wrapperRef}
+      onBlur={(e) => {
+        if (!wrapperRef.current?.contains(e.relatedTarget as Node)) {
+          setIsOpen(false);
+        }
+      }}
+    >
       <div className={styles.inputWrapper}>
         <span className={styles.selectedIcon}>
           <SearchIcon size={20} />
