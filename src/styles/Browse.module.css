@@ -88,6 +88,11 @@
   background: var(--color-bg-hover);
 }
 
+.eraHeader:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
 .eraInfo {
   flex: 1;
   display: flex;
@@ -146,6 +151,11 @@
 
 .eventItem:hover {
   background: var(--color-bg-hover);
+}
+
+.eventItem:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
 }
 
 .eventIcon {
