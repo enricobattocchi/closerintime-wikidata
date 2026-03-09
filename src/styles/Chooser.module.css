@@ -213,6 +213,13 @@
   color: var(--color-primary);
 }
 
+.highlightsLink {
+  text-align: center;
+  color: var(--color-text-light);
+  font-size: 1rem;
+  margin: 0;
+}
+
 /* Bottom padding so exported image has breathing room */
 .exportArea {
   padding-bottom: 24px;

@@ -19,6 +19,7 @@ import Sentence from "@/components/Sentence";
 import styles from "@/styles/Chooser.module.css";
 
 const BrowseModal = dynamic(() => import("@/components/BrowseModal"));
+const HighlightsModal = dynamic(() => import("@/components/HighlightsModal"));
 
 interface ChooserProps {
   allEvents: Event[];
@@ -48,6 +49,7 @@ export default function Chooser({
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingSlot, setEditingSlot] = useState<number | null>(null);
   const [showBrowse, setShowBrowse] = useState(false);
+  const [showHighlights, setShowHighlights] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
 
   // Merge server + local events for the search list
@@ -333,6 +335,11 @@ export default function Chooser({
             onCancel={() => setShowAddForm(false)}
           />
         )}
+        {allSelected.length === 0 && (
+          <p className={styles.highlightsLink}>
+            or see some <button className={styles.browseLink} onClick={() => setShowHighlights(true)}>interesting highlights</button>
+          </p>
+        )}
       </div>
       <div ref={exportRef} className={styles.exportArea} aria-live="polite" aria-atomic="true">
         {allSelected.length > 0 && (
@@ -344,6 +351,9 @@ export default function Chooser({
         )}
         <Timeline markers={timeline.markers} segments={timeline.segments} />
       </div>
+      {showHighlights && (
+        <HighlightsModal onClose={() => setShowHighlights(false)} />
+      )}
       {showBrowse && (
         <BrowseModal
           events={mergedEvents}
