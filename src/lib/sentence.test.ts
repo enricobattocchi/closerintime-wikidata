@@ -11,7 +11,6 @@ function makeEvent(overrides: Partial<Event> = {}): Event {
     month: null,
     day: null,
     type: "history",
-    plural: 0,
     link: null,
     dateProperty: null,
     ...overrides,
@@ -88,15 +87,6 @@ describe("generateSentence", () => {
       expect(result).toBe(
         "Event B is exactly halfway between Event A and us."
       );
-    });
-
-    it("uses 'are' verb for plural events", () => {
-      const events = [
-        makeEvent({ id: "Q1", name: "Event A", year: 1900 }),
-        makeEvent({ id: "Q2", name: "the Beatles", year: 1990, plural: 1 }),
-      ];
-      const result = generateSentence(events);
-      expect(result).toContain("The Beatles are");
     });
 
     it("sorts events chronologically regardless of input order", () => {

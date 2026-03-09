@@ -9,7 +9,6 @@ export function makeEvent(overrides: Partial<Event> = {}): Event {
     month: null,
     day: null,
     type: "history",
-    plural: 0,
     link: null,
     dateProperty: null,
     ...overrides,

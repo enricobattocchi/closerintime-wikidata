@@ -17,16 +17,6 @@
   color: var(--color-text-light);
 }
 
-.browseLink {
-  color: var(--color-primary);
-  text-decoration: underline;
-  background: none;
-  border: none;
-  font: inherit;
-  cursor: pointer;
-  padding: 0;
-}
-
 .iconButton {
   background: none;
   border: none;
@@ -190,44 +180,6 @@
   padding: 12px;
   text-align: center;
   color: var(--color-text-light);
-}
-
-.editButton {
-  display: flex;
-  align-items: center;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  color: var(--color-text-light);
-}
-
-.editButton:hover {
-  color: var(--color-primary);
-}
-
-.addIconButton {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--color-text-light);
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  flex-shrink: 0;
-}
-
-.addIconButton:hover {
-  color: var(--color-primary);
-}
-
-.highlightsLink {
-  text-align: center;
-  color: var(--color-text-light);
-  font-size: 1rem;
-  margin: 0;
 }
 
 /* Bottom padding so exported image has breathing room */

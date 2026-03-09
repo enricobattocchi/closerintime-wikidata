@@ -74,7 +74,7 @@ export function computeTimeline(
 
   // "Now" marker
   markers.push({
-    event: { id: "0", name: "Now", description: null, year: currentYear(), month: null, day: null, type: "", plural: 0, link: null, dateProperty: null },
+    event: { id: "0", name: "Now", description: null, year: currentYear(), month: null, day: null, type: "", link: null, dateProperty: null },
     label: yearsOnly ? String(currentYear()) : formatMonthDayYear(now),
     position: 100,
   });

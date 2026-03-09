@@ -290,13 +290,6 @@ function extractDate(claims: Record<string, WikidataClaim[]>): { year: number; m
   return null;
 }
 
-/** Extract type label from P31 (instance of) claims */
-function extractTypeLabel(claims: Record<string, WikidataClaim[]>): string | undefined {
-  // We'll need labels for the P31 targets - for now return undefined
-  // and let the caller resolve them
-  return undefined;
-}
-
 /** Get English Wikipedia link from sitelinks */
 function extractWikiLink(entity: WikidataEntity): string | null {
   const enwiki = entity.sitelinks?.enwiki;
@@ -389,7 +382,6 @@ async function entitiesToEvents(qids: string[]): Promise<Event[]> {
       month: date.month,
       day: date.day,
       type: mapType(typeLabel),
-      plural: 0,
       link: extractWikiLink(entity),
       dateProperty: date.property,
     });

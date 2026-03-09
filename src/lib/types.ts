@@ -6,7 +6,6 @@ export interface Event {
   month: number | null;
   day: number | null;
   type: string;
-  plural: number;
   link: string | null;
   /** Wikidata property ID that provided the date (e.g. "P569" for birth) */
   dateProperty: string | null;

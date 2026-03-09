@@ -91,14 +91,12 @@ export function generateSentence(
     const d1 = eventToDate(sorted[1], yearsOnly);
     const firstSpan = yearsOnly ? diffYears(d0, d1) : diffDays(d0, d1);
     const secondSpan = yearsOnly ? diffYears(d1, now) : diffDays(d1, now);
-    const verb = sorted[1].plural ? "are" : "is";
-
     if (firstSpan > secondSpan) {
-      return `${ucfirst(cn[1])} ${verb} closer in time to us than to ${cn[0]}.`;
+      return `${ucfirst(cn[1])} is closer in time to us than to ${cn[0]}.`;
     } else if (firstSpan < secondSpan) {
-      return `${ucfirst(cn[1])} ${verb} closer in time to ${cn[0]} than to us.`;
+      return `${ucfirst(cn[1])} is closer in time to ${cn[0]} than to us.`;
     } else {
-      return `${ucfirst(cn[1])} ${verb} exactly halfway between ${cn[0]} and us.`;
+      return `${ucfirst(cn[1])} is exactly halfway between ${cn[0]} and us.`;
     }
   }
 
