@@ -54,3 +54,18 @@
   opacity: 0.4;
   pointer-events: none;
 }
+
+@media (max-width: 640px) {
+  .overlay {
+    align-items: flex-end;
+  }
+
+  .modal {
+    width: 100%;
+    max-width: 100%;
+    max-height: none;
+    height: calc(100dvh - 68px);
+    border-radius: 0;
+    padding: 16px;
+  }
+}
