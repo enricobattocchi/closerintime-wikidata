@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
           justifyContent: "center",
           background: "#ffffff",
           padding: "60px 80px",
-          borderBottom: "4px solid #3366cc",
+          border: "4px solid #3366cc",
         }}
       >
         {sentence ? (
