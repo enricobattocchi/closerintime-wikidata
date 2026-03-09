@@ -4,10 +4,11 @@ import { EVENT_TYPES } from "./types";
 const WIKIDATA_API = "https://www.wikidata.org/w/api.php";
 
 // Date properties to check, in priority order
-// P585 = point in time, P580 = start time, P571 = inception, P577 = publication date
+// Date properties to check, in priority order
+// P585 = point in time, P580 = start time, P577 = publication date, P571 = inception
 // P569 = date of birth, P619 = time of spacecraft launch, P620 = time of spacecraft landing
 // P1191 = first performance, P606 = first flight
-const DATE_PROPERTIES = ["P585", "P580", "P571", "P577", "P569", "P619", "P620", "P1191", "P606"];
+const DATE_PROPERTIES = ["P585", "P580", "P577", "P571", "P569", "P619", "P620", "P1191", "P606"];
 
 /** Map a Wikidata type description to one of our EVENT_TYPES */
 function mapType(typeLabel: string | undefined): string {

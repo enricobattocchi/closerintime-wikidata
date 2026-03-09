@@ -5,7 +5,7 @@ import type { Event } from "@/lib/types";
 import { useWikidataSearch } from "@/hooks/useWikidataSearch";
 import { formatYear } from "@/lib/date-utils";
 import CategoryIcon from "@/components/CategoryIcon";
-import { SearchIcon, CloseIcon } from "@/components/Icon";
+import { SearchIcon, CloseIcon, DiceIcon } from "@/components/Icon";
 import styles from "@/styles/Chooser.module.css";
 
 interface EventAutocompleteProps {
@@ -13,6 +13,8 @@ interface EventAutocompleteProps {
   value: Event | null;
   onSelect: (event: Event) => void;
   onClear: () => void;
+  isLoadingRandom?: boolean;
+  onRandom?: () => void;
 }
 
 function capitalize(s: string): string {
@@ -24,6 +26,8 @@ export default function EventAutocomplete({
   value,
   onSelect,
   onClear,
+  isLoadingRandom,
+  onRandom,
 }: EventAutocompleteProps) {
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
@@ -227,6 +231,17 @@ export default function EventAutocomplete({
             </div>
           )}
         </div>
+        {onRandom && (
+          <button
+            className={styles.randomButton}
+            onClick={onRandom}
+            disabled={isLoadingRandom}
+            aria-label="Random event"
+            title="Random event"
+          >
+            <DiceIcon size={18} />
+          </button>
+        )}
       </div>
     </div>
   );

@@ -182,6 +182,25 @@
   color: var(--color-text-light);
 }
 
+.randomButton {
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-light);
+  padding: 0;
+}
+
+.randomButton:hover {
+  color: var(--color-primary);
+}
+
+.randomButton:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
 /* Bottom padding so exported image has breathing room */
 .exportArea {
   padding-bottom: 24px;

@@ -35,7 +35,27 @@ export default function Chooser({
     setSelected(selectedEvents);
   }, [selectedEvents]);
 
+  const [loadingRandom, setLoadingRandom] = useState(false);
   const currentIds = selected.map((e) => e.id);
+
+  const handleRandom = useCallback(
+    async (slotIndex: number) => {
+      setLoadingRandom(true);
+      try {
+        const exclude = currentIds.join(",");
+        const res = await fetch(`/api/random${exclude ? `?exclude=${exclude}` : ""}`);
+        const event = await res.json();
+        if (event?.id) {
+          const next = [...selected, event];
+          const path = buildShareablePath(next);
+          router.push(path);
+        }
+      } finally {
+        setLoadingRandom(false);
+      }
+    },
+    [selected, currentIds, router]
+  );
 
   const handleSelect = useCallback(
     (_slotIndex: number, event: Event) => {
@@ -116,6 +136,8 @@ export default function Chooser({
               value={event}
               onSelect={(e) => handleSelect(i, e)}
               onClear={() => handleClear(i)}
+              isLoadingRandom={loadingRandom}
+              onRandom={() => handleRandom(i)}
             />
           </div>
         ))}
