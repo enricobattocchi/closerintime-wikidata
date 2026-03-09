@@ -187,6 +187,10 @@ a.marker:focus-visible {
     margin-left: 0;
   }
 
+  .timelineEmpty .marker {
+    height: auto;
+  }
+
   .marker {
     flex-direction: row;
     width: auto;
