@@ -181,7 +181,7 @@ a.marker:focus-visible {
   .timelineEmpty {
     justify-content: center;
     align-items: center;
-    min-height: calc(100dvh - 320px);
+    min-height: calc(100dvh - 360px);
     margin: 0;
   }
 
