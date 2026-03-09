@@ -91,7 +91,19 @@ export async function GET(request: NextRequest) {
           >
             {sentence}
           </div>
-        ) : null}
+        ) : (
+          <div
+            style={{
+              color: "#54595d",
+              fontSize: 36,
+              fontFamily: "Source Serif 4",
+              textAlign: "center",
+              lineHeight: 1.4,
+            }}
+          >
+            Visualize the time between historical events.
+          </div>
+        )}
         {timeline && (
           <div
             style={{

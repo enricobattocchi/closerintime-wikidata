@@ -32,13 +32,13 @@ export const metadata: Metadata = {
     title: "wiki:closerintime",
     description: "Visualize the time between historical events.",
     siteName: "wiki:closerintime",
-    images: [{ url: "/closerintime-sharing.png", width: 1200, height: 630 }],
+    images: [{ url: "/api/og", width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
     title: "wiki:closerintime",
     description: "Visualize the time between historical events.",
-    images: ["/closerintime-sharing.png"],
+    images: ["/api/og"],
   },
 };
 
