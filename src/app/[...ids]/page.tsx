@@ -14,21 +14,27 @@ interface PageProps {
   params: Promise<{ ids: string[] }>;
 }
 
-/** Apply ~d (death date) flags to fetched events */
-function applyDeathFlags(events: Event[], deathFlags: Map<string, boolean>): Event[] {
-  return events.map((e) => {
-    if (deathFlags.get(e.id) && e.deathYear !== null) {
-      return {
+/** Expand fetched events according to parsed segments (handles same Q-ID for birth + death) */
+function expandEvents(fetched: Event[], segments: { qid: string; useDeath: boolean }[]): Event[] {
+  const byId = new Map(fetched.map((e) => [e.id, e]));
+  const result: Event[] = [];
+  for (const seg of segments) {
+    const e = byId.get(seg.qid);
+    if (!e) continue;
+    if (seg.useDeath && e.deathYear !== null) {
+      result.push({
         ...e,
         year: e.deathYear,
         month: e.deathMonth,
         day: e.deathDay,
         dateProperty: "P570",
         useDeath: true,
-      };
+      });
+    } else {
+      result.push(e);
     }
-    return e;
-  });
+  }
+  return result;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -36,12 +42,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const segments = parseSegments(rawIds);
   if (!segments) return { title: "wiki:closerintime" };
 
-  const qids = segments.map((s) => s.qid);
-  const deathFlags = new Map(segments.map((s) => [s.qid, s.useDeath]));
+  const uniqueQids = [...new Set(segments.map((s) => s.qid))];
 
   let events;
   try {
-    events = applyDeathFlags(await fetchWikidataEvents(qids), deathFlags);
+    events = expandEvents(await fetchWikidataEvents(uniqueQids), segments);
   } catch {
     return { title: "wiki:closerintime" };
   }
@@ -81,12 +86,11 @@ export default async function EventPage({ params }: PageProps) {
     redirect("/" + sortedPath.join("/"));
   }
 
-  const qids = sortedSegments.map((s) => s.qid);
-  const deathFlags = new Map(sortedSegments.map((s) => [s.qid, s.useDeath]));
+  const uniqueQids = [...new Set(sortedSegments.map((s) => s.qid))];
 
   let events;
   try {
-    events = applyDeathFlags(await fetchWikidataEvents(qids), deathFlags);
+    events = expandEvents(await fetchWikidataEvents(uniqueQids), sortedSegments);
   } catch {
     redirect("/");
   }

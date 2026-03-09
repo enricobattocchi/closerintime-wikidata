@@ -41,15 +41,18 @@ export async function GET(request: NextRequest) {
   if (ids) {
     const segments = parseSegments(ids.split(","));
     if (segments && segments.length > 0) {
-      const qids = segments.map((s) => s.qid);
-      const deathFlags = new Map(segments.map((s) => [s.qid, s.useDeath]));
-      const fetched = await fetchWikidataEvents(qids);
-      allEvents = fetched.map((e) => {
-        if (deathFlags.get(e.id) && e.deathYear !== null) {
-          return { ...e, year: e.deathYear, month: e.deathMonth, day: e.deathDay, dateProperty: "P570", useDeath: true };
+      const uniqueQids = [...new Set(segments.map((s) => s.qid))];
+      const fetched = await fetchWikidataEvents(uniqueQids);
+      const byId = new Map(fetched.map((e) => [e.id, e]));
+      for (const seg of segments) {
+        const e = byId.get(seg.qid);
+        if (!e) continue;
+        if (seg.useDeath && e.deathYear !== null) {
+          allEvents.push({ ...e, year: e.deathYear, month: e.deathMonth, day: e.deathDay, dateProperty: "P570", useDeath: true });
+        } else {
+          allEvents.push(e);
         }
-        return e;
-      });
+      }
       if (allEvents.length > 0) {
         sentence = generateSentence(allEvents);
       }

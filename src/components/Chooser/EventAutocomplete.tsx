@@ -9,7 +9,8 @@ import { SearchIcon, CloseIcon, DiceIcon } from "@/components/Icon";
 import styles from "@/styles/Chooser.module.css";
 
 interface EventAutocompleteProps {
-  selectedIds: string[];
+  /** Keys like "Q42" or "Q42~d" for already-selected events */
+  selectedKeys: string[];
   value: Event | null;
   onSelect: (event: Event) => void;
   onClear: () => void;
@@ -23,7 +24,7 @@ function capitalize(s: string): string {
 }
 
 export default function EventAutocomplete({
-  selectedIds,
+  selectedKeys,
   value,
   onSelect,
   onClear,
@@ -40,8 +41,28 @@ export default function EventAutocomplete({
 
   const { results, isLoading } = useWikidataSearch(query);
 
-  // Filter out already-selected events
-  const filtered = results.filter((e) => !selectedIds.includes(e.id));
+  // Filter out already-selected events.
+  // If birth is selected but death date exists, keep the result so the user
+  // can select the death date (and vice versa). Mark with useDeath accordingly.
+  const filtered: Event[] = [];
+  for (const e of results) {
+    const birthKey = e.id;
+    const deathKey = `${e.id}~d`;
+    const birthSelected = selectedKeys.includes(birthKey);
+    const deathSelected = selectedKeys.includes(deathKey);
+
+    if (birthSelected && deathSelected) continue; // both already picked
+    if (!birthSelected && !deathSelected) {
+      filtered.push(e); // neither picked
+    } else if (birthSelected && !deathSelected && e.deathYear !== null) {
+      // Birth picked, offer death
+      filtered.push({ ...e, useDeath: true });
+    } else if (deathSelected && !birthSelected) {
+      // Death picked, offer birth
+      filtered.push(e);
+    }
+    // birthSelected && no death date → skip (already fully selected)
+  }
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -151,7 +172,7 @@ export default function EventAutocomplete({
   const listboxId = "autocomplete-listbox";
   const activeDescendant =
     highlightedIndex >= 0 && filtered[highlightedIndex]
-      ? `option-${filtered[highlightedIndex].id}`
+      ? `option-${filtered[highlightedIndex].id}${filtered[highlightedIndex].useDeath ? "~d" : ""}`
       : undefined;
 
   const showDropdown = isOpen && query.trim().length >= 2;
@@ -211,8 +232,8 @@ export default function EventAutocomplete({
                 ) : (
                   filtered.map((event, index) => (
                     <div
-                      key={event.id}
-                      id={`option-${event.id}`}
+                      key={`${event.id}${event.useDeath ? "~d" : ""}`}
+                      id={`option-${event.id}${event.useDeath ? "~d" : ""}`}
                       role="option"
                       aria-selected={index === highlightedIndex}
                       className={`${styles.option}${index === highlightedIndex ? ` ${styles.optionHighlighted}` : ""}`}

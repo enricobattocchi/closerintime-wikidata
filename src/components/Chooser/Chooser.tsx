@@ -36,13 +36,13 @@ export default function Chooser({
   }, [selectedEvents]);
 
   const [loadingRandom, setLoadingRandom] = useState(false);
-  const currentIds = selected.map((e) => e.id);
+  const currentKeys = selected.map((e) => `${e.id}${e.useDeath ? "~d" : ""}`);
 
   const handleRandom = useCallback(
     async (slotIndex: number) => {
       setLoadingRandom(true);
       try {
-        const exclude = currentIds.join(",");
+        const exclude = currentKeys.join(",");
         const res = await fetch(`/api/random${exclude ? `?exclude=${exclude}` : ""}`);
         const event = await res.json();
         if (event?.id) {
@@ -54,7 +54,7 @@ export default function Chooser({
         setLoadingRandom(false);
       }
     },
-    [selected, currentIds, router]
+    [selected, currentKeys, router]
   );
 
   const handleSelect = useCallback(
@@ -71,18 +71,34 @@ export default function Chooser({
       const event = selected[slotIndex];
       if (!event || event.deathYear === null) return;
 
-      const updated = selected.map((e, i) => {
-        if (i !== slotIndex) return e;
-        if (e.useDeath) {
-          // Switch back to birth
-          return { ...e, useDeath: false, dateProperty: "P569" };
-        } else {
-          // Switch to death
-          return { ...e, useDeath: true, dateProperty: "P570" };
-        }
-      });
-      const path = buildShareablePath(updated);
-      router.push(path);
+      const targetUseDeath = !event.useDeath;
+
+      // Check if the target variant already exists in another slot
+      const duplicateIndex = selected.findIndex(
+        (e, i) => i !== slotIndex && e.id === event.id && e.useDeath === targetUseDeath
+      );
+
+      let updated;
+      if (duplicateIndex >= 0) {
+        // Target variant already selected — just remove this slot
+        updated = selected.filter((_, i) => i !== slotIndex);
+      } else {
+        updated = selected.map((e, i) => {
+          if (i !== slotIndex) return e;
+          if (targetUseDeath) {
+            return { ...e, useDeath: true, dateProperty: "P570" };
+          } else {
+            return { ...e, useDeath: false, dateProperty: "P569" };
+          }
+        });
+      }
+
+      if (updated.length > 0) {
+        const path = buildShareablePath(updated);
+        router.push(path);
+      } else {
+        router.push("/");
+      }
     },
     [selected, router]
   );
@@ -92,7 +108,7 @@ export default function Chooser({
       const event = selected[slotIndex];
       if (!event) return;
 
-      const remaining = selected.filter((e) => e.id !== event.id);
+      const remaining = selected.filter((_, i) => i !== slotIndex);
       if (remaining.length > 0) {
         const path = buildShareablePath(remaining);
         router.push(path);
@@ -151,9 +167,9 @@ export default function Chooser({
           <p className={styles.heading}>Search for events to compare</p>
         </div>
         {slots.map((event, i) => (
-          <div key={event ? event.id : `empty-${i}`} className={styles.slot}>
+          <div key={event ? `${event.id}${event.useDeath ? "~d" : ""}` : `empty-${i}`} className={styles.slot}>
             <EventAutocomplete
-              selectedIds={currentIds}
+              selectedKeys={currentKeys}
               value={event}
               onSelect={(e) => handleSelect(i, e)}
               onClear={() => handleClear(i)}
