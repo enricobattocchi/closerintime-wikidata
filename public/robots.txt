@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://closerinti.me/sitemap.xml
+Sitemap: https://wiki.closerinti.me/sitemap.xml

@@ -25,7 +25,7 @@ export function useExport(allSelected: Event[]) {
     container.style.left = "-9999px";
     const canvas = await html2canvas(container, {
       scale: 2,
-      backgroundColor: isDark ? "#1a1a1a" : "#ffffff",
+      backgroundColor: isDark ? "#101418" : "#f8f9fa",
     });
     container.style.cssText = origStyles;
     container.removeAttribute("data-exporting");
@@ -33,7 +33,7 @@ export function useExport(allSelected: Event[]) {
     const names = allSelected
       .map((e) => e.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-+$/, ""))
       .join("-");
-    link.download = `closerintime-${names || "timeline"}.png`;
+    link.download = `wiki-closerintime-${names || "timeline"}.png`;
     link.href = canvas.toDataURL("image/png");
     link.click();
   }, [allSelected]);

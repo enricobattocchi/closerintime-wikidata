@@ -4,7 +4,8 @@ import { useEffect, useRef } from "react";
 import {
   AccountBalance, MusicNote, Movie, Domain, MenuBook,
   ScienceIcon, PaletteIcon, MemoryIcon, SportsSoccer,
-  LiveTv, AccountCircle,
+  LiveTv, PersonIcon, PlaceIcon, GroupIcon, WarningIcon,
+  MilitaryIcon, FlightIcon,
 } from "@/components/Icon";
 import styles from "@/styles/HelpModal.module.css";
 
@@ -13,17 +14,22 @@ interface HelpModalProps {
 }
 
 const categories = [
+  { icon: PersonIcon, label: "person" },
   { icon: AccountBalance, label: "history" },
   { icon: MusicNote, label: "music" },
-  { icon: MemoryIcon, label: "computer" },
+  { icon: ScienceIcon, label: "science" },
   { icon: PaletteIcon, label: "art" },
   { icon: Movie, label: "film" },
-  { icon: Domain, label: "building" },
-  { icon: ScienceIcon, label: "science" },
   { icon: MenuBook, label: "book" },
+  { icon: Domain, label: "building" },
+  { icon: MemoryIcon, label: "computer" },
   { icon: SportsSoccer, label: "sport" },
   { icon: LiveTv, label: "pop culture" },
-  { icon: AccountCircle, label: "personal" },
+  { icon: MilitaryIcon, label: "military" },
+  { icon: PlaceIcon, label: "place" },
+  { icon: GroupIcon, label: "organization" },
+  { icon: WarningIcon, label: "disaster" },
+  { icon: FlightIcon, label: "transport" },
 ];
 
 export default function HelpModal({ onClose }: HelpModalProps) {
@@ -76,12 +82,15 @@ export default function HelpModal({ onClose }: HelpModalProps) {
         </div>
         <div className={styles.body}>
           <p className={styles.description}>
-            Visualize the time between historical events.
+            Visualize the time between historical events, powered by{" "}
+            <a href="https://www.wikidata.org" target="_blank" rel="noopener">Wikidata</a>.
           </p>
           <p>
-            Pick up to three events by typing in the search fields. You can
-            search by name, year, or category:
+            Pick up to three events by typing in the search fields. Results
+            come directly from Wikidata&apos;s knowledge base of millions of
+            entities &mdash; people, places, inventions, battles, and more.
           </p>
+          <p>Events are classified into categories:</p>
           <ul className={styles.categories}>
             {categories.map(({ icon: Icon, label }) => (
               <li key={label} className={styles.category}>
@@ -95,14 +104,13 @@ export default function HelpModal({ onClose }: HelpModalProps) {
             show the proportional timespans between them and now.
           </p>
           <p>
-            You can add your own personal events (e.g. your birthday) using the{" "}
-            <strong>+</strong> button. They are stored locally in your browser
-            and not shared with anyone.
-          </p>
-          <p>
-            The dates chosen for some events may be approximate when precise
+            Dates are sourced from Wikidata and may be approximate when precise
             dating is not possible. Click an event on the timeline to read its
             Wikipedia article and learn more.
+          </p>
+          <p>
+            Share your timeline by copying the URL &mdash; each combination of
+            events has a unique, shareable link.
           </p>
         </div>
         <div className={styles.footer}>

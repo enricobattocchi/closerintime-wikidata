@@ -16,19 +16,19 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { ids: rawIds } = await params;
   const qids = parseSegments(rawIds);
-  if (!qids) return { title: "closerintime" };
+  if (!qids) return { title: "wiki:closerintime" };
 
   let events;
   try {
     events = await fetchWikidataEvents(qids);
   } catch {
-    return { title: "closerintime" };
+    return { title: "wiki:closerintime" };
   }
-  if (events.length === 0) return { title: "closerintime" };
+  if (events.length === 0) return { title: "wiki:closerintime" };
 
   const sentence = generateSentence(events);
-  const title = sentence || "closerintime";
-  const ogTitle = sentence ? `${sentence} #closerintime` : "#closerintime";
+  const title = sentence || "wiki:closerintime";
+  const ogTitle = sentence ? `${sentence} wiki:closerintime` : "wiki:closerintime";
   const description = "Visualize the time between historical events.";
   const ogImage = `/api/og?ids=${rawIds.join(",")}`;
 

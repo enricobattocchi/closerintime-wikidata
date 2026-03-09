@@ -1,6 +1,7 @@
 export interface Event {
   id: string;
   name: string;
+  description: string | null;
   year: number;
   month: number | null;
   day: number | null;
@@ -34,6 +35,7 @@ export interface TimelineResult {
 export type TimespanFormat = 0 | 1 | 2; // 0=days, 1=years only, 2=precise
 
 export const EVENT_TYPES = [
-  "art", "book", "building", "computer", "film",
-  "history", "music", "pop culture", "science", "sport",
+  "art", "book", "building", "computer", "disaster",
+  "film", "history", "military", "music", "organization",
+  "person", "place", "pop culture", "science", "sport", "transport",
 ] as const;

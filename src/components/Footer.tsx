@@ -41,7 +41,7 @@ export default function Footer() {
             Lopo.it
           </a>
           {" "}&middot;{" "}
-          <a href="https://github.com/enricobattocchi/closerintime-node" rel="noopener" target="_blank">
+          <a href="https://github.com/enricobattocchi/closerintime-wikidata" rel="noopener" target="_blank">
             GitHub
           </a>
         </p>

@@ -1,11 +1,11 @@
 {
-  "name": "closerintime",
-  "short_name": "closerintime",
+  "name": "wiki:closerintime",
+  "short_name": "wiki:closerintime",
   "description": "Visualize the time between historical events.",
   "start_url": "/",
   "display": "standalone",
-  "theme_color": "#8B2252",
-  "background_color": "#ffffff",
+  "theme_color": "#3366cc",
+  "background_color": "#f8f9fa",
   "icons": [
     {
       "src": "/icons/icon-48.png",

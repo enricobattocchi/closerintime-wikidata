@@ -167,6 +167,16 @@
 
 .optionName {
   flex: 1;
+  line-height: 1.4;
+}
+
+.optionDesc {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--color-text-light);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .optionYear {

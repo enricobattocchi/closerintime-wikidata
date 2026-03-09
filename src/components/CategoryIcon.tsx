@@ -2,7 +2,8 @@ import type { SVGProps } from "react";
 import {
   AccountBalance, MusicNote, Movie, Domain, MenuBook,
   ScienceIcon, PaletteIcon, MemoryIcon, SportsSoccer,
-  LiveTv, AccountCircle, EventIcon,
+  LiveTv, PersonIcon, PlaceIcon, GroupIcon, WarningIcon,
+  MilitaryIcon, FlightIcon, EventIcon,
 } from "@/components/Icon";
 
 type IconComponent = (props: SVGProps<SVGSVGElement> & { size?: number }) => React.JSX.Element;
@@ -18,7 +19,12 @@ const iconMap: Record<string, IconComponent> = {
   computer: MemoryIcon,
   sport: SportsSoccer,
   "pop culture": LiveTv,
-  personal: AccountCircle,
+  person: PersonIcon,
+  place: PlaceIcon,
+  organization: GroupIcon,
+  disaster: WarningIcon,
+  military: MilitaryIcon,
+  transport: FlightIcon,
 };
 
 export default function CategoryIcon({

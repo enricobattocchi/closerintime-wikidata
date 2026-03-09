@@ -14,54 +14,222 @@ function mapType(typeLabel: string | undefined): string {
   if (!typeLabel) return "history";
   const lower = typeLabel.toLowerCase();
 
-  const mapping: Record<string, string> = {
-    battle: "history",
-    war: "history",
-    revolution: "history",
-    treaty: "history",
-    election: "history",
-    assassination: "history",
-    disaster: "history",
-    earthquake: "history",
-    pandemic: "history",
-    film: "film",
-    movie: "film",
-    book: "book",
-    novel: "book",
-    publication: "book",
-    album: "music",
-    song: "music",
-    symphony: "music",
-    opera: "music",
-    concert: "music",
-    painting: "art",
-    sculpture: "art",
-    artwork: "art",
-    building: "building",
-    bridge: "building",
-    monument: "building",
-    cathedral: "building",
-    software: "computer",
-    website: "computer",
-    invention: "science",
-    discovery: "science",
-    experiment: "science",
-    "space mission": "science",
-    launch: "science",
-    landing: "science",
-    sport: "sport",
-    "olympic games": "sport",
-    championship: "sport",
-    tournament: "sport",
-    human: "history",
-  };
+  // Order matters — more specific keywords first
+  const mapping: [string, string][] = [
+    // Space (before "human" to catch "human spaceflight")
+    ["spaceflight", "transport"],
+    ["space station", "transport"],
+    ["space program", "science"],
 
-  for (const [keyword, type] of Object.entries(mapping)) {
-    if (lower.includes(keyword)) return type;
-  }
+    // People
+    ["human", "person"],
+    ["composer", "person"],
+    ["politician", "person"],
+    ["writer", "person"],
+    ["author", "person"],
+    ["actor", "person"],
+    ["singer", "person"],
+    ["musician", "person"],
+    ["philosopher", "person"],
+    ["scientist", "person"],
+    ["inventor", "person"],
+    ["painter", "person"],
+    ["sculptor", "person"],
+    ["architect", "person"],
+    ["monarch", "person"],
+    ["emperor", "person"],
+    ["president", "person"],
+    ["pharaoh", "person"],
+    ["explorer", "person"],
+    ["astronaut", "person"],
+    ["athlete", "person"],
+    ["footballer", "person"],
 
-  for (const t of EVENT_TYPES) {
-    if (lower.includes(t)) return t;
+    // Military
+    ["battle", "military"],
+    ["war", "military"],
+    ["military operation", "military"],
+    ["military conflict", "military"],
+    ["siege", "military"],
+    ["bombing", "military"],
+    ["invasion", "military"],
+    ["armistice", "military"],
+
+    // Disasters
+    ["earthquake", "disaster"],
+    ["tsunami", "disaster"],
+    ["volcanic eruption", "disaster"],
+    ["flood", "disaster"],
+    ["famine", "disaster"],
+    ["pandemic", "disaster"],
+    ["epidemic", "disaster"],
+    ["shipwreck", "disaster"],
+    ["aviation accident", "disaster"],
+    ["nuclear disaster", "disaster"],
+    ["disaster", "disaster"],
+    ["explosion", "disaster"],
+
+    // Transport
+    ["aircraft", "transport"],
+    ["airplane", "transport"],
+    ["ship", "transport"],
+    ["locomotive", "transport"],
+    ["automobile", "transport"],
+    ["car model", "transport"],
+    ["spacecraft", "transport"],
+    ["space mission", "transport"],
+    ["maiden voyage", "transport"],
+    ["flight", "transport"],
+    ["ocean liner", "transport"],
+    ["rocket", "transport"],
+
+    // Places
+    ["city", "place"],
+    ["country", "place"],
+    ["territory", "place"],
+    ["colony", "place"],
+    ["kingdom", "place"],
+    ["empire", "place"],
+    ["republic", "place"],
+    ["state", "place"],
+    ["island", "place"],
+
+    // Organizations
+    ["organization", "organization"],
+    ["company", "organization"],
+    ["university", "organization"],
+    ["political party", "organization"],
+    ["religious order", "organization"],
+    ["band", "organization"],
+    ["sports team", "organization"],
+    ["club", "organization"],
+    ["association", "organization"],
+    ["institution", "organization"],
+
+    // Film & TV
+    ["film", "film"],
+    ["movie", "film"],
+    ["television series", "film"],
+    ["television film", "film"],
+    ["animated film", "film"],
+    ["documentary", "film"],
+    ["short film", "film"],
+
+    // Music
+    ["album", "music"],
+    ["song", "music"],
+    ["single", "music"],
+    ["symphony", "music"],
+    ["concerto", "music"],
+    ["musical composition", "music"],
+    ["musical work", "music"],
+    ["musical group", "music"],
+    ["concert", "music"],
+    ["opera", "music"],
+
+    // Books & publications
+    ["book", "book"],
+    ["novel", "book"],
+    ["poem", "book"],
+    ["play", "book"],
+    ["newspaper", "book"],
+    ["magazine", "book"],
+    ["encyclopedia", "book"],
+    ["publication", "book"],
+    ["literary work", "book"],
+    ["comic", "book"],
+    ["manga", "book"],
+    ["academic journal", "book"],
+    ["scientific article", "book"],
+
+    // Art
+    ["painting", "art"],
+    ["sculpture", "art"],
+    ["artwork", "art"],
+    ["photograph", "art"],
+    ["mural", "art"],
+    ["fresco", "art"],
+    ["mosaic", "art"],
+    ["art exhibition", "art"],
+
+    // Buildings & architecture
+    ["building", "building"],
+    ["bridge", "building"],
+    ["monument", "building"],
+    ["cathedral", "building"],
+    ["church", "building"],
+    ["mosque", "building"],
+    ["temple", "building"],
+    ["castle", "building"],
+    ["palace", "building"],
+    ["tower", "building"],
+    ["skyscraper", "building"],
+    ["dam", "building"],
+    ["stadium", "building"],
+    ["pyramid", "building"],
+    ["lighthouse", "building"],
+    ["fortification", "building"],
+
+    // Science & technology
+    ["invention", "science"],
+    ["discovery", "science"],
+    ["experiment", "science"],
+    ["telescope", "science"],
+    ["particle", "science"],
+    ["chemical element", "science"],
+    ["comet", "science"],
+    ["asteroid", "science"],
+    ["vaccine", "science"],
+
+    // Computers & software
+    ["software", "computer"],
+    ["website", "computer"],
+    ["video game", "computer"],
+    ["programming language", "computer"],
+    ["operating system", "computer"],
+    ["mobile app", "computer"],
+    ["smartphone", "computer"],
+    ["computer", "computer"],
+    ["console", "computer"],
+
+    // Sport
+    ["sport", "sport"],
+    ["olympic games", "sport"],
+    ["championship", "sport"],
+    ["tournament", "sport"],
+    ["world cup", "sport"],
+    ["marathon", "sport"],
+    ["race", "sport"],
+
+    // Pop culture
+    ["television", "pop culture"],
+    ["tv show", "pop culture"],
+    ["game show", "pop culture"],
+    ["theme park", "pop culture"],
+    ["award ceremony", "pop culture"],
+    ["festival", "pop culture"],
+
+    // History (general — catch-all for political/social events)
+    ["revolution", "history"],
+    ["treaty", "history"],
+    ["election", "history"],
+    ["assassination", "history"],
+    ["coronation", "history"],
+    ["referendum", "history"],
+    ["declaration", "history"],
+    ["constitution", "history"],
+    ["ceremony", "history"],
+    ["protest", "history"],
+    ["rebellion", "history"],
+    ["independence", "history"],
+    ["annexation", "history"],
+    ["coup", "history"],
+  ];
+
+  for (const [keyword, type] of mapping) {
+    // Use word boundary matching to avoid partial matches (e.g. "opera" in "operating")
+    const pattern = new RegExp(`\\b${keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i");
+    if (pattern.test(lower)) return type;
   }
 
   return "history";
@@ -143,7 +311,7 @@ async function entitiesToEvents(qids: string[]): Promise<Event[]> {
   const url = new URL(WIKIDATA_API);
   url.searchParams.set("action", "wbgetentities");
   url.searchParams.set("ids", qids.join("|"));
-  url.searchParams.set("props", "labels|claims|sitelinks");
+  url.searchParams.set("props", "labels|descriptions|claims|sitelinks");
   url.searchParams.set("languages", "en");
   url.searchParams.set("sitefilter", "enwiki");
   url.searchParams.set("format", "json");
@@ -213,6 +381,7 @@ async function entitiesToEvents(qids: string[]): Promise<Event[]> {
     events.push({
       id: qid,
       name: label,
+      description: entity.descriptions?.en?.value ?? null,
       year: date.year,
       month: date.month,
       day: date.day,

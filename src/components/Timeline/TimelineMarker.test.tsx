@@ -37,7 +37,7 @@ describe("TimelineMarker", () => {
 
   it("renders as div when event has no link", () => {
     const marker = {
-      event: makeEvent({ id: 5, name: "test", link: null }),
+      event: makeEvent({ id: "Q5", name: "test", link: null }),
       label: "2000",
       position: 50,
     };

@@ -5,7 +5,7 @@ export default function Header() {
   return (
     <header className={styles.header}>
       <a href="/" className={styles.title}>
-        #closerintime
+        wiki:closerintime
       </a>
       <OfflineIndicator />
     </header>

@@ -213,7 +213,12 @@ export default function EventAutocomplete({
                   <span className={styles.optionIcon}>
                     <CategoryIcon type={event.type} size={20} />
                   </span>
-                  <span className={styles.optionName}>{capitalize(event.name)}</span>
+                  <span className={styles.optionName}>
+                    {capitalize(event.name)}
+                    {event.description && (
+                      <span className={styles.optionDesc}>{event.description}</span>
+                    )}
+                  </span>
                   <span className={styles.optionYear}>
                     {formatYear(event.year)}
                   </span>

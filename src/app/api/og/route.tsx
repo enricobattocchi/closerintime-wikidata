@@ -24,8 +24,8 @@ async function getFont(): Promise<ArrayBuffer> {
 }
 
 function segmentColor(order: number, total: number): string {
-  const hue = 115 + (360 * order) / total;
-  return `hsl(${hue}, 65%, 55%)`;
+  const hue = 210 + (120 * order) / total;
+  return `hsl(${hue}, 60%, 65%)`;
 }
 
 function capitalize(s: string): string {
@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          background: "#8B2252",
+          background: "#2a4b8d",
           padding: "60px 80px",
         }}
       >
@@ -174,7 +174,7 @@ export async function GET(request: NextRequest) {
             bottom: "40px",
           }}
         >
-          #closerintime
+          wiki:closerintime
         </div>
       </div>
     ),

@@ -17,10 +17,10 @@ const sourceSerif = Source_Serif_4({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://closerinti.me"),
+  metadataBase: new URL("https://wiki.closerinti.me"),
   title: {
-    default: "#closerintime",
-    template: "%s #closerintime",
+    default: "wiki:closerintime",
+    template: "%s | wiki:closerintime",
   },
   description: "Visualize the time between historical events.",
   manifest: "/manifest.json",
@@ -29,14 +29,14 @@ export const metadata: Metadata = {
     apple: "/icons/icon-192.png",
   },
   openGraph: {
-    title: "#closerintime",
+    title: "wiki:closerintime",
     description: "Visualize the time between historical events.",
-    siteName: "closerintime",
+    siteName: "wiki:closerintime",
     images: [{ url: "/closerintime-sharing.png", width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "#closerintime",
+    title: "wiki:closerintime",
     description: "Visualize the time between historical events.",
     images: ["/closerintime-sharing.png"],
   },
