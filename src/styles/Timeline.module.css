@@ -179,8 +179,12 @@ a.marker:focus-visible {
   }
 
   .timelineEmpty {
+    flex: 1;
     justify-content: center;
     align-items: center;
+    min-height: unset;
+    margin-top: 0;
+    margin-left: 0;
   }
 
   .marker {
