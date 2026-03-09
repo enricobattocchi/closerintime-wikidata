@@ -5,8 +5,9 @@
 }
 
 .sentence {
-  font-size: 1.6em;
-  line-height: 1.4;
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 1.5em;
+  line-height: 1.5;
   color: var(--color-text);
   text-decoration: none;
 }
