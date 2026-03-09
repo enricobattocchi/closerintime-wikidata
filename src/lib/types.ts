@@ -8,6 +8,8 @@ export interface Event {
   type: string;
   plural: number;
   link: string | null;
+  /** Wikidata property ID that provided the date (e.g. "P569" for birth) */
+  dateProperty: string | null;
 }
 
 export interface MarkerData {

@@ -15,7 +15,7 @@ interface TimelineProps {
 const nowMarker: MarkerData = {
   event: {
     id: "0", name: "Now", description: null, year: currentYear(),
-    month: null, day: null, type: "", plural: 0, link: null,
+    month: null, day: null, type: "", plural: 0, link: null, dateProperty: null,
   },
   label: formatMonthDayYear(createUTCDate()),
   position: 100,

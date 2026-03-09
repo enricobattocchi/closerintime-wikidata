@@ -5,7 +5,7 @@ import type { Event } from "./types";
 function makeEvent(overrides: Partial<Event> = {}): Event {
   return {
     id: "Q1", name: "test", description: null, year: 2000, month: null, day: null,
-    type: "history", plural: 0, link: null,
+    type: "history", plural: 0, link: null, dateProperty: null,
     ...overrides,
   };
 }

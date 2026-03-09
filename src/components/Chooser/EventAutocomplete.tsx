@@ -185,49 +185,49 @@ export default function EventAutocomplete({
               <CloseIcon size={16} />
             </button>
           )}
+          {showDropdown && (
+            <div className={styles.dropdown}>
+              <div role="listbox" id={listboxId} ref={listRef}>
+                {isLoading ? (
+                  <div className={styles.noResults}>Searching Wikidata…</div>
+                ) : filtered.length === 0 ? (
+                  <div className={styles.noResults}>No events found</div>
+                ) : (
+                  filtered.map((event, index) => (
+                    <div
+                      key={event.id}
+                      id={`option-${event.id}`}
+                      role="option"
+                      aria-selected={index === highlightedIndex}
+                      className={`${styles.option}${index === highlightedIndex ? ` ${styles.optionHighlighted}` : ""}`}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        onSelect(event);
+                        setQuery("");
+                        setIsOpen(false);
+                      }}
+                      onMouseEnter={() => setHighlightedIndex(index)}
+                    >
+                      <span className={styles.optionIcon}>
+                        <CategoryIcon type={event.type} size={20} />
+                      </span>
+                      <span className={styles.optionName}>
+                        {capitalize(event.name)}
+                        {event.description && (
+                          <span className={styles.optionDesc}>{event.description}</span>
+                        )}
+                      </span>
+                      <span className={styles.optionYear}>
+                        {formatYear(event.year)}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
-      {showDropdown && (
-        <div className={styles.dropdown}>
-          <div role="listbox" id={listboxId} ref={listRef}>
-            {isLoading ? (
-              <div className={styles.noResults}>Searching Wikidata…</div>
-            ) : filtered.length === 0 ? (
-              <div className={styles.noResults}>No events found</div>
-            ) : (
-              filtered.map((event, index) => (
-                <div
-                  key={event.id}
-                  id={`option-${event.id}`}
-                  role="option"
-                  aria-selected={index === highlightedIndex}
-                  className={`${styles.option}${index === highlightedIndex ? ` ${styles.optionHighlighted}` : ""}`}
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    onSelect(event);
-                    setQuery("");
-                    setIsOpen(false);
-                  }}
-                  onMouseEnter={() => setHighlightedIndex(index)}
-                >
-                  <span className={styles.optionIcon}>
-                    <CategoryIcon type={event.type} size={20} />
-                  </span>
-                  <span className={styles.optionName}>
-                    {capitalize(event.name)}
-                    {event.description && (
-                      <span className={styles.optionDesc}>{event.description}</span>
-                    )}
-                  </span>
-                  <span className={styles.optionYear}>
-                    {formatYear(event.year)}
-                  </span>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

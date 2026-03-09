@@ -242,7 +242,10 @@ function parseWikidataTime(timeValue: string): { year: number; month: number | n
   if (!match) return null;
 
   const year = parseInt(match[1], 10);
-  if (isNaN(year)) return null;
+  // Reject dates outside a reasonable range for timeline display
+  // (JavaScript Date breaks beyond ~±270,000 years, and geological
+  // timescales aren't useful for our comparisons)
+  if (isNaN(year) || year < -10000 || year > 9999) return null;
 
   const month = parseInt(match[2], 10);
   const day = parseInt(match[3], 10);
@@ -272,7 +275,7 @@ interface WikidataEntity {
 }
 
 /** Extract the best date from an entity's claims */
-function extractDate(claims: Record<string, WikidataClaim[]>): { year: number; month: number | null; day: number | null } | null {
+function extractDate(claims: Record<string, WikidataClaim[]>): { year: number; month: number | null; day: number | null; property: string } | null {
   for (const prop of DATE_PROPERTIES) {
     const propClaims = claims[prop];
     if (!propClaims?.length) continue;
@@ -282,7 +285,7 @@ function extractDate(claims: Record<string, WikidataClaim[]>): { year: number; m
 
     const timeVal = dv.value as { time: string };
     const parsed = parseWikidataTime(timeVal.time);
-    if (parsed) return parsed;
+    if (parsed) return { ...parsed, property: prop };
   }
   return null;
 }
@@ -388,6 +391,7 @@ async function entitiesToEvents(qids: string[]): Promise<Event[]> {
       type: mapType(typeLabel),
       plural: 0,
       link: extractWikiLink(entity),
+      dateProperty: date.property,
     });
   }
 
@@ -418,7 +422,9 @@ export async function searchWikidata(term: string): Promise<Event[]> {
 
   if (qids.length === 0) return [];
 
-  return entitiesToEvents(qids);
+  const events = await entitiesToEvents(qids);
+  // Only show results that have an English Wikipedia article
+  return events.filter((e) => e.link);
 }
 
 /** Fetch specific events by their Q-IDs */
