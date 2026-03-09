@@ -9,7 +9,7 @@ interface TimelineMarkerProps {
 
 export default function TimelineMarker({ marker }: TimelineMarkerProps) {
   const { event, label } = marker;
-  const isNow = event.id === 0;
+  const isNow = event.id === "0";
   const hasLink = !isNow && event.link;
 
   const circle = (

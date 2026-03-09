@@ -1,11 +1,10 @@
 export interface Event {
-  id: number;
+  id: string;
   name: string;
   year: number;
   month: number | null;
   day: number | null;
   type: string;
-  enabled: number;
   plural: number;
   link: string | null;
 }
@@ -38,15 +37,3 @@ export const EVENT_TYPES = [
   "art", "book", "building", "computer", "film",
   "history", "music", "pop culture", "science", "sport",
 ] as const;
-
-export interface Submission {
-  name: string;
-  year: number;
-  month: number | null;
-  day: number | null;
-  type: string;
-  plural: number;
-  link: string;
-  status: "pending" | "approved" | "rejected";
-  submittedAt: string;
-}

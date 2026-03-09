@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import { type NextRequest } from "next/server";
 import type { Event } from "@/lib/types";
-import { getEventsByIds } from "@/lib/events";
+import { fetchWikidataEvents } from "@/lib/wikidata";
 import { generateSentence } from "@/lib/sentence";
 import { computeTimeline } from "@/lib/timeline-math";
 import { parseSegments } from "@/lib/url-params";
@@ -39,14 +39,9 @@ export async function GET(request: NextRequest) {
   let sentence = "";
   let allEvents: Event[] = [];
   if (ids) {
-    const rawIds = ids.split(",");
-    const parsed = parseSegments(rawIds);
-    if (parsed) {
-      const serverEvents =
-        parsed.serverIds.length > 0
-          ? await getEventsByIds(parsed.serverIds)
-          : [];
-      allEvents = [...serverEvents, ...parsed.customEvents];
+    const qids = parseSegments(ids.split(","));
+    if (qids && qids.length > 0) {
+      allEvents = await fetchWikidataEvents(qids);
       if (allEvents.length > 0) {
         sentence = generateSentence(allEvents);
       }
@@ -55,7 +50,6 @@ export async function GET(request: NextRequest) {
 
   const font = await getFont();
 
-  // Compute timeline data for the mini visualization
   const timeline = allEvents.length > 0 ? computeTimeline(allEvents) : null;
 
   return new ImageResponse(
@@ -96,7 +90,6 @@ export async function GET(request: NextRequest) {
               marginTop: "50px",
             }}
           >
-            {/* Span labels above the bar */}
             <div style={{ display: "flex", alignItems: "center", width: "100%", marginBottom: "8px" }}>
               {timeline.segments.map((seg) => (
                 <div
@@ -116,13 +109,11 @@ export async function GET(request: NextRequest) {
                 </div>
               ))}
             </div>
-            {/* Bar with segments */}
             <div style={{ display: "flex", alignItems: "center", width: "100%", height: "24px" }}>
               {timeline.markers.map((marker, i) => {
                 const seg = i < timeline.segments.length ? timeline.segments[i] : null;
                 return (
                   <div key={marker.event.id} style={{ display: "flex", alignItems: "center", flexGrow: seg ? Math.max(seg.percentage, 1) : 0, flexBasis: seg ? 0 : "auto", flexShrink: 0 }}>
-                    {/* Marker dot */}
                     <div
                       style={{
                         width: "24px",
@@ -132,7 +123,6 @@ export async function GET(request: NextRequest) {
                         flexShrink: 0,
                       }}
                     />
-                    {/* Segment line (except after last marker) */}
                     {seg && (
                       <div
                         style={{
@@ -148,10 +138,9 @@ export async function GET(request: NextRequest) {
                 );
               })}
             </div>
-            {/* Marker labels below the bar */}
             <div style={{ display: "flex", alignItems: "flex-start", width: "100%", marginTop: "8px" }}>
               {timeline.markers.map((marker, i) => {
-                const isNow = marker.event.id === 0;
+                const isNow = marker.event.id === "0";
                 const seg = i < timeline.segments.length ? timeline.segments[i] : null;
                 return (
                   <div key={marker.event.id} style={{ display: "flex", alignItems: "flex-start", flexGrow: seg ? Math.max(seg.percentage, 1) : 0, flexBasis: seg ? 0 : "auto", flexShrink: 0 }}>

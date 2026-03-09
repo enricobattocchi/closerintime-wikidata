@@ -4,8 +4,8 @@ import type { Event } from "./types";
 
 function makeEvent(overrides: Partial<Event> = {}): Event {
   return {
-    id: 1, name: "test", year: 2000, month: null, day: null,
-    type: "history", enabled: 1, plural: 0, link: null,
+    id: "Q1", name: "test", year: 2000, month: null, day: null,
+    type: "history", plural: 0, link: null,
     ...overrides,
   };
 }
@@ -23,13 +23,13 @@ describe("ERAS", () => {
 describe("groupByEra", () => {
   it("groups events into correct eras", () => {
     const events = [
-      makeEvent({ id: 1, year: -500 }),
-      makeEvent({ id: 2, year: 1200 }),
-      makeEvent({ id: 3, year: 1600 }),
-      makeEvent({ id: 4, year: 1850 }),
-      makeEvent({ id: 5, year: 1920 }),
-      makeEvent({ id: 6, year: 1975 }),
-      makeEvent({ id: 7, year: 2020 }),
+      makeEvent({ id: "Q1", year: -500 }),
+      makeEvent({ id: "Q2", year: 1200 }),
+      makeEvent({ id: "Q3", year: 1600 }),
+      makeEvent({ id: "Q4", year: 1850 }),
+      makeEvent({ id: "Q5", year: 1920 }),
+      makeEvent({ id: "Q6", year: 1975 }),
+      makeEvent({ id: "Q7", year: 2020 }),
     ];
 
     const groups = groupByEra(events);
@@ -44,9 +44,9 @@ describe("groupByEra", () => {
 
   it("sorts events chronologically within each era", () => {
     const events = [
-      makeEvent({ id: 1, year: 1980 }),
-      makeEvent({ id: 2, year: 1960 }),
-      makeEvent({ id: 3, year: 1970 }),
+      makeEvent({ id: "Q1", year: 1980 }),
+      makeEvent({ id: "Q2", year: 1960 }),
+      makeEvent({ id: "Q3", year: 1970 }),
     ];
 
     const groups = groupByEra(events);

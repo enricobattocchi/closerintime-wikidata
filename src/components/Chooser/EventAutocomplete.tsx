@@ -1,66 +1,41 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import type { Event } from "@/lib/types";
+import { useWikidataSearch } from "@/hooks/useWikidataSearch";
 import { formatYear } from "@/lib/date-utils";
 import CategoryIcon from "@/components/CategoryIcon";
-import { SearchIcon, AddCircleOutline, CloseIcon, EditIcon } from "@/components/Icon";
+import { SearchIcon, CloseIcon } from "@/components/Icon";
 import styles from "@/styles/Chooser.module.css";
 
 interface EventAutocompleteProps {
-  events: Event[];
-  selectedIds: number[];
+  selectedIds: string[];
   value: Event | null;
   onSelect: (event: Event) => void;
   onClear: () => void;
-  isLocal?: boolean;
-  onEdit?: () => void;
-  onAdd?: () => void;
-  showingAddForm?: boolean;
-}
-
-function tokenize(s: string): string[] {
-  return s.toLowerCase().split(/\s+/).filter(Boolean);
-}
-
-function matchesQuery(event: Event, query: string): boolean {
-  const tokens = tokenize(query);
-  const searchable = `${event.name} ${event.year} ${event.type}`.toLowerCase();
-  return tokens.every((t) => searchable.includes(t));
 }
 
 function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-function getRandomEvents(events: Event[], count: number): Event[] {
-  const copy = [...events];
-  const result: Event[] = [];
-  for (let i = 0; i < count && copy.length > 0; i++) {
-    const idx = Math.floor(Math.random() * copy.length);
-    result.push(copy.splice(idx, 1)[0]);
-  }
-  return result;
-}
-
 export default function EventAutocomplete({
-  events,
   selectedIds,
   value,
   onSelect,
   onClear,
-  isLocal,
-  onEdit,
-  onAdd,
-  showingAddForm,
 }: EventAutocompleteProps) {
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
-  const [randomEvents] = useState(() => getRandomEvents(events, 10));
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+
+  const { results, isLoading } = useWikidataSearch(query);
+
+  // Filter out already-selected events
+  const filtered = results.filter((e) => !selectedIds.includes(e.id));
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -72,24 +47,10 @@ export default function EventAutocomplete({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const available = useMemo(
-    () => events.filter((e) => !selectedIds.includes(e.id)),
-    [events, selectedIds]
-  );
-  const filtered = useMemo(
-    () => {
-      const base = query
-        ? available.filter((e) => matchesQuery(e, query))
-        : randomEvents.filter((e) => !selectedIds.includes(e.id));
-      return base.slice(0, 10);
-    },
-    [available, query, randomEvents, selectedIds]
-  );
-
-  // Reset highlight when query changes
+  // Reset highlight when results change
   useEffect(() => {
     setHighlightedIndex(-1);
-  }, [query]);
+  }, [results]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -164,16 +125,6 @@ export default function EventAutocomplete({
             <img src="/icons/wikipedia-w.svg" alt="Wikipedia" width={18} height={18} />
           </a>
         )}
-        {isLocal && onEdit && (
-          <button
-            className={styles.editButton}
-            onClick={onEdit}
-            aria-label="Edit local event"
-            title="Edit this event"
-          >
-            <EditIcon size={18} />
-          </button>
-        )}
         <button className={styles.cancelButton} onClick={onClear} aria-label="Remove event">
           <CloseIcon size={18} />
         </button>
@@ -186,6 +137,8 @@ export default function EventAutocomplete({
     highlightedIndex >= 0 && filtered[highlightedIndex]
       ? `option-${filtered[highlightedIndex].id}`
       : undefined;
+
+  const showDropdown = isOpen && query.trim().length >= 2;
 
   return (
     <div
@@ -233,21 +186,13 @@ export default function EventAutocomplete({
             </button>
           )}
         </div>
-        {onAdd && (
-          <button
-            className={styles.addIconButton}
-            onClick={onAdd}
-            aria-label={showingAddForm ? "Cancel adding event" : "Add your own event"}
-            title={showingAddForm ? "Cancel" : "Add your own event"}
-          >
-            {showingAddForm ? <CloseIcon size={20} /> : <AddCircleOutline size={20} />}
-          </button>
-        )}
       </div>
-      {isOpen && (
+      {showDropdown && (
         <div className={styles.dropdown}>
           <div role="listbox" id={listboxId} ref={listRef}>
-            {filtered.length === 0 ? (
+            {isLoading ? (
+              <div className={styles.noResults}>Searching Wikidata…</div>
+            ) : filtered.length === 0 ? (
               <div className={styles.noResults}>No events found</div>
             ) : (
               filtered.map((event, index) => (

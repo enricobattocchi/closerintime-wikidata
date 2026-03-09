@@ -14,15 +14,15 @@ interface TimelineProps {
 
 const nowMarker: MarkerData = {
   event: {
-    id: 0, name: "Now", year: currentYear(),
-    month: null, day: null, type: "", enabled: 1, plural: 0, link: null,
+    id: "0", name: "Now", year: currentYear(),
+    month: null, day: null, type: "", plural: 0, link: null,
   },
   label: formatMonthDayYear(createUTCDate()),
   position: 100,
 };
 
 // Module-level: survives component remounts during client navigation
-let prevMarkerPositions: Map<number, number> | null = null;
+let prevMarkerPositions: Map<string, number> | null = null;
 let prevTimelineData: { markers: MarkerData[]; segments: SegmentData[] } | null = null;
 
 interface AnimatedTimelineProps extends TimelineProps {
@@ -53,7 +53,7 @@ function AnimatedTimeline({ markers, segments, exit = false }: AnimatedTimelineP
 
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    const currentPositions = new Map<number, number>();
+    const currentPositions = new Map<string, number>();
     markers.forEach((marker, i) => {
       currentPositions.set(marker.event.id, markerEls[i][posProp]);
     });

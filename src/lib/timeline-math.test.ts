@@ -4,13 +4,12 @@ import type { Event } from "./types";
 
 function makeEvent(overrides: Partial<Event> = {}): Event {
   return {
-    id: 1,
+    id: "Q1",
     name: "Test Event",
     year: 2000,
     month: null,
     day: null,
     type: "history",
-    enabled: 1,
     plural: 0,
     link: null,
     ...overrides,
@@ -60,8 +59,8 @@ describe("computeTimeline", () => {
   describe("two events", () => {
     it("returns 3 markers and 2 segments", () => {
       const events = [
-        makeEvent({ id: 1, year: 1900 }),
-        makeEvent({ id: 2, year: 2000 }),
+        makeEvent({ id: "Q1", year: 1900 }),
+        makeEvent({ id: "Q2", year: 2000 }),
       ];
       const result = computeTimeline(events);
       expect(result.markers).toHaveLength(3);
@@ -70,8 +69,8 @@ describe("computeTimeline", () => {
 
     it("sorts events chronologically", () => {
       const events = [
-        makeEvent({ id: 2, name: "Later", year: 2000 }),
-        makeEvent({ id: 1, name: "Earlier", year: 1900 }),
+        makeEvent({ id: "Q2", name: "Later", year: 2000 }),
+        makeEvent({ id: "Q1", name: "Earlier", year: 1900 }),
       ];
       const result = computeTimeline(events);
       expect(result.markers[0].event.name).toBe("Earlier");
@@ -81,8 +80,8 @@ describe("computeTimeline", () => {
     it("calculates proportional segments", () => {
       // 1900 to 2000 = 100 years, 2000 to 2024 = 24 years, total = 124 years
       const events = [
-        makeEvent({ id: 1, year: 1900 }),
-        makeEvent({ id: 2, year: 2000 }),
+        makeEvent({ id: "Q1", year: 1900 }),
+        makeEvent({ id: "Q2", year: 2000 }),
       ];
       const result = computeTimeline(events);
       const seg1Pct = result.segments[0].percentage;
@@ -98,8 +97,8 @@ describe("computeTimeline", () => {
 
     it("calculates proportional marker positions", () => {
       const events = [
-        makeEvent({ id: 1, year: 1900 }),
-        makeEvent({ id: 2, year: 2000 }),
+        makeEvent({ id: "Q1", year: 1900 }),
+        makeEvent({ id: "Q2", year: 2000 }),
       ];
       const result = computeTimeline(events);
       expect(result.markers[0].position).toBe(0); // oldest
@@ -111,9 +110,9 @@ describe("computeTimeline", () => {
   describe("three events", () => {
     it("returns 4 markers and 3 segments", () => {
       const events = [
-        makeEvent({ id: 1, year: 1800 }),
-        makeEvent({ id: 2, year: 1900 }),
-        makeEvent({ id: 3, year: 2000 }),
+        makeEvent({ id: "Q1", year: 1800 }),
+        makeEvent({ id: "Q2", year: 1900 }),
+        makeEvent({ id: "Q3", year: 2000 }),
       ];
       const result = computeTimeline(events);
       expect(result.markers).toHaveLength(4);
@@ -122,9 +121,9 @@ describe("computeTimeline", () => {
 
     it("segment percentages sum to 100", () => {
       const events = [
-        makeEvent({ id: 1, year: 1800 }),
-        makeEvent({ id: 2, year: 1900 }),
-        makeEvent({ id: 3, year: 2000 }),
+        makeEvent({ id: "Q1", year: 1800 }),
+        makeEvent({ id: "Q2", year: 1900 }),
+        makeEvent({ id: "Q3", year: 2000 }),
       ];
       const result = computeTimeline(events);
       const sum = result.segments.reduce((s, seg) => s + seg.percentage, 0);
@@ -135,8 +134,8 @@ describe("computeTimeline", () => {
   describe("yearsOnly flag", () => {
     it("is true when any event lacks month/day", () => {
       const events = [
-        makeEvent({ id: 1, year: 2000, month: 6, day: 15 }),
-        makeEvent({ id: 2, year: 2010 }), // no month/day
+        makeEvent({ id: "Q1", year: 2000, month: 6, day: 15 }),
+        makeEvent({ id: "Q2", year: 2010 }), // no month/day
       ];
       const result = computeTimeline(events);
       expect(result.yearsOnly).toBe(true);
@@ -144,8 +143,8 @@ describe("computeTimeline", () => {
 
     it("is false when all events have month and day", () => {
       const events = [
-        makeEvent({ id: 1, year: 2000, month: 6, day: 15 }),
-        makeEvent({ id: 2, year: 2010, month: 3, day: 1 }),
+        makeEvent({ id: "Q1", year: 2000, month: 6, day: 15 }),
+        makeEvent({ id: "Q2", year: 2010, month: 3, day: 1 }),
       ];
       const result = computeTimeline(events);
       expect(result.yearsOnly).toBe(false);
@@ -155,8 +154,8 @@ describe("computeTimeline", () => {
   describe("segment labels", () => {
     it("sets startLabel only on first segment", () => {
       const events = [
-        makeEvent({ id: 1, year: 1900 }),
-        makeEvent({ id: 2, year: 2000 }),
+        makeEvent({ id: "Q1", year: 1900 }),
+        makeEvent({ id: "Q2", year: 2000 }),
       ];
       const result = computeTimeline(events);
       expect(result.segments[0].startLabel).not.toBe("");
@@ -165,8 +164,8 @@ describe("computeTimeline", () => {
 
     it("sets endLabel only on last segment", () => {
       const events = [
-        makeEvent({ id: 1, year: 1900 }),
-        makeEvent({ id: 2, year: 2000 }),
+        makeEvent({ id: "Q1", year: 1900 }),
+        makeEvent({ id: "Q2", year: 2000 }),
       ];
       const result = computeTimeline(events);
       expect(result.segments[0].endLabel).toBe("");
@@ -175,9 +174,9 @@ describe("computeTimeline", () => {
 
     it("sets order and total correctly", () => {
       const events = [
-        makeEvent({ id: 1, year: 1800 }),
-        makeEvent({ id: 2, year: 1900 }),
-        makeEvent({ id: 3, year: 2000 }),
+        makeEvent({ id: "Q1", year: 1800 }),
+        makeEvent({ id: "Q2", year: 1900 }),
+        makeEvent({ id: "Q3", year: 2000 }),
       ];
       const result = computeTimeline(events);
       expect(result.segments.map((s) => s.order)).toEqual([0, 1, 2]);
@@ -187,14 +186,14 @@ describe("computeTimeline", () => {
 
   describe("timespanFormat", () => {
     it("uses precise format by default (format 2)", () => {
-      const events = [makeEvent({ id: 1, year: 2000, month: 6, day: 15 })];
+      const events = [makeEvent({ id: "Q1", year: 2000, month: 6, day: 15 })];
       const result = computeTimeline(events);
       // Precise format includes months/days
       expect(result.segments[0].spanLabel).toContain("years");
     });
 
     it("uses years-only format when requested (format 1)", () => {
-      const events = [makeEvent({ id: 1, year: 2000, month: 6, day: 15 })];
+      const events = [makeEvent({ id: "Q1", year: 2000, month: 6, day: 15 })];
       const result = computeTimeline(events, 1);
       // Should just be "X years"
       expect(result.segments[0].spanLabel).toMatch(/^\d+ years?$/);
