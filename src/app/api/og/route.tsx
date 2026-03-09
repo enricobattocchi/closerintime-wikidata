@@ -25,7 +25,7 @@ async function getFont(): Promise<ArrayBuffer> {
 
 function segmentColor(order: number, total: number): string {
   const hue = 210 + (120 * order) / total;
-  return `hsl(${hue}, 60%, 65%)`;
+  return `hsl(${hue}, 55%, 45%)`;
 }
 
 function capitalize(s: string): string {
@@ -62,14 +62,15 @@ export async function GET(request: NextRequest) {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          background: "#2a4b8d",
+          background: "#ffffff",
           padding: "60px 80px",
+          borderBottom: "4px solid #3366cc",
         }}
       >
         {sentence ? (
           <div
             style={{
-              color: "white",
+              color: "#202122",
               fontSize: sentence.length > 100 ? 36 : 48,
               fontFamily: "Source Serif 4",
               textAlign: "center",
@@ -119,7 +120,7 @@ export async function GET(request: NextRequest) {
                         width: "24px",
                         height: "24px",
                         borderRadius: "50%",
-                        background: "white",
+                        background: "#3366cc",
                         flexShrink: 0,
                       }}
                     />
@@ -146,7 +147,7 @@ export async function GET(request: NextRequest) {
                   <div key={marker.event.id} style={{ display: "flex", alignItems: "flex-start", flexGrow: seg ? Math.max(seg.percentage, 1) : 0, flexBasis: seg ? 0 : "auto", flexShrink: 0 }}>
                     <div
                       style={{
-                        color: "rgba(255, 255, 255, 0.9)",
+                        color: "#54595d",
                         fontSize: 16,
                         fontFamily: "Source Serif 4",
                         whiteSpace: "nowrap",
@@ -167,7 +168,7 @@ export async function GET(request: NextRequest) {
         )}
         <div
           style={{
-            color: "rgba(255, 255, 255, 0.7)",
+            color: "#3366cc",
             fontSize: 28,
             fontFamily: "Source Serif 4",
             position: "absolute",
