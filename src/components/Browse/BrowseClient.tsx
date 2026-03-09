@@ -157,7 +157,7 @@ export default function BrowseClient({ eras: serverEras }: BrowseClientProps) {
                 </span>
               </button>
               {isOpen && (
-                <div id={`era-${era.id}`} className={styles.eventList} role="list">
+                <div id={`era-${era.id}`} className={styles.eventList} role="list" tabIndex={-1}>
                   {era.events.map((event) => (
                     <Link
                       key={event.id}

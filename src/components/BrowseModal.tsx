@@ -150,7 +150,7 @@ export default function BrowseModal({ events, selectedIds, onSelect, onClose }: 
                   </span>
                 </button>
                 {isOpen && (
-                  <div id={`browse-era-${era.id}`} className={browseStyles.eventList} role="list">
+                  <div id={`browse-era-${era.id}`} className={browseStyles.eventList} role="list" tabIndex={-1}>
                     {era.events.map((event) => {
                       const alreadySelected = selectedIds.includes(event.id);
                       return (
