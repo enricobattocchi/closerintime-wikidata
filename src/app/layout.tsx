@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     title: "#closerintime",
     description: "Visualize the time between historical events.",
     siteName: "closerintime",
-    images: [{ url: "/closerintime-sharing.png" }],
+    images: [{ url: "/closerintime-sharing.png", width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
