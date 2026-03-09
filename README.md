@@ -1,6 +1,6 @@
 # #closerintime
 
-Visualize the time between historical events.
+A refactor of [closerintime](https://github.com/enricobattocchi/closerintime) that replaces the curated event database with real-time Wikidata search.
 
 Pick up to three historical events and see them on a proportional timeline ending at *now*. The app generates comparison sentences like *"The Great Pyramid is closer in time to us than to the Big Bang"* and renders them as shareable links with correct Open Graph metadata.
 
