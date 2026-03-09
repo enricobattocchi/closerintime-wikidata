@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
+import type { Event } from "@/lib/types";
 import { fetchWikidataEvents } from "@/lib/wikidata";
 import { computeTimeline } from "@/lib/timeline-math";
 import { generateSentence } from "@/lib/sentence";
@@ -13,14 +14,34 @@ interface PageProps {
   params: Promise<{ ids: string[] }>;
 }
 
+/** Apply ~d (death date) flags to fetched events */
+function applyDeathFlags(events: Event[], deathFlags: Map<string, boolean>): Event[] {
+  return events.map((e) => {
+    if (deathFlags.get(e.id) && e.deathYear !== null) {
+      return {
+        ...e,
+        year: e.deathYear,
+        month: e.deathMonth,
+        day: e.deathDay,
+        dateProperty: "P570",
+        useDeath: true,
+      };
+    }
+    return e;
+  });
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { ids: rawIds } = await params;
-  const qids = parseSegments(rawIds);
-  if (!qids) return { title: "wiki:closerintime" };
+  const segments = parseSegments(rawIds);
+  if (!segments) return { title: "wiki:closerintime" };
+
+  const qids = segments.map((s) => s.qid);
+  const deathFlags = new Map(segments.map((s) => [s.qid, s.useDeath]));
 
   let events;
   try {
-    events = await fetchWikidataEvents(qids);
+    events = applyDeathFlags(await fetchWikidataEvents(qids), deathFlags);
   } catch {
     return { title: "wiki:closerintime" };
   }
@@ -42,21 +63,30 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function EventPage({ params }: PageProps) {
   const { ids: rawIds } = await params;
-  const qids = parseSegments(rawIds);
+  const segments = parseSegments(rawIds);
 
-  if (!qids) {
+  if (!segments) {
     redirect("/");
   }
 
   // Redirect to sorted order for canonical URLs
-  const sorted = [...qids].sort();
-  if (qids.some((id, i) => id !== sorted[i])) {
-    redirect("/" + sorted.join("/"));
+  const sortedSegments = [...segments].sort((a, b) => {
+    const sa = `${a.qid}${a.useDeath ? "~d" : ""}`;
+    const sb = `${b.qid}${b.useDeath ? "~d" : ""}`;
+    return sa.localeCompare(sb);
+  });
+  const sortedPath = sortedSegments.map((s) => `${s.qid}${s.useDeath ? "~d" : ""}`);
+  const rawPath = segments.map((s) => `${s.qid}${s.useDeath ? "~d" : ""}`);
+  if (rawPath.some((v, i) => v !== sortedPath[i])) {
+    redirect("/" + sortedPath.join("/"));
   }
+
+  const qids = sortedSegments.map((s) => s.qid);
+  const deathFlags = new Map(sortedSegments.map((s) => [s.qid, s.useDeath]));
 
   let events;
   try {
-    events = await fetchWikidataEvents(sorted);
+    events = applyDeathFlags(await fetchWikidataEvents(qids), deathFlags);
   } catch {
     redirect("/");
   }

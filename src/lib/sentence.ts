@@ -21,6 +21,8 @@ function contextualName(event: Event): string {
   switch (event.dateProperty) {
     case "P569": // date of birth
       return `the birth of ${event.name}`;
+    case "P570": // date of death
+      return `the death of ${event.name}`;
     case "P571": { // inception / founding
       const verb = event.type === "building" ? "construction" : "founding";
       return `the ${verb} of ${event.name}`;

@@ -66,6 +66,27 @@ export default function Chooser({
     [selected, router]
   );
 
+  const handleToggleDeath = useCallback(
+    (slotIndex: number) => {
+      const event = selected[slotIndex];
+      if (!event || event.deathYear === null) return;
+
+      const updated = selected.map((e, i) => {
+        if (i !== slotIndex) return e;
+        if (e.useDeath) {
+          // Switch back to birth
+          return { ...e, useDeath: false, dateProperty: "P569" };
+        } else {
+          // Switch to death
+          return { ...e, useDeath: true, dateProperty: "P570" };
+        }
+      });
+      const path = buildShareablePath(updated);
+      router.push(path);
+    },
+    [selected, router]
+  );
+
   const handleClear = useCallback(
     (slotIndex: number) => {
       const event = selected[slotIndex];
@@ -136,6 +157,7 @@ export default function Chooser({
               value={event}
               onSelect={(e) => handleSelect(i, e)}
               onClear={() => handleClear(i)}
+              onToggleDeath={() => handleToggleDeath(i)}
               isLoadingRandom={loadingRandom}
               onRandom={() => handleRandom(i)}
             />

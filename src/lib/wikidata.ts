@@ -375,6 +375,23 @@ async function entitiesToEvents(qids: string[]): Promise<Event[]> {
     const typeTargetId = entityTypeMap.get(qid);
     const typeLabel = typeTargetId ? typeLabels.get(typeTargetId) : undefined;
 
+    // Extract death date (P570) if available
+    let deathYear: number | null = null;
+    let deathMonth: number | null = null;
+    let deathDay: number | null = null;
+    const p570 = entity.claims["P570"];
+    if (p570?.length) {
+      const dv = p570[0].mainsnak.datavalue;
+      if (dv?.type === "time") {
+        const parsed = parseWikidataTime((dv.value as { time: string }).time);
+        if (parsed) {
+          deathYear = parsed.year;
+          deathMonth = parsed.month;
+          deathDay = parsed.day;
+        }
+      }
+    }
+
     events.push({
       id: qid,
       name: label,
@@ -385,6 +402,10 @@ async function entitiesToEvents(qids: string[]): Promise<Event[]> {
       type: mapType(typeLabel),
       link: extractWikiLink(entity),
       dateProperty: date.property,
+      deathYear,
+      deathMonth,
+      deathDay,
+      useDeath: false,
     });
   }
 

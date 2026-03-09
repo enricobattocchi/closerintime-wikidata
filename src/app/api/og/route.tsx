@@ -39,9 +39,17 @@ export async function GET(request: NextRequest) {
   let sentence = "";
   let allEvents: Event[] = [];
   if (ids) {
-    const qids = parseSegments(ids.split(","));
-    if (qids && qids.length > 0) {
-      allEvents = await fetchWikidataEvents(qids);
+    const segments = parseSegments(ids.split(","));
+    if (segments && segments.length > 0) {
+      const qids = segments.map((s) => s.qid);
+      const deathFlags = new Map(segments.map((s) => [s.qid, s.useDeath]));
+      const fetched = await fetchWikidataEvents(qids);
+      allEvents = fetched.map((e) => {
+        if (deathFlags.get(e.id) && e.deathYear !== null) {
+          return { ...e, year: e.deathYear, month: e.deathMonth, day: e.deathDay, dateProperty: "P570", useDeath: true };
+        }
+        return e;
+      });
       if (allEvents.length > 0) {
         sentence = generateSentence(allEvents);
       }

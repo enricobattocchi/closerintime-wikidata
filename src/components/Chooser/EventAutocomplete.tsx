@@ -13,6 +13,7 @@ interface EventAutocompleteProps {
   value: Event | null;
   onSelect: (event: Event) => void;
   onClear: () => void;
+  onToggleDeath?: () => void;
   isLoadingRandom?: boolean;
   onRandom?: () => void;
 }
@@ -26,6 +27,7 @@ export default function EventAutocomplete({
   value,
   onSelect,
   onClear,
+  onToggleDeath,
   isLoadingRandom,
   onRandom,
 }: EventAutocompleteProps) {
@@ -117,6 +119,16 @@ export default function EventAutocomplete({
           value={`${capitalize(value.name)} \u2013 ${formatYear(value.year)}`}
           aria-label={`Selected event: ${capitalize(value.name)}`}
         />
+        {onToggleDeath && value.deathYear !== null && (
+          <button
+            className={styles.toggleDeathButton}
+            onClick={onToggleDeath}
+            aria-label={value.useDeath ? "Switch to birth date" : "Switch to death date"}
+            title={value.useDeath ? "Switch to birth date" : "Switch to death date"}
+          >
+            {value.useDeath ? "birth" : "death"}
+          </button>
+        )}
         {value.link && (
           <a
             href={value.link}

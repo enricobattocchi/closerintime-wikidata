@@ -13,6 +13,10 @@ function makeEvent(overrides: Partial<Event> = {}): Event {
     type: "history",
     link: null,
     dateProperty: null,
+    deathYear: null,
+    deathMonth: null,
+    deathDay: null,
+    useDeath: false,
     ...overrides,
   };
 }
@@ -39,5 +43,13 @@ describe("buildShareablePath", () => {
       makeEvent({ id: "Q107" }),
     ];
     expect(buildShareablePath(events)).toBe("/Q107/Q42/Q500");
+  });
+
+  it("appends ~d suffix for death date events", () => {
+    const events = [
+      makeEvent({ id: "Q42", useDeath: true }),
+      makeEvent({ id: "Q107" }),
+    ];
+    expect(buildShareablePath(events)).toBe("/Q107/Q42~d");
   });
 });

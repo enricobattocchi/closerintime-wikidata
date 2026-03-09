@@ -16,6 +16,7 @@ const nowMarker: MarkerData = {
   event: {
     id: "0", name: "Now", description: null, year: currentYear(),
     month: null, day: null, type: "", link: null, dateProperty: null,
+    deathYear: null, deathMonth: null, deathDay: null, useDeath: false,
   },
   label: formatMonthDayYear(createUTCDate()),
   position: 100,

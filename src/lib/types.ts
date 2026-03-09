@@ -9,6 +9,12 @@ export interface Event {
   link: string | null;
   /** Wikidata property ID that provided the date (e.g. "P569" for birth) */
   dateProperty: string | null;
+  /** Death date for people (P570), if available */
+  deathYear: number | null;
+  deathMonth: number | null;
+  deathDay: number | null;
+  /** Whether the death date is the active date */
+  useDeath: boolean;
 }
 
 export interface MarkerData {

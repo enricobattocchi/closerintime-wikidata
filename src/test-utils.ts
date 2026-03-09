@@ -11,6 +11,10 @@ export function makeEvent(overrides: Partial<Event> = {}): Event {
     type: "history",
     link: null,
     dateProperty: null,
+    deathYear: null,
+    deathMonth: null,
+    deathDay: null,
+    useDeath: false,
     ...overrides,
   };
 }
