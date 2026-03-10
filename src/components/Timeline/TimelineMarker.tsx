@@ -30,6 +30,9 @@ export default function TimelineMarker({ marker }: TimelineMarkerProps) {
     <div className={`${styles.markerInfo} ${hasLink ? styles.markerClickable : ""}`}>
       <span className={styles.markerDate}>{label}</span>
       <span className={styles.markerName}>{event.name.charAt(0).toUpperCase() + event.name.slice(1)}</span>
+      {event.description && (
+        <span className={styles.markerDesc}>{event.description}</span>
+      )}
     </div>
   );
 

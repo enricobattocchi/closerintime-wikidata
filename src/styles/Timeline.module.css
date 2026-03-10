@@ -70,6 +70,14 @@
   line-height: 1.2;
 }
 
+.markerDesc {
+  display: block;
+  font-size: 0.7em;
+  color: var(--color-text-light);
+  line-height: 1.2;
+  margin-top: 3px;
+}
+
 .markerClickable {
   cursor: pointer;
 }
