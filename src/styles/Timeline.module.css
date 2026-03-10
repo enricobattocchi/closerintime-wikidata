@@ -250,15 +250,7 @@ a.marker:focus-visible {
 }
 
 :global([data-exporting]) .partLabel {
-  position: absolute;
-  left: 50%;
-  top: -28px;
-  transform: translateX(-50%);
-  right: auto;
-  width: auto;
-  text-align: center;
-  white-space: nowrap;
-  opacity: 1;
+  display: none;
 }
 
 /* Vertical layout for mobile */

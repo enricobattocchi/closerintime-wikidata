@@ -20,7 +20,7 @@ export function useExport(allSelected: Event[]) {
     container.setAttribute("data-exporting", "");
     // Force 1200px width off-screen for consistent export size
     const origStyles = container.style.cssText;
-    container.style.width = "1200px";
+    container.style.width = `${Math.max(1200, window.innerWidth)}px`;
     container.style.position = "absolute";
     container.style.left = "-9999px";
     const canvas = await html2canvas(container, {
