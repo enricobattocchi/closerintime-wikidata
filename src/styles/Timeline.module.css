@@ -176,6 +176,15 @@ a.marker:focus-visible {
   min-width: 4px;
 }
 
+.part::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -12px;
+  bottom: -12px;
+}
+
 .partLabel {
   position: absolute;
   left: 50%;
@@ -185,6 +194,12 @@ a.marker:focus-visible {
   font-size: 0.85rem;
   font-weight: 500;
   pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.part:hover .partLabel {
+  opacity: 1;
 }
 
 @media (max-width: 960px) {
@@ -243,6 +258,7 @@ a.marker:focus-visible {
   width: auto;
   text-align: center;
   white-space: nowrap;
+  opacity: 1;
 }
 
 /* Vertical layout for mobile */
@@ -281,6 +297,10 @@ a.marker:focus-visible {
 
   .markerRemove,
   .markerToggleDeath {
+    opacity: 1;
+  }
+
+  .partLabel {
     opacity: 1;
   }
 

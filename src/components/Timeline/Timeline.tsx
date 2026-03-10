@@ -41,6 +41,12 @@ function AnimatedTimeline({ markers, segments, exit = false, onRemove, onToggleD
   const containerRef = useRef<HTMLDivElement>(null);
   const [flippedKeys, setFlippedKeys] = useState<Set<string>>(new Set());
 
+  // Re-measure after fonts load (card sizes depend on the serif font)
+  const [fontsReady, setFontsReady] = useState(false);
+  useEffect(() => {
+    document.fonts.ready.then(() => setFontsReady(true));
+  }, []);
+
   // Detect overlapping info cards and flip alternating ones above the line
   useLayoutEffect(() => {
     const container = containerRef.current;
@@ -88,7 +94,7 @@ function AnimatedTimeline({ markers, segments, exit = false, onRemove, onToggleD
     }
 
     setFlippedKeys(flipped);
-  }, [markers, segments, exit]);
+  }, [markers, segments, exit, fontsReady]);
 
   useLayoutEffect(() => {
     const container = containerRef.current;
@@ -154,13 +160,6 @@ function AnimatedTimeline({ markers, segments, exit = false, onRemove, onToggleD
           ],
           { duration: 800, easing: "ease-in", fill: "forwards" }
         );
-        const label = el.querySelector<HTMLElement>(`.${styles.partLabel}`);
-        if (label) {
-          label.animate(
-            [{ opacity: 1 }, { opacity: 0 }],
-            { duration: 200, easing: "ease-in", fill: "forwards" }
-          );
-        }
       });
     } else if (!hasPrev) {
       // ── FIRST APPEARANCE: grow from center ──
@@ -183,13 +182,6 @@ function AnimatedTimeline({ markers, segments, exit = false, onRemove, onToggleD
           ],
           { duration, easing: "ease-out" }
         );
-        const label = el.querySelector<HTMLElement>(`.${styles.partLabel}`);
-        if (label) {
-          label.animate(
-            [{ opacity: 0 }, { opacity: 1 }],
-            { duration: 600, delay: 600, easing: "ease-out", fill: "backwards" }
-          );
-        }
       });
     } else {
       // ── SUBSEQUENT: new markers slide from Now, existing FLIP ──
