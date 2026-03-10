@@ -1,8 +1,8 @@
-# #closerintime
+# wiki.closerintime
 
 A refactor of [closerintime](https://github.com/enricobattocchi/closerintime) that replaces the curated event database with real-time Wikidata search.
 
-Pick up to three historical events and see them on a proportional timeline ending at *now*. The app generates comparison sentences like *"The Great Pyramid is closer in time to us than to the Big Bang"* and renders them as shareable links with correct Open Graph metadata.
+Search for any number of historical events and see them on a proportional timeline. Give your timeline a custom title, share it as a link, or export it as a PNG image.
 
 ## Tech stack
 
@@ -47,8 +47,13 @@ The build uses `--webpack` to enable PWA service worker generation (Turbopack do
 
 - **Real-time Wikidata search** — search for any historical event, person, or milestone in Wikidata's knowledge base. Results are fetched on demand with debounced queries.
 - **Dark mode** — automatic via system preference, or manually toggle between System / Light / Dark in Settings. Choice persists across sessions.
-- **Dynamic OG images** — shared links generate branded Open Graph images with the comparison sentence text, rendered server-side via `next/og`.
-- **Image export** — download the timeline + sentence as a PNG image.
+- **Unlimited events** — add as many events as you want. For people, choose between birth and death dates directly from the dropdown.
+- **Editable title** — name your timeline; the title is used in the page title, OG image, and share dialog.
+- **Removable "Now" marker** — when you have 2+ events, you can hide the present-day marker and re-add it later.
+- **Smart overlap detection** — marker info cards that would overlap are automatically flipped above the timeline line.
+- **Dynamic OG images** — shared links generate branded Open Graph images with the timeline title, rendered server-side via `next/og`.
+- **Image export** — download the timeline as a PNG image with a "wiki:closerintime" watermark.
+- **Random event** — add a random Wikidata event to your timeline with one click.
 
 ## Project structure
 
@@ -62,9 +67,10 @@ src/
       search/route.ts       # GET /api/search?q=... → Wikidata search proxy
       og/route.tsx           # Dynamic Open Graph image generation
   components/
-    Chooser/                # Autocomplete search with Wikidata results
-    Timeline/               # Proportional horizontal/vertical timeline
-    Sentence.tsx            # Comparison sentence as shareable link
+    Chooser/                # Single search input with Wikidata autocomplete
+    Timeline/               # Proportional horizontal/vertical timeline with interactive markers
+    EditableTitle.tsx        # Editable timeline title with auto-resize
+    ShareToolbar.tsx         # Copy link, share, export, and show-Now buttons
     HelpModal.tsx           # Instructions modal
     SettingsModal.tsx       # Theme + timespan format settings
     CategoryIcon.tsx        # Maps event type to MUI icon
@@ -72,7 +78,6 @@ src/
     wikidata.ts             # Wikidata REST API: search + fetch by Q-ID
     date-utils.ts           # UTC date creation, precise diffs, formatting
     timeline-math.ts        # Proportional segment computation
-    sentence.ts             # Comparison sentence generation
     url-params.ts           # URL segment parsing (Q-IDs)
     custom-event-url.ts     # Shareable path builder
     types.ts                # TypeScript interfaces + EVENT_TYPES constant
@@ -91,13 +96,13 @@ npm run test:watch    # watch mode
 ```
 
 Tests use Vitest with jsdom. Coverage includes:
-- **Library tests** — date utils, timeline math, sentence generation, URL building
-- **Component tests** — Sentence, SettingsModal, TimelineMarker
+- **Library tests** — date utils, timeline math, URL building
+- **Component tests** — SettingsModal, TimelineMarker
 
 ## How it works
 
 - Events are sourced from Wikidata in real time. The search uses the `wbsearchentities` API for fast text matching, then `wbgetentities` to fetch dates, types, and Wikipedia links. Multiple date properties are checked (P585, P580, P571, P577, P569, P619, P620, P1191, P606) to cover different kinds of events.
-- URLs like `/Q43653/Q107` use Wikidata Q-IDs. They are server-rendered with `generateMetadata()` so link previews show the comparison sentence as the page title and a dynamically generated OG image.
+- URLs like `/Q43653/Q107` use Wikidata Q-IDs. Append `~d` for death dates (e.g. `/Q42~d`). They are server-rendered with `generateMetadata()` so link previews show the timeline title and a dynamically generated OG image. The custom title and "hide Now" preference are stored as query params (`?t=...&now=0`).
 - Q-IDs in the URL are always sorted; out-of-order URLs redirect to the canonical form.
 - The timeline switches from horizontal to vertical layout below 640px.
 
