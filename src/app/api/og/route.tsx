@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
           }
         }
         if (allEvents.length > 0) {
-          heading = customTitle || allEvents.map((e) => eventDisplayName(e)).join(", ");
+          heading = customTitle || "Build your own timeline";
         }
       } catch {
         // Wikidata API unavailable — fall back to default image

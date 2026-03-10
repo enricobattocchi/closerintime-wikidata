@@ -30,7 +30,7 @@ export default function ShareToolbar({ href, title, onExport, showNowButton, onS
   const handleShare = useCallback(async () => {
     const url = window.location.origin + href;
     try {
-      await navigator.share({ title: title || undefined, url });
+      await navigator.share({ title: title || "Build your own timeline", url });
     } catch {
       // User cancelled or share failed — ignore
     }

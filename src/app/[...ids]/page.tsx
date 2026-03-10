@@ -5,7 +5,6 @@ import { fetchWikidataEvents } from "@/lib/wikidata";
 import { computeTimeline } from "@/lib/timeline-math";
 import { buildShareablePath } from "@/lib/custom-event-url";
 import { parseSegments } from "@/lib/url-params";
-import { eventDisplayName } from "@/lib/event-label";
 import Chooser from "@/components/Chooser/Chooser";
 
 export const revalidate = 3600;
@@ -55,10 +54,7 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
   }
   if (events.length === 0) return { title: "wiki:closerintime" };
 
-  const names = events.map((e) => eventDisplayName(e));
-  const title = customTitle
-    ? `${customTitle} | wiki:closerintime`
-    : `${names.join(", ")} | wiki:closerintime`;
+  const title = customTitle || "Build your own timeline";
   const description = "Visualize the time between historical events.";
   const ogParams = [`ids=${rawIds.join(",")}`];
   if (customTitle) ogParams.push(`t=${encodeURIComponent(customTitle)}`);
