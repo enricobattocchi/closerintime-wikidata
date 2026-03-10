@@ -12,7 +12,7 @@ const MAX_LENGTH = 100;
 const PLACEHOLDER = "my timeline";
 
 function autoResize(el: HTMLTextAreaElement) {
-  el.style.height = "auto";
+  el.style.height = "0";
   el.style.height = `${el.scrollHeight}px`;
 }
 
@@ -23,6 +23,7 @@ export default function EditableTitle({ value, onChange }: EditableTitleProps) {
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       const text = e.target.value.replace(/\n/g, "").slice(0, MAX_LENGTH);
       onChange(text);
+      if (textareaRef.current) autoResize(textareaRef.current);
     },
     [onChange]
   );
@@ -38,6 +39,15 @@ export default function EditableTitle({ value, onChange }: EditableTitleProps) {
   useEffect(() => {
     if (textareaRef.current) autoResize(textareaRef.current);
   }, [value]);
+
+  // Re-measure when the container width changes (window resize, layout shift)
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver(() => autoResize(el));
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <div className={styles.container}>
