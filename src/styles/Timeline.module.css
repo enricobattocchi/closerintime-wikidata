@@ -279,6 +279,11 @@ a.marker:focus-visible {
     width: 50vw;
   }
 
+  .markerRemove,
+  .markerToggleDeath {
+    opacity: 1;
+  }
+
   .markerInfoFlipped {
     position: relative;
     bottom: auto;
