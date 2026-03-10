@@ -2,6 +2,8 @@ import type { Event } from "./types";
 import { EVENT_TYPES } from "./types";
 
 const WIKIDATA_API = "https://www.wikidata.org/w/api.php";
+const USER_AGENT = "wiki-closerintime/1.0 (https://wiki.closerinti.me)";
+const FETCH_OPTIONS: RequestInit = { headers: { "User-Agent": USER_AGENT, "Api-User-Agent": USER_AGENT } };
 
 // Date properties to check, in priority order
 // Date properties to check, in priority order
@@ -314,7 +316,7 @@ async function entitiesToEvents(qids: string[]): Promise<Event[]> {
   url.searchParams.set("format", "json");
   url.searchParams.set("origin", "*");
 
-  const res = await fetch(url.toString());
+  const res = await fetch(url.toString(), FETCH_OPTIONS);
   if (!res.ok) {
     throw new Error(`Wikidata API error: ${res.status}`);
   }
@@ -350,7 +352,7 @@ async function entitiesToEvents(qids: string[]): Promise<Event[]> {
     typeUrl.searchParams.set("format", "json");
     typeUrl.searchParams.set("origin", "*");
 
-    const typeRes = await fetch(typeUrl.toString());
+    const typeRes = await fetch(typeUrl.toString(), FETCH_OPTIONS);
     if (typeRes.ok) {
       const typeData = await typeRes.json();
       for (const [id, ent] of Object.entries(typeData.entities || {})) {
@@ -426,7 +428,7 @@ export async function searchWikidata(term: string): Promise<Event[]> {
   searchUrl.searchParams.set("format", "json");
   searchUrl.searchParams.set("origin", "*");
 
-  const searchRes = await fetch(searchUrl.toString());
+  const searchRes = await fetch(searchUrl.toString(), FETCH_OPTIONS);
   if (!searchRes.ok) {
     throw new Error(`Wikidata search error: ${searchRes.status}`);
   }
