@@ -32,8 +32,62 @@ interface AnimatedTimelineProps extends TimelineProps {
   exit?: boolean;
 }
 
+function eventKey(marker: MarkerData): string {
+  return `${marker.event.id}${marker.event.useDeath ? "~d" : ""}`;
+}
+
 function AnimatedTimeline({ markers, segments, exit = false, onRemove, onToggleDeath }: AnimatedTimelineProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [flippedKeys, setFlippedKeys] = useState<Set<string>>(new Set());
+
+  // Detect overlapping info cards and flip alternating ones above the line
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const isVertical = window.matchMedia("(max-width: 640px)").matches;
+    if (isVertical || exit) {
+      if (flippedKeys.size > 0) setFlippedKeys(new Set());
+      return;
+    }
+
+    const markerEls = Array.from(
+      container.querySelectorAll<HTMLElement>(`:scope > .${styles.marker}`)
+    );
+    const rects = markerEls.map((el) => {
+      const info = el.querySelector<HTMLElement>(`.${styles.markerInfo}`);
+      return info?.getBoundingClientRect() ?? null;
+    });
+
+    const flipped = new Set<string>();
+    let lastBelowRight = -Infinity;
+    let lastAboveRight = -Infinity;
+
+    for (let i = 0; i < markers.length; i++) {
+      const rect = rects[i];
+      if (!rect) continue;
+
+      const overlapBelow = rect.left < lastBelowRight;
+      const overlapAbove = rect.left < lastAboveRight;
+
+      if (!overlapBelow) {
+        lastBelowRight = rect.right;
+      } else if (!overlapAbove) {
+        flipped.add(eventKey(markers[i]));
+        lastAboveRight = rect.right;
+      } else {
+        // Both tracks overlap — pick the less crowded one
+        if (lastAboveRight - rect.left < lastBelowRight - rect.left) {
+          flipped.add(eventKey(markers[i]));
+          lastAboveRight = rect.right;
+        } else {
+          lastBelowRight = rect.right;
+        }
+      }
+    }
+
+    setFlippedKeys(flipped);
+  }, [markers, segments, exit]);
 
   useLayoutEffect(() => {
     const container = containerRef.current;
@@ -174,8 +228,9 @@ function AnimatedTimeline({ markers, segments, exit = false, onRemove, onToggleD
         <Fragment key={marker.event.id}>
           <TimelineMarker
             marker={marker}
-            onRemove={onRemove && marker.event.id !== "0" ? () => onRemove(`${marker.event.id}${marker.event.useDeath ? "~d" : ""}`) : undefined}
-            onToggleDeath={onToggleDeath && marker.event.id !== "0" ? () => onToggleDeath(`${marker.event.id}${marker.event.useDeath ? "~d" : ""}`) : undefined}
+            flipped={flippedKeys.has(eventKey(marker))}
+            onRemove={onRemove && marker.event.id !== "0" ? () => onRemove(eventKey(marker)) : undefined}
+            onToggleDeath={onToggleDeath && marker.event.id !== "0" ? () => onToggleDeath(eventKey(marker)) : undefined}
           />
           {i < segments.length && <TimelinePart segment={segments[i]} />}
         </Fragment>

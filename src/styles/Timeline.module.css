@@ -21,6 +21,7 @@
   width: 0;
   flex-shrink: 0;
   z-index: 1;
+  position: relative;
 }
 
 .marker:hover {
@@ -77,6 +78,14 @@
   color: var(--color-text-light);
   line-height: 1.2;
   margin-top: 3px;
+}
+
+.markerInfoFlipped {
+  position: absolute;
+  bottom: calc(100% + 5px);
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 0;
 }
 
 .markerRemove {
@@ -209,6 +218,7 @@ a.marker:focus-visible {
   width: 120px;
 }
 
+
 :global([data-exporting]) .part {
   border-bottom: solid 6px;
   border-left: none;
@@ -267,6 +277,15 @@ a.marker:focus-visible {
     margin-left: 5px;
     text-align: left;
     width: 50vw;
+  }
+
+  .markerInfoFlipped {
+    position: relative;
+    bottom: auto;
+    left: auto;
+    transform: none;
+    margin-top: 0;
+    margin-left: 5px;
   }
 
   .part {

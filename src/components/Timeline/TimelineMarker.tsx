@@ -6,11 +6,12 @@ import styles from "@/styles/Timeline.module.css";
 
 interface TimelineMarkerProps {
   marker: MarkerData;
+  flipped?: boolean;
   onRemove?: () => void;
   onToggleDeath?: () => void;
 }
 
-export default function TimelineMarker({ marker, onRemove, onToggleDeath }: TimelineMarkerProps) {
+export default function TimelineMarker({ marker, flipped, onRemove, onToggleDeath }: TimelineMarkerProps) {
   const { event, label } = marker;
   const isNow = event.id === "0";
   const hasLink = !isNow && event.link;
@@ -31,7 +32,7 @@ export default function TimelineMarker({ marker, onRemove, onToggleDeath }: Time
   );
 
   const info = (
-    <div className={`${styles.markerInfo} ${hasLink ? styles.markerClickable : ""}`}>
+    <div className={`${styles.markerInfo} ${hasLink ? styles.markerClickable : ""} ${flipped ? styles.markerInfoFlipped : ""}`}>
       {onRemove && (
         <button
           className={styles.markerRemove}
