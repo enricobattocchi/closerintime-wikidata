@@ -3,6 +3,7 @@ import { Source_Sans_3, Source_Serif_4 } from "next/font/google";
 import "@/styles/globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import NavigationLoader from "@/components/NavigationLoader";
 
 const sourceSans = Source_Sans_3({
   subsets: ["latin"],
@@ -63,6 +64,7 @@ export default function RootLayout({
           }}
         />
         <a href="#main-content" className="skip-link">Skip to content</a>
+        <NavigationLoader />
         <Header />
         <main id="main-content">{children}</main>
         <Footer />

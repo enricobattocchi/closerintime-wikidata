@@ -180,6 +180,10 @@
   padding: 12px;
   text-align: center;
   color: var(--color-text-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .toggleDeathButton {

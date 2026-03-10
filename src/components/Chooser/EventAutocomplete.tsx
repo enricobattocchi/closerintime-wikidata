@@ -226,7 +226,7 @@ export default function EventAutocomplete({
             <div className={styles.dropdown}>
               <div role="listbox" id={listboxId} ref={listRef}>
                 {isLoading ? (
-                  <div className={styles.noResults}>Searching Wikidata…</div>
+                  <div className={styles.noResults}><span className="spinner" /> Searching Wikidata…</div>
                 ) : filtered.length === 0 ? (
                   <div className={styles.noResults}>No events found</div>
                 ) : (
@@ -272,7 +272,7 @@ export default function EventAutocomplete({
             aria-label="Random event"
             title="Random event"
           >
-            <DiceIcon size={18} />
+            {isLoadingRandom ? <span className="spinner" /> : <DiceIcon size={18} />}
           </button>
         )}
       </div>

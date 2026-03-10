@@ -105,6 +105,47 @@ a:hover {
   outline: none;
 }
 
+/* Spinner */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+/* Top loading bar */
+@keyframes loading-bar {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(0); }
+  100% { transform: translateX(100%); }
+}
+
+.loading-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 9999;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.loading-bar::after {
+  content: "";
+  display: block;
+  height: 100%;
+  background: var(--color-primary);
+  animation: loading-bar 1s ease-in-out infinite;
+}
+
 @media (prefers-color-scheme: dark) {
   html:not([data-theme="light"]) img[src*="wikipedia"] {
     filter: invert(1);
