@@ -5,7 +5,7 @@ import type { Event } from "@/lib/types";
 import { useWikidataSearch } from "@/hooks/useWikidataSearch";
 import { formatYear } from "@/lib/date-utils";
 import CategoryIcon from "@/components/CategoryIcon";
-import { SearchIcon, CloseIcon, DiceIcon } from "@/components/Icon";
+import { SearchIcon, CloseIcon, DiceIcon, SwapIcon } from "@/components/Icon";
 import styles from "@/styles/Chooser.module.css";
 
 interface EventAutocompleteProps {
@@ -147,7 +147,7 @@ export default function EventAutocomplete({
             aria-label={value.useDeath ? "Switch to birth date" : "Switch to death date"}
             title={value.useDeath ? "Switch to birth date" : "Switch to death date"}
           >
-            {value.useDeath ? "birth" : "death"}
+            <SwapIcon size={12} aria-hidden="true" /> {value.useDeath ? "birth" : "death"}
           </button>
         )}
         {value.link && (
