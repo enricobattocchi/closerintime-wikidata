@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import type { Event } from "@/lib/types";
 import { useWikidataSearch } from "@/hooks/useWikidataSearch";
 import { formatYear } from "@/lib/date-utils";
+import { eventDisplayName } from "@/lib/event-label";
 import CategoryIcon from "@/components/CategoryIcon";
 import { SearchIcon, CloseIcon, DiceIcon, SwapIcon } from "@/components/Icon";
 import styles from "@/styles/Chooser.module.css";
@@ -137,8 +138,8 @@ export default function EventAutocomplete({
         <input
           className={styles.input}
           disabled
-          value={`${capitalize(value.name)} \u2013 ${formatYear(value.year)}`}
-          aria-label={`Selected event: ${capitalize(value.name)}`}
+          value={`${eventDisplayName(value)} \u2013 ${formatYear(value.year)}`}
+          aria-label={`Selected event: ${eventDisplayName(value)}`}
         />
         {onToggleDeath && value.deathYear !== null && (
           <button

@@ -5,6 +5,7 @@ import { fetchWikidataEvents } from "@/lib/wikidata";
 import { generateSentence } from "@/lib/sentence";
 import { computeTimeline } from "@/lib/timeline-math";
 import { parseSegments } from "@/lib/url-params";
+import { eventDisplayName } from "@/lib/event-label";
 
 export const revalidate = 3600;
 
@@ -26,10 +27,6 @@ async function getFont(): Promise<ArrayBuffer> {
 function segmentColor(order: number, total: number): string {
   const hue = 210 + (120 * order) / total;
   return `hsl(${hue}, 55%, 45%)`;
-}
-
-function capitalize(s: string): string {
-  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 export async function GET(request: NextRequest) {
@@ -183,9 +180,9 @@ export async function GET(request: NextRequest) {
                         overflow: "visible",
                       }}
                     >
-                      {isNow ? "Now" : capitalize(marker.event.name).length > 25
-                        ? capitalize(marker.event.name).slice(0, 23) + "…"
-                        : capitalize(marker.event.name)}
+                      {isNow ? "Now" : eventDisplayName(marker.event).length > 25
+                        ? eventDisplayName(marker.event).slice(0, 23) + "…"
+                        : eventDisplayName(marker.event)}
                     </div>
                   </div>
                 );
