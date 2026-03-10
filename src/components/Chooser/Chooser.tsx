@@ -248,6 +248,9 @@ export default function Chooser({
           onToggleDeath={handleToggleDeath}
           canRemoveNow={canRemoveNow}
         />
+        <div className={styles.watermark} data-show-on-export>
+          wiki:closerintime
+        </div>
       </div>
     </>
   );

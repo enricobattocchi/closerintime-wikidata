@@ -242,3 +242,10 @@
 .exportArea[data-exporting] [data-show-on-export] {
   display: block !important;
 }
+
+.watermark {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--color-text-light);
+  padding: 16px 0 8px;
+}

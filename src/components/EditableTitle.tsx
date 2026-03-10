@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useCallback, useEffect } from "react";
+import { EditOutlined } from "@/components/Icon";
 import styles from "@/styles/EditableTitle.module.css";
 
 interface EditableTitleProps {
@@ -51,21 +52,33 @@ export default function EditableTitle({ value, onChange }: EditableTitleProps) {
 
   return (
     <div className={styles.container}>
-      <textarea
-        ref={textareaRef}
-        className={styles.input}
-        value={value}
-        onChange={handleChange}
-        onKeyDown={handleKeyDown}
-        placeholder={PLACEHOLDER}
-        maxLength={MAX_LENGTH}
-        rows={1}
-        aria-label="Timeline title"
-        data-hide-on-export
-      />
-      <span className={styles.exportText} data-show-on-export>
-        {value || PLACEHOLDER}
-      </span>
+      <div className={styles.inputWrapper}>
+        {!value && (
+          <span
+            className={styles.placeholder}
+            onClick={() => textareaRef.current?.focus()}
+            data-hide-on-export
+          >
+            {PLACEHOLDER} <EditOutlined size={14} />
+          </span>
+        )}
+        <textarea
+          ref={textareaRef}
+          className={styles.input}
+          value={value}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          maxLength={MAX_LENGTH}
+          rows={1}
+          aria-label="Timeline title"
+          data-hide-on-export
+        />
+      </div>
+      {value && (
+        <span className={styles.exportText} data-show-on-export>
+          {value}
+        </span>
+      )}
     </div>
   );
 }
