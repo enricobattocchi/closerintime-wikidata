@@ -12,6 +12,7 @@ interface TimelineProps {
   segments: SegmentData[];
   onRemove?: (eventKey: string) => void;
   onToggleDeath?: (eventKey: string) => void;
+  canRemoveNow?: boolean;
 }
 
 const nowMarker: MarkerData = {
@@ -36,7 +37,7 @@ function eventKey(marker: MarkerData): string {
   return `${marker.event.id}${marker.event.useDeath ? "~d" : ""}`;
 }
 
-function AnimatedTimeline({ markers, segments, exit = false, onRemove, onToggleDeath }: AnimatedTimelineProps) {
+function AnimatedTimeline({ markers, segments, exit = false, onRemove, onToggleDeath, canRemoveNow }: AnimatedTimelineProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [flippedKeys, setFlippedKeys] = useState<Set<string>>(new Set());
 
@@ -229,7 +230,7 @@ function AnimatedTimeline({ markers, segments, exit = false, onRemove, onToggleD
           <TimelineMarker
             marker={marker}
             flipped={flippedKeys.has(eventKey(marker))}
-            onRemove={onRemove && marker.event.id !== "0" ? () => onRemove(eventKey(marker)) : undefined}
+            onRemove={onRemove && (marker.event.id !== "0" || canRemoveNow) ? () => onRemove(eventKey(marker)) : undefined}
             onToggleDeath={onToggleDeath && marker.event.id !== "0" ? () => onToggleDeath(eventKey(marker)) : undefined}
           />
           {i < segments.length && <TimelinePart segment={segments[i]} />}
@@ -239,7 +240,7 @@ function AnimatedTimeline({ markers, segments, exit = false, onRemove, onToggleD
   );
 }
 
-export default function Timeline({ markers, segments, onRemove, onToggleDeath }: TimelineProps) {
+export default function Timeline({ markers, segments, onRemove, onToggleDeath, canRemoveNow }: TimelineProps) {
   const hasMarkers = markers.length > 0;
 
   // Initialize exiting from module-level state (survives remounts)
@@ -300,5 +301,5 @@ export default function Timeline({ markers, segments, onRemove, onToggleDeath }:
     );
   }
 
-  return <AnimatedTimeline markers={markers} segments={segments} onRemove={onRemove} onToggleDeath={onToggleDeath} />;
+  return <AnimatedTimeline markers={markers} segments={segments} onRemove={onRemove} onToggleDeath={onToggleDeath} canRemoveNow={canRemoveNow} />;
 }

@@ -31,6 +31,7 @@ function segmentColor(order: number, total: number): string {
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const ids = searchParams.get("ids");
+  const customTitle = searchParams.get("t")?.slice(0, 100) || "";
 
   let heading = "";
   let allEvents: Event[] = [];
@@ -51,7 +52,7 @@ export async function GET(request: NextRequest) {
           }
         }
         if (allEvents.length > 0) {
-          heading = allEvents.map((e) => eventDisplayName(e)).join(", ");
+          heading = customTitle || allEvents.map((e) => eventDisplayName(e)).join(", ");
         }
       } catch {
         // Wikidata API unavailable — fall back to default image

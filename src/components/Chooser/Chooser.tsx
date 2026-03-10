@@ -9,6 +9,7 @@ import { computeTimeline } from "@/lib/timeline-math";
 import { buildShareablePath } from "@/lib/custom-event-url";
 import EventAutocomplete from "./EventAutocomplete";
 import Timeline from "@/components/Timeline/Timeline";
+import EditableTitle from "@/components/EditableTitle";
 import ShareToolbar from "@/components/ShareToolbar";
 import styles from "@/styles/Chooser.module.css";
 
@@ -16,24 +17,55 @@ interface ChooserProps {
   selectedEvents: Event[];
   serverTimeline?: { markers: MarkerData[]; segments: SegmentData[] };
   serverHref?: string;
+  serverTitle?: string;
+  serverHideNow?: boolean;
+}
+
+function buildUrl(path: string, title: string, hideNow: boolean): string {
+  const params = new URLSearchParams();
+  if (title) params.set("t", title);
+  if (hideNow) params.set("now", "0");
+  const qs = params.toString();
+  return qs ? `${path}?${qs}` : path;
 }
 
 export default function Chooser({
   selectedEvents,
   serverTimeline,
   serverHref,
+  serverTitle,
+  serverHideNow,
 }: ChooserProps) {
   const router = useRouter();
   const { timespanFormat } = useSettings();
   const [selected, setSelected] = useState<Event[]>(selectedEvents);
+  const [title, setTitle] = useState(serverTitle || "");
+  const [hideNow, setHideNow] = useState(serverHideNow || false);
 
   // Sync with server-provided events when they change (navigation)
   useEffect(() => {
     setSelected(selectedEvents);
   }, [selectedEvents]);
 
+  useEffect(() => {
+    setTitle(serverTitle || "");
+  }, [serverTitle]);
+
+  useEffect(() => {
+    setHideNow(serverHideNow || false);
+  }, [serverHideNow]);
+
   const [loadingRandom, setLoadingRandom] = useState(false);
   const currentKeys = selected.map((e) => `${e.id}${e.useDeath ? "~d" : ""}`);
+
+  const handleTitleChange = useCallback(
+    (newTitle: string) => {
+      setTitle(newTitle);
+      const path = selected.length > 0 ? buildShareablePath(selected) : "/";
+      window.history.replaceState(null, "", buildUrl(path, newTitle, hideNow));
+    },
+    [selected, hideNow]
+  );
 
   const handleRandom = useCallback(
     async () => {
@@ -45,22 +77,22 @@ export default function Chooser({
         if (event?.id) {
           const next = [...selected, event];
           const path = buildShareablePath(next);
-          router.push(path);
+          router.push(buildUrl(path, title, hideNow));
         }
       } finally {
         setLoadingRandom(false);
       }
     },
-    [selected, currentKeys, router]
+    [selected, currentKeys, router, title, hideNow]
   );
 
   const handleSelect = useCallback(
     (event: Event) => {
       const next = [...selected, event];
       const path = buildShareablePath(next);
-      router.push(path);
+      router.push(buildUrl(path, title, hideNow));
     },
-    [selected, router]
+    [selected, router, title, hideNow]
   );
 
   const handleToggleDeath = useCallback(
@@ -96,28 +128,44 @@ export default function Chooser({
 
       if (updated.length > 0) {
         const path = buildShareablePath(updated);
-        router.push(path);
+        router.push(buildUrl(path, title, hideNow));
       } else {
-        router.push("/");
+        router.push(buildUrl("/", title, hideNow));
       }
     },
-    [selected, router]
+    [selected, router, title, hideNow]
   );
 
   const handleRemove = useCallback(
     (eventKey: string) => {
+      // Handle removing the "Now" marker
+      if (eventKey === "0") {
+        setHideNow(true);
+        const path = selected.length > 0 ? buildShareablePath(selected) : "/";
+        window.history.replaceState(null, "", buildUrl(path, title, true));
+        return;
+      }
+
       const remaining = selected.filter(
         (e) => `${e.id}${e.useDeath ? "~d" : ""}` !== eventKey
       );
+      // If removing an event drops us below 2, re-show Now
+      const nextHideNow = remaining.length >= 2 ? hideNow : false;
       if (remaining.length > 0) {
         const path = buildShareablePath(remaining);
-        router.push(path);
+        router.push(buildUrl(path, title, nextHideNow));
       } else {
-        router.push("/");
+        router.push(buildUrl("/", title, false));
       }
     },
-    [selected, router]
+    [selected, router, title, hideNow]
   );
+
+  const handleShowNow = useCallback(() => {
+    setHideNow(false);
+    const path = selected.length > 0 ? buildShareablePath(selected) : "/";
+    window.history.replaceState(null, "", buildUrl(path, title, false));
+  }, [selected, title]);
 
   // Recompute client-side when format differs from default
   const needsClientCompute = timespanFormat !== 2;
@@ -133,6 +181,22 @@ export default function Chooser({
     timeline = serverTimeline || { markers: [], segments: [] };
     href = serverHref || "/";
   }
+
+  // Strip Now marker + last segment when hidden and 2+ events
+  if (hideNow && selected.length >= 2 && timeline.markers.length > 0) {
+    const lastMarker = timeline.markers[timeline.markers.length - 1];
+    if (lastMarker.event.id === "0") {
+      timeline = {
+        markers: timeline.markers.slice(0, -1),
+        segments: timeline.segments.slice(0, -1),
+      };
+    }
+  }
+
+  // Allow removing Now when there are 2+ events (timeline still has 2 markers without it)
+  const canRemoveNow = selected.length >= 2;
+
+  const shareHref = buildUrl(href, title, hideNow);
 
   const { exportRef, handleExport } = useExport(selected);
 
@@ -155,7 +219,7 @@ export default function Chooser({
     <>
       <div className={styles.chooser}>
         <div className={styles.headingRow}>
-          <p className={styles.heading}>Search for events to compare</p>
+          <p className={styles.heading}>Build your own timeline</p>
         </div>
         <EventAutocomplete
           selectedKeys={currentKeys}
@@ -166,16 +230,23 @@ export default function Chooser({
       </div>
       <div ref={exportRef} className={styles.exportArea} aria-live="polite" aria-atomic="true">
         {selected.length > 0 && (
-          <ShareToolbar
-            href={href}
-            onExport={timeline.markers.length >= 2 ? handleExport : undefined}
-          />
+          <>
+            <EditableTitle value={title} onChange={handleTitleChange} />
+            <ShareToolbar
+              href={shareHref}
+              title={title}
+              onExport={timeline.markers.length >= 2 ? handleExport : undefined}
+              showNowButton={hideNow && selected.length >= 2}
+              onShowNow={handleShowNow}
+            />
+          </>
         )}
         <Timeline
           markers={timeline.markers}
           segments={timeline.segments}
           onRemove={handleRemove}
           onToggleDeath={handleToggleDeath}
+          canRemoveNow={canRemoveNow}
         />
       </div>
     </>

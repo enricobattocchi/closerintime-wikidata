@@ -1,15 +1,18 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { ContentCopy, DownloadIcon, ShareIcon } from "@/components/Icon";
+import { ContentCopy, DownloadIcon, ShareIcon, EventAvailable } from "@/components/Icon";
 import styles from "@/styles/ShareToolbar.module.css";
 
 interface ShareToolbarProps {
   href: string;
+  title?: string;
   onExport?: () => void;
+  showNowButton?: boolean;
+  onShowNow?: () => void;
 }
 
-export default function ShareToolbar({ href, onExport }: ShareToolbarProps) {
+export default function ShareToolbar({ href, title, onExport, showNowButton, onShowNow }: ShareToolbarProps) {
   const [showToast, setShowToast] = useState(false);
   const [canShare, setCanShare] = useState(false);
 
@@ -27,11 +30,11 @@ export default function ShareToolbar({ href, onExport }: ShareToolbarProps) {
   const handleShare = useCallback(async () => {
     const url = window.location.origin + href;
     try {
-      await navigator.share({ url });
+      await navigator.share({ title: title || undefined, url });
     } catch {
       // User cancelled or share failed — ignore
     }
-  }, [href]);
+  }, [title, href]);
 
   return (
     <div className={styles.container}>
@@ -65,6 +68,17 @@ export default function ShareToolbar({ href, onExport }: ShareToolbarProps) {
             data-hide-on-export
           >
             <DownloadIcon size={18} />
+          </button>
+        )}
+        {showNowButton && onShowNow && (
+          <button
+            className={styles.button}
+            onClick={onShowNow}
+            aria-label="Show present day"
+            title="Show present day"
+            data-hide-on-export
+          >
+            <EventAvailable size={18} />
           </button>
         )}
       </div>

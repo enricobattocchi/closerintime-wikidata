@@ -12,6 +12,7 @@ export const revalidate = 3600;
 
 interface PageProps {
   params: Promise<{ ids: string[] }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 /** Expand fetched events according to parsed segments (handles same Q-ID for birth + death) */
@@ -37,8 +38,10 @@ function expandEvents(fetched: Event[], segments: { qid: string; useDeath: boole
   return result;
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
   const { ids: rawIds } = await params;
+  const { t } = await searchParams;
+  const customTitle = typeof t === "string" ? t.slice(0, 100) : "";
   const segments = parseSegments(rawIds);
   if (!segments) return { title: "wiki:closerintime" };
 
@@ -53,9 +56,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (events.length === 0) return { title: "wiki:closerintime" };
 
   const names = events.map((e) => eventDisplayName(e));
-  const title = `${names.join(", ")} | wiki:closerintime`;
+  const title = customTitle
+    ? `${customTitle} | wiki:closerintime`
+    : `${names.join(", ")} | wiki:closerintime`;
   const description = "Visualize the time between historical events.";
-  const ogImage = `/api/og?ids=${rawIds.join(",")}`;
+  const ogParams = [`ids=${rawIds.join(",")}`];
+  if (customTitle) ogParams.push(`t=${encodeURIComponent(customTitle)}`);
+  const ogImage = `/api/og?${ogParams.join("&")}`;
 
   return {
     title,
@@ -65,8 +72,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function EventPage({ params }: PageProps) {
+export default async function EventPage({ params, searchParams }: PageProps) {
   const { ids: rawIds } = await params;
+  const { t, now } = await searchParams;
+  const customTitle = typeof t === "string" ? t.slice(0, 100) : "";
+  const hideNow = now === "0";
   const segments = parseSegments(rawIds);
 
   if (!segments) {
@@ -82,7 +92,8 @@ export default async function EventPage({ params }: PageProps) {
   const sortedPath = sortedSegments.map((s) => `${s.qid}${s.useDeath ? "~d" : ""}`);
   const rawPath = segments.map((s) => `${s.qid}${s.useDeath ? "~d" : ""}`);
   if (rawPath.some((v, i) => v !== sortedPath[i])) {
-    redirect("/" + sortedPath.join("/"));
+    const redirectPath = "/" + sortedPath.join("/");
+    redirect(customTitle ? `${redirectPath}?t=${encodeURIComponent(customTitle)}` : redirectPath);
   }
 
   const uniqueQids = [...new Set(sortedSegments.map((s) => s.qid))];
@@ -106,6 +117,8 @@ export default async function EventPage({ params }: PageProps) {
       selectedEvents={events}
       serverTimeline={{ markers: timeline.markers, segments: timeline.segments }}
       serverHref={href}
+      serverTitle={customTitle}
+      serverHideNow={hideNow}
     />
   );
 }

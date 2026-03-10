@@ -1,0 +1,36 @@
+.container {
+  text-align: center;
+  padding: 24px 16px 0;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.input {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 1.5em;
+  line-height: 1.5;
+  color: var(--color-text);
+  text-align: center;
+  width: 100%;
+  border: none;
+  background: none;
+  outline: none;
+  padding: 0;
+  resize: none;
+  overflow: hidden;
+}
+
+.input::placeholder {
+  color: var(--color-text-light);
+}
+
+.input:focus {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.exportText {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 1.5em;
+  line-height: 1.5;
+  color: var(--color-text);
+}
