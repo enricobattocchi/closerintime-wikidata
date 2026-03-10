@@ -1,7 +1,8 @@
-import type { Event, TimelineResult, MarkerData, SegmentData, TimespanFormat } from "./types";
+import type { Event, DatePrecision, TimelineResult, MarkerData, SegmentData, TimespanFormat } from "./types";
 import {
   createUTCDate,
   diffYears,
+  diffMonths,
   diffDays,
   isBefore,
   formatEventDate,
@@ -11,33 +12,56 @@ import {
   currentYear,
 } from "./date-utils";
 
-function eventToDate(event: Event, yearsOnly: boolean): Date {
-  if (yearsOnly || !event.month || !event.day) {
+function eventPrecision(events: Event[]): DatePrecision {
+  if (events.some((e) => !e.month)) return "year";
+  if (events.some((e) => !e.day)) return "month";
+  return "day";
+}
+
+function eventToDate(event: Event, precision: DatePrecision): Date {
+  if (precision === "year") {
     return createUTCDate(event.year);
   }
-  return createUTCDate(event.year, event.month - 1, event.day);
+  if (precision === "month") {
+    return createUTCDate(event.year, (event.month ?? 1) - 1, 1);
+  }
+  return createUTCDate(event.year, event.month! - 1, event.day!);
+}
+
+function formatNowLabel(precision: DatePrecision, now: Date): string {
+  if (precision === "year") return String(currentYear());
+  if (precision === "month") {
+    return now.toLocaleDateString("en-US", { month: "long", timeZone: "UTC" }) + " " + currentYear();
+  }
+  return formatMonthDayYear(now);
+}
+
+function spanValue(d1: Date, d2: Date, precision: DatePrecision): number {
+  if (precision === "year") return diffYears(d1, d2);
+  if (precision === "month") return diffMonths(d1, d2);
+  return diffDays(d1, d2);
 }
 
 export function computeTimeline(
   events: Event[],
   timespanFormat: TimespanFormat = 2
 ): TimelineResult {
-  const yearsOnly = events.some((e) => !e.month || !e.day);
+  const precision = eventPrecision(events);
+  const yearsOnly = precision === "year";
+  const monthsOnly = precision === "month";
   const now = createUTCDate();
 
   // Sort events chronologically
   const sorted = [...events].sort((a, b) => {
-    const da = eventToDate(a, yearsOnly);
-    const db = eventToDate(b, yearsOnly);
+    const da = eventToDate(a, precision);
+    const db = eventToDate(b, precision);
     return da.getTime() - db.getTime();
   });
 
-  const dates = sorted.map((e) => eventToDate(e, yearsOnly));
+  const dates = sorted.map((e) => eventToDate(e, precision));
 
   // Total span from oldest event to now
-  const totalSpan = yearsOnly
-    ? diffYears(dates[0], now)
-    : diffDays(dates[0], now);
+  const totalSpan = spanValue(dates[0], now, precision);
 
   // Build segments: between each consecutive pair of points (events + now)
   const allDates = [...dates, now];
@@ -47,13 +71,13 @@ export function computeTimeline(
   for (let i = 0; i < sorted.length; i++) {
     const d1 = allDates[i];
     const d2 = allDates[i + 1];
-    const span = yearsOnly ? diffYears(d1, d2) : diffDays(d1, d2);
+    const span = spanValue(d1, d2, precision);
     const percentage = totalSpan > 0 ? (100 * span) / totalSpan : 100 / total;
 
     segments.push({
       startLabel: i === 0 ? formatEventDate(sorted[0]) : "",
-      endLabel: i === sorted.length - 1 ? (yearsOnly ? String(currentYear()) : formatMonthDayYear(now)) : "",
-      spanLabel: formatSpan(d1, d2, yearsOnly, timespanFormat),
+      endLabel: i === sorted.length - 1 ? formatNowLabel(precision, now) : "",
+      spanLabel: formatSpan(d1, d2, yearsOnly, timespanFormat, monthsOnly),
       percentage,
       order: i,
       total,
@@ -63,7 +87,7 @@ export function computeTimeline(
   // Build markers: one per event + "Now"
   const markers: MarkerData[] = sorted.map((event, i) => {
     const pos = totalSpan > 0
-      ? (100 * (yearsOnly ? diffYears(dates[0], dates[i]) : diffDays(dates[0], dates[i]))) / totalSpan
+      ? (100 * spanValue(dates[0], dates[i], precision)) / totalSpan
       : (100 * i) / (sorted.length);
     return {
       event,
@@ -75,9 +99,9 @@ export function computeTimeline(
   // "Now" marker
   markers.push({
     event: { id: "0", name: "Now", description: null, year: currentYear(), month: null, day: null, type: "", link: null, dateProperty: null, deathYear: null, deathMonth: null, deathDay: null, useDeath: false },
-    label: yearsOnly ? String(currentYear()) : formatMonthDayYear(now),
+    label: formatNowLabel(precision, now),
     position: 100,
   });
 
-  return { markers, segments, totalDays: totalSpan, yearsOnly };
+  return { markers, segments, totalDays: totalSpan, yearsOnly, precision };
 }

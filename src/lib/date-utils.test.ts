@@ -227,8 +227,8 @@ describe("formatEventDate", () => {
     expect(formatEventDate({ year: 1990, month: null, day: null })).toBe("1990");
   });
 
-  it("formats event with year only when day is null", () => {
-    expect(formatEventDate({ year: 1990, month: 6, day: null })).toBe("1990");
+  it("formats event with month and year when day is null", () => {
+    expect(formatEventDate({ year: 1990, month: 6, day: null })).toBe("June 1990");
   });
 
   it("formats B.C. event year", () => {

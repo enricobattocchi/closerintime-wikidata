@@ -1,7 +1,8 @@
-import type { Event, TimespanFormat } from "./types";
+import type { Event, DatePrecision, TimespanFormat } from "./types";
 import {
   createUTCDate,
   diffYears,
+  diffMonths,
   diffDays,
   preciseDiff,
   formatSpan,
@@ -45,11 +46,22 @@ function contextualName(event: Event): string {
   }
 }
 
-function eventToDate(event: Event, yearsOnly: boolean): Date {
-  if (yearsOnly || !event.month || !event.day) {
-    return createUTCDate(event.year);
-  }
-  return createUTCDate(event.year, event.month - 1, event.day);
+function eventPrecision(events: Event[]): DatePrecision {
+  if (events.some((e) => !e.month)) return "year";
+  if (events.some((e) => !e.day)) return "month";
+  return "day";
+}
+
+function eventToDate(event: Event, precision: DatePrecision): Date {
+  if (precision === "year") return createUTCDate(event.year);
+  if (precision === "month") return createUTCDate(event.year, (event.month ?? 1) - 1, 1);
+  return createUTCDate(event.year, event.month! - 1, event.day!);
+}
+
+function spanValue(d1: Date, d2: Date, precision: DatePrecision): number {
+  if (precision === "year") return diffYears(d1, d2);
+  if (precision === "month") return diffMonths(d1, d2);
+  return diffDays(d1, d2);
 }
 
 export function generateSentence(
@@ -58,13 +70,15 @@ export function generateSentence(
 ): string {
   if (events.length === 0) return "";
 
-  const yearsOnly = events.some((e) => !e.month || !e.day);
+  const precision = eventPrecision(events);
+  const yearsOnly = precision === "year";
+  const monthsOnly = precision === "month";
   const now = createUTCDate();
 
   // Sort chronologically
   const sorted = [...events].sort((a, b) => {
-    const da = eventToDate(a, yearsOnly);
-    const db = eventToDate(b, yearsOnly);
+    const da = eventToDate(a, precision);
+    const db = eventToDate(b, precision);
     return da.getTime() - db.getTime();
   });
 
@@ -72,10 +86,10 @@ export function generateSentence(
   const cn = sorted.map(contextualName);
 
   if (sorted.length === 1) {
-    const d = eventToDate(sorted[0], yearsOnly);
+    const d = eventToDate(sorted[0], precision);
     // If the event has a precise day and today is its exact anniversary, use "X years ago today:"
     if (
-      !yearsOnly &&
+      precision === "day" &&
       d.getUTCMonth() === now.getUTCMonth() &&
       d.getUTCDate() === now.getUTCDate()
     ) {
@@ -84,15 +98,17 @@ export function generateSentence(
     }
     const span = yearsOnly
       ? formatSpan(d, now, true, 1)
-      : preciseDiff(d, now);
+      : monthsOnly
+        ? formatSpan(d, now, false, timespanFormat, true)
+        : preciseDiff(d, now);
     return `${span} ago: ${cn[0]}`;
   }
 
   if (sorted.length === 2) {
-    const d0 = eventToDate(sorted[0], yearsOnly);
-    const d1 = eventToDate(sorted[1], yearsOnly);
-    const firstSpan = yearsOnly ? diffYears(d0, d1) : diffDays(d0, d1);
-    const secondSpan = yearsOnly ? diffYears(d1, now) : diffDays(d1, now);
+    const d0 = eventToDate(sorted[0], precision);
+    const d1 = eventToDate(sorted[1], precision);
+    const firstSpan = spanValue(d0, d1, precision);
+    const secondSpan = spanValue(d1, now, precision);
     if (firstSpan > secondSpan) {
       return `${ucfirst(cn[1])} is closer in time to us than to ${cn[0]}.`;
     } else if (firstSpan < secondSpan) {
@@ -103,11 +119,11 @@ export function generateSentence(
   }
 
   if (sorted.length === 3) {
-    const d0 = eventToDate(sorted[0], yearsOnly);
-    const d1 = eventToDate(sorted[1], yearsOnly);
-    const d2 = eventToDate(sorted[2], yearsOnly);
-    const firstSpan = yearsOnly ? diffYears(d0, d1) : diffDays(d0, d1);
-    const lastSpan = yearsOnly ? diffYears(d2, now) : diffDays(d2, now);
+    const d0 = eventToDate(sorted[0], precision);
+    const d1 = eventToDate(sorted[1], precision);
+    const d2 = eventToDate(sorted[2], precision);
+    const firstSpan = spanValue(d0, d1, precision);
+    const lastSpan = spanValue(d2, now, precision);
 
     if (firstSpan > lastSpan) {
       return `More time passed between ${cn[0]} and ${cn[1]} than between ${cn[2]} and us.`;

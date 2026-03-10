@@ -36,6 +36,13 @@ export function diffYears(d1: Date, d2: Date): number {
   return diff;
 }
 
+export function diffMonths(d1: Date, d2: Date): number {
+  let [m1, m2] = d1 < d2 ? [d1, d2] : [d2, d1];
+  let months = (m2.getUTCFullYear() - m1.getUTCFullYear()) * 12 + m2.getUTCMonth() - m1.getUTCMonth();
+  if (spansBCBoundary(m1.getUTCFullYear(), m2.getUTCFullYear())) months -= 12;
+  return months;
+}
+
 export function diffDays(d1: Date, d2: Date): number {
   const msPerDay = 86400000;
   return Math.round(Math.abs(d1.getTime() - d2.getTime()) / msPerDay);
@@ -118,6 +125,10 @@ export function formatEventDate(event: { year: number; month: number | null; day
     const year = formatYear(event.year);
     return formatMonthDay(d) + ", " + year;
   }
+  if (event.month) {
+    const d = createUTCDate(event.year, event.month - 1, 1);
+    return d.toLocaleDateString("en-US", { month: "long", timeZone: "UTC" }) + " " + formatYear(event.year);
+  }
   return formatYear(event.year);
 }
 
@@ -129,11 +140,23 @@ export function formatSpan(
   d1: Date,
   d2: Date,
   yearsOnly: boolean,
-  timespanFormat: number
+  timespanFormat: number,
+  monthsOnly?: boolean
 ): string {
   if (yearsOnly || timespanFormat === 1) {
     const years = diffYears(d1, d2);
     return plural(years, "year");
+  }
+  if (monthsOnly) {
+    const totalMonths = diffMonths(d1, d2);
+    const years = Math.floor(totalMonths / 12);
+    const months = totalMonths % 12;
+    const parts: string[] = [];
+    if (years) parts.push(plural(years, "year"));
+    if (months) parts.push(plural(months, "month"));
+    if (parts.length === 0) return "0 months";
+    if (parts.length === 1) return parts[0];
+    return parts[0] + " and " + parts[1];
   }
   if (timespanFormat === 2) {
     return preciseDiff(d1, d2);

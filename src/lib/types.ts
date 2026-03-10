@@ -32,11 +32,14 @@ export interface SegmentData {
   total: number;
 }
 
+export type DatePrecision = "year" | "month" | "day";
+
 export interface TimelineResult {
   markers: MarkerData[];
   segments: SegmentData[];
   totalDays: number;
   yearsOnly: boolean;
+  precision: DatePrecision;
 }
 
 export type TimespanFormat = 0 | 1 | 2; // 0=days, 1=years only, 2=precise
