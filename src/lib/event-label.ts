@@ -20,7 +20,7 @@ export function eventDisplayName(event: Event): string {
       return `${noun} of ${name}`;
     }
     case "P577": {
-      const noun = event.type === "film" ? "Release" : "Publication";
+      const noun = event.type === "film" || event.type === "music" ? "Release" : "Publication";
       return `${noun} of ${name}`;
     }
     case "P619":

@@ -28,7 +28,7 @@ function contextualName(event: Event): string {
       return `the ${verb} of ${event.name}`;
     }
     case "P577": { // publication date
-      const verb = event.type === "film" ? "release" : "publication";
+      const verb = event.type === "film" || event.type === "music" ? "release" : "publication";
       return `the ${verb} of ${event.name}`;
     }
     case "P619": // spacecraft launch
