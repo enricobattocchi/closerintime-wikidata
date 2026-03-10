@@ -10,6 +10,8 @@ import styles from "@/styles/Timeline.module.css";
 interface TimelineProps {
   markers: MarkerData[];
   segments: SegmentData[];
+  onRemove?: (eventKey: string) => void;
+  onToggleDeath?: (eventKey: string) => void;
 }
 
 const nowMarker: MarkerData = {
@@ -30,7 +32,7 @@ interface AnimatedTimelineProps extends TimelineProps {
   exit?: boolean;
 }
 
-function AnimatedTimeline({ markers, segments, exit = false }: AnimatedTimelineProps) {
+function AnimatedTimeline({ markers, segments, exit = false, onRemove, onToggleDeath }: AnimatedTimelineProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
@@ -170,7 +172,11 @@ function AnimatedTimeline({ markers, segments, exit = false }: AnimatedTimelineP
     <div ref={containerRef} className={styles.timeline}>
       {markers.map((marker, i) => (
         <Fragment key={marker.event.id}>
-          <TimelineMarker marker={marker} />
+          <TimelineMarker
+            marker={marker}
+            onRemove={onRemove && marker.event.id !== "0" ? () => onRemove(`${marker.event.id}${marker.event.useDeath ? "~d" : ""}`) : undefined}
+            onToggleDeath={onToggleDeath && marker.event.id !== "0" ? () => onToggleDeath(`${marker.event.id}${marker.event.useDeath ? "~d" : ""}`) : undefined}
+          />
           {i < segments.length && <TimelinePart segment={segments[i]} />}
         </Fragment>
       ))}
@@ -178,7 +184,7 @@ function AnimatedTimeline({ markers, segments, exit = false }: AnimatedTimelineP
   );
 }
 
-export default function Timeline({ markers, segments }: TimelineProps) {
+export default function Timeline({ markers, segments, onRemove, onToggleDeath }: TimelineProps) {
   const hasMarkers = markers.length > 0;
 
   // Initialize exiting from module-level state (survives remounts)
@@ -239,5 +245,5 @@ export default function Timeline({ markers, segments }: TimelineProps) {
     );
   }
 
-  return <AnimatedTimeline markers={markers} segments={segments} />;
+  return <AnimatedTimeline markers={markers} segments={segments} onRemove={onRemove} onToggleDeath={onToggleDeath} />;
 }

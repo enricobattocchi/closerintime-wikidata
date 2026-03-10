@@ -43,6 +43,7 @@
 }
 
 .markerInfo {
+  position: relative;
   margin-top: 5px;
   text-align: center;
   width: 10vw;
@@ -76,6 +77,62 @@
   color: var(--color-text-light);
   line-height: 1.2;
   margin-top: 3px;
+}
+
+.markerRemove {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-light);
+  padding: 2px;
+  border-radius: 2px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.markerInfo:hover .markerRemove,
+.markerRemove:focus-visible {
+  opacity: 1;
+}
+
+.markerRemove:hover {
+  color: var(--color-primary);
+}
+
+.markerToggleDeath {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: 2px;
+  cursor: pointer;
+  color: var(--color-text-light);
+  font-size: 0.65em;
+  padding: 1px 4px;
+  white-space: nowrap;
+  font-family: inherit;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.markerInfo:hover .markerToggleDeath,
+.markerToggleDeath:focus-visible {
+  opacity: 1;
+}
+
+.markerToggleDeath:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
 }
 
 .markerClickable {

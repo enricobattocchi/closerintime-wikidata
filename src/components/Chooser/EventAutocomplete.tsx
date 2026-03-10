@@ -4,18 +4,14 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import type { Event } from "@/lib/types";
 import { useWikidataSearch } from "@/hooks/useWikidataSearch";
 import { formatYear } from "@/lib/date-utils";
-import { eventDisplayName } from "@/lib/event-label";
 import CategoryIcon from "@/components/CategoryIcon";
-import { SearchIcon, CloseIcon, DiceIcon, SwapIcon } from "@/components/Icon";
+import { SearchIcon, CloseIcon, DiceIcon } from "@/components/Icon";
 import styles from "@/styles/Chooser.module.css";
 
 interface EventAutocompleteProps {
   /** Keys like "Q42" or "Q42~d" for already-selected events */
   selectedKeys: string[];
-  value: Event | null;
   onSelect: (event: Event) => void;
-  onClear: () => void;
-  onToggleDeath?: () => void;
   isLoadingRandom?: boolean;
   onRandom?: () => void;
 }
@@ -24,12 +20,35 @@ function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+/** Expand a person with deathYear into birth + death sub-options */
+function expandPersonOptions(event: Event, selectedKeys: string[]): Event[] {
+  if (event.deathYear === null) return [event];
+
+  const birthKey = event.id;
+  const deathKey = `${event.id}~d`;
+  const birthSelected = selectedKeys.includes(birthKey);
+  const deathSelected = selectedKeys.includes(deathKey);
+
+  const options: Event[] = [];
+  if (!birthSelected) {
+    options.push(event); // birth variant (useDeath: false is default)
+  }
+  if (!deathSelected) {
+    options.push({
+      ...event,
+      useDeath: true,
+      year: event.deathYear,
+      month: event.deathMonth,
+      day: event.deathDay,
+      dateProperty: "P570",
+    });
+  }
+  return options;
+}
+
 export default function EventAutocomplete({
   selectedKeys,
-  value,
   onSelect,
-  onClear,
-  onToggleDeath,
   isLoadingRandom,
   onRandom,
 }: EventAutocompleteProps) {
@@ -42,9 +61,7 @@ export default function EventAutocomplete({
 
   const { results, isLoading } = useWikidataSearch(query);
 
-  // Filter out already-selected events.
-  // If birth is selected but death date exists, keep the result so the user
-  // can select the death date (and vice versa). Mark with useDeath accordingly.
+  // Build expanded dropdown items: persons with deathYear get birth+death sub-rows
   const filtered: Event[] = [];
   for (const e of results) {
     const birthKey = e.id;
@@ -52,17 +69,14 @@ export default function EventAutocomplete({
     const birthSelected = selectedKeys.includes(birthKey);
     const deathSelected = selectedKeys.includes(deathKey);
 
-    if (birthSelected && deathSelected) continue; // both already picked
-    if (!birthSelected && !deathSelected) {
-      filtered.push(e); // neither picked
-    } else if (birthSelected && !deathSelected && e.deathYear !== null) {
-      // Birth picked, offer death
-      filtered.push({ ...e, useDeath: true });
-    } else if (deathSelected && !birthSelected) {
-      // Death picked, offer birth
+    if (birthSelected && deathSelected) continue;
+
+    if (e.deathYear !== null) {
+      // Person with death date — expand into sub-options
+      filtered.push(...expandPersonOptions(e, selectedKeys));
+    } else if (!birthSelected) {
       filtered.push(e);
     }
-    // birthSelected && no death date → skip (already fully selected)
   }
 
   useEffect(() => {
@@ -129,47 +143,6 @@ export default function EventAutocomplete({
     }
   }, [highlightedIndex]);
 
-  if (value) {
-    return (
-      <div className={styles.inputWrapper}>
-        <span className={styles.selectedIcon}>
-          <CategoryIcon type={value.type} size={20} />
-        </span>
-        <input
-          className={styles.input}
-          disabled
-          value={`${eventDisplayName(value)} \u2013 ${formatYear(value.year)}`}
-          aria-label={`Selected event: ${eventDisplayName(value)}`}
-        />
-        {onToggleDeath && value.deathYear !== null && (
-          <button
-            className={styles.toggleDeathButton}
-            onClick={onToggleDeath}
-            aria-label={value.useDeath ? "Switch to birth date" : "Switch to death date"}
-            title={value.useDeath ? "Switch to birth date" : "Switch to death date"}
-          >
-            <SwapIcon size={12} aria-hidden="true" /> {value.useDeath ? "birth" : "death"}
-          </button>
-        )}
-        {value.link && (
-          <a
-            href={value.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.linkButton}
-            aria-label={`Wikipedia article about ${capitalize(value.name)}`}
-            title={`Wikipedia: ${capitalize(value.name)}`}
-          >
-            <img src="/icons/wikipedia-w.svg" alt="Wikipedia" width={18} height={18} />
-          </a>
-        )}
-        <button className={styles.cancelButton} onClick={onClear} aria-label="Remove event">
-          <CloseIcon size={18} />
-        </button>
-      </div>
-    );
-  }
-
   const listboxId = "autocomplete-listbox";
   const activeDescendant =
     highlightedIndex >= 0 && filtered[highlightedIndex]
@@ -231,35 +204,43 @@ export default function EventAutocomplete({
                 ) : filtered.length === 0 ? (
                   <div className={styles.noResults}>No events found</div>
                 ) : (
-                  filtered.map((event, index) => (
-                    <div
-                      key={`${event.id}${event.useDeath ? "~d" : ""}`}
-                      id={`option-${event.id}${event.useDeath ? "~d" : ""}`}
-                      role="option"
-                      aria-selected={index === highlightedIndex}
-                      className={`${styles.option}${index === highlightedIndex ? ` ${styles.optionHighlighted}` : ""}`}
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        onSelect(event);
-                        setQuery("");
-                        setIsOpen(false);
-                      }}
-                      onMouseEnter={() => setHighlightedIndex(index)}
-                    >
-                      <span className={styles.optionIcon}>
-                        <CategoryIcon type={event.type} size={20} />
-                      </span>
-                      <span className={styles.optionName}>
-                        {capitalize(event.name)}
-                        {event.description && (
-                          <span className={styles.optionDesc}>{event.description}</span>
-                        )}
-                      </span>
-                      <span className={styles.optionYear}>
-                        {formatYear(event.year)}
-                      </span>
-                    </div>
-                  ))
+                  filtered.map((event, index) => {
+                    const key = `${event.id}${event.useDeath ? "~d" : ""}`;
+                    const label = event.useDeath
+                      ? `Death of ${capitalize(event.name)}`
+                      : event.deathYear !== null
+                        ? `Birth of ${capitalize(event.name)}`
+                        : capitalize(event.name);
+                    return (
+                      <div
+                        key={key}
+                        id={`option-${key}`}
+                        role="option"
+                        aria-selected={index === highlightedIndex}
+                        className={`${styles.option}${index === highlightedIndex ? ` ${styles.optionHighlighted}` : ""}`}
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          onSelect(event);
+                          setQuery("");
+                          setIsOpen(false);
+                        }}
+                        onMouseEnter={() => setHighlightedIndex(index)}
+                      >
+                        <span className={styles.optionIcon}>
+                          <CategoryIcon type={event.type} size={20} />
+                        </span>
+                        <span className={styles.optionName}>
+                          {label}
+                          {event.description && (
+                            <span className={styles.optionDesc}>{event.description}</span>
+                          )}
+                        </span>
+                        <span className={styles.optionYear}>
+                          {formatYear(event.useDeath ? event.year : event.year)}
+                        </span>
+                      </div>
+                    );
+                  })
                 )}
               </div>
             </div>

@@ -4,25 +4,12 @@
   position: relative;
 }
 
-.sentence {
-  font-family: var(--font-serif), Georgia, serif;
-  font-size: 1.5em;
-  line-height: 1.5;
-  color: var(--color-text);
-  text-decoration: none;
-}
-
-.sentence:hover {
-  text-decoration: underline;
-}
-
 .iconGroup {
   white-space: nowrap;
   display: block;
-  margin-top: 8px;
 }
 
-.copyButton {
+.button {
   background: none;
   border: none;
   cursor: pointer;
@@ -33,7 +20,7 @@
   align-items: center;
 }
 
-.copyButton:hover {
+.button:hover {
   color: var(--color-primary);
 }
 

@@ -2,15 +2,14 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { ContentCopy, DownloadIcon, ShareIcon } from "@/components/Icon";
-import styles from "@/styles/Sentence.module.css";
+import styles from "@/styles/ShareToolbar.module.css";
 
-interface SentenceProps {
-  text: string;
+interface ShareToolbarProps {
   href: string;
   onExport?: () => void;
 }
 
-export default function Sentence({ text, href, onExport }: SentenceProps) {
+export default function ShareToolbar({ href, onExport }: ShareToolbarProps) {
   const [showToast, setShowToast] = useState(false);
   const [canShare, setCanShare] = useState(false);
 
@@ -28,22 +27,17 @@ export default function Sentence({ text, href, onExport }: SentenceProps) {
   const handleShare = useCallback(async () => {
     const url = window.location.origin + href;
     try {
-      await navigator.share({ title: text, url });
+      await navigator.share({ url });
     } catch {
       // User cancelled or share failed — ignore
     }
-  }, [text, href]);
-
-  if (!text) return null;
+  }, [href]);
 
   return (
     <div className={styles.container}>
-      <a href={href} className={styles.sentence}>
-        {text}
-      </a>
       <div className={styles.iconGroup}>
         <button
-          className={styles.copyButton}
+          className={styles.button}
           onClick={handleCopy}
           aria-label="Copy link"
           title="Copy link"
@@ -53,7 +47,7 @@ export default function Sentence({ text, href, onExport }: SentenceProps) {
         </button>
         {canShare && (
           <button
-            className={styles.copyButton}
+            className={styles.button}
             onClick={handleShare}
             aria-label="Share"
             title="Share"
@@ -64,7 +58,7 @@ export default function Sentence({ text, href, onExport }: SentenceProps) {
         )}
         {onExport && (
           <button
-            className={styles.copyButton}
+            className={styles.button}
             onClick={onExport}
             aria-label="Download as image"
             title="Download as image"

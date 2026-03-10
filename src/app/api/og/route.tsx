@@ -2,7 +2,6 @@ import { ImageResponse } from "next/og";
 import { type NextRequest } from "next/server";
 import type { Event } from "@/lib/types";
 import { fetchWikidataEvents } from "@/lib/wikidata";
-import { generateSentence } from "@/lib/sentence";
 import { computeTimeline } from "@/lib/timeline-math";
 import { parseSegments } from "@/lib/url-params";
 import { eventDisplayName } from "@/lib/event-label";
@@ -33,7 +32,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const ids = searchParams.get("ids");
 
-  let sentence = "";
+  let heading = "";
   let allEvents: Event[] = [];
   if (ids) {
     const segments = parseSegments(ids.split(","));
@@ -52,7 +51,7 @@ export async function GET(request: NextRequest) {
           }
         }
         if (allEvents.length > 0) {
-          sentence = generateSentence(allEvents);
+          heading = allEvents.map((e) => eventDisplayName(e)).join(", ");
         }
       } catch {
         // Wikidata API unavailable — fall back to default image
@@ -79,18 +78,18 @@ export async function GET(request: NextRequest) {
           border: "4px solid #3366cc",
         }}
       >
-        {sentence ? (
+        {heading ? (
           <div
             style={{
               color: "#202122",
-              fontSize: sentence.length > 100 ? 36 : 48,
+              fontSize: heading.length > 100 ? 36 : 48,
               fontFamily: "Source Serif 4",
               textAlign: "center",
               lineHeight: 1.4,
               maxWidth: "1040px",
             }}
           >
-            {sentence}
+            {heading}
           </div>
         ) : (
           <div

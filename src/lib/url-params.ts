@@ -4,7 +4,7 @@ export interface ParsedSegment {
 }
 
 export function parseSegments(rawIds: string[]): ParsedSegment[] | null {
-  if (rawIds.length < 1 || rawIds.length > 3) return null;
+  if (rawIds.length < 1) return null;
 
   const segments: ParsedSegment[] = [];
   for (const raw of rawIds) {
