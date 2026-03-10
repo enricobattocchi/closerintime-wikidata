@@ -44,7 +44,7 @@ export default function Footer() {
           <a href="https://github.com/enricobattocchi/closerintime-wikidata" rel="noopener" target="_blank">
             GitHub
           </a>
-          {" "}&middot;{" "}
+          <br />
           Check also{" "}
           <a href="https://closerinti.me" rel="noopener" target="_blank">
             #closerintime
