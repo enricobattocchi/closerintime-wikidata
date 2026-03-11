@@ -20,8 +20,13 @@
   align-items: center;
 }
 
-.button:hover {
+.button:hover:not(:disabled) {
   color: var(--color-primary);
+}
+
+.button:disabled {
+  opacity: 0.3;
+  cursor: default;
 }
 
 .toast {

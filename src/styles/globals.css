@@ -1,16 +1,16 @@
 /* Light defaults — Wikipedia-inspired palette */
 :root {
-  --color-primary: #3366cc;
+  --color-primary: #2a5599;
   --color-green: #14866d;
-  --color-blue: #3366cc;
+  --color-blue: #2a5599;
   --color-bg: #f8f9fa;
   --color-text: #202122;
-  --color-text-light: #54595d;
+  --color-text-light: #50555a;
   --color-border: #a2a9b1;
   --color-bg-surface: #ffffff;
   --color-bg-disabled: #eaecf0;
   --color-bg-hover: #eaecf0;
-  --color-primary-shadow: rgba(51, 102, 204, 0.3);
+  --color-primary-shadow: rgba(42, 85, 153, 0.3);
   --segment-lightness: 50%;
   --timeline-marker-size: 48px;
 }

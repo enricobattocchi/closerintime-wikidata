@@ -64,9 +64,10 @@ export default function ShareToolbar({ href, title, onExport, showNowButton, onS
         {onExport && (
           <button
             className={styles.button}
-            onClick={onExport}
+            onClick={zoomed ? undefined : onExport}
+            disabled={zoomed}
             aria-label="Download as image"
-            title="Download as image"
+            title={zoomed ? "Zoom out to download" : "Download as image"}
             data-hide-on-export
           >
             <DownloadIcon size={22} />
