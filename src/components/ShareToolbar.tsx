@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { ContentCopy, DownloadIcon, ShareIcon, EventAvailable } from "@/components/Icon";
+import { ContentCopy, DownloadIcon, ShareIcon, EventAvailable, ZoomInIcon, ZoomOutIcon } from "@/components/Icon";
 import styles from "@/styles/ShareToolbar.module.css";
 
 interface ShareToolbarProps {
@@ -10,9 +10,11 @@ interface ShareToolbarProps {
   onExport?: () => void;
   showNowButton?: boolean;
   onShowNow?: () => void;
+  zoomed?: boolean;
+  onToggleZoom?: () => void;
 }
 
-export default function ShareToolbar({ href, title, onExport, showNowButton, onShowNow }: ShareToolbarProps) {
+export default function ShareToolbar({ href, title, onExport, showNowButton, onShowNow, zoomed, onToggleZoom }: ShareToolbarProps) {
   const [showToast, setShowToast] = useState(false);
   const [canShare, setCanShare] = useState(false);
 
@@ -68,6 +70,17 @@ export default function ShareToolbar({ href, title, onExport, showNowButton, onS
             data-hide-on-export
           >
             <DownloadIcon size={18} />
+          </button>
+        )}
+        {onToggleZoom && (
+          <button
+            className={`${styles.button} ${styles.zoomButton}`}
+            onClick={onToggleZoom}
+            aria-label={zoomed ? "Zoom out" : "Zoom in"}
+            title={zoomed ? "Zoom out" : "Zoom in"}
+            data-hide-on-export
+          >
+            {zoomed ? <ZoomOutIcon size={18} /> : <ZoomInIcon size={18} />}
           </button>
         )}
         {showNowButton && onShowNow && (

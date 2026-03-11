@@ -13,6 +13,7 @@ interface TimelineProps {
   onRemove?: (eventKey: string) => void;
   onToggleDeath?: (eventKey: string) => void;
   canRemoveNow?: boolean;
+  zoomed?: boolean;
 }
 
 const nowMarker: MarkerData = {
@@ -31,13 +32,14 @@ let prevTimelineData: { markers: MarkerData[]; segments: SegmentData[] } | null 
 
 interface AnimatedTimelineProps extends TimelineProps {
   exit?: boolean;
+  zoomed?: boolean;
 }
 
 function eventKey(marker: MarkerData): string {
   return `${marker.event.id}${marker.event.useDeath ? "~d" : ""}`;
 }
 
-function AnimatedTimeline({ markers, segments, exit = false, onRemove, onToggleDeath, canRemoveNow }: AnimatedTimelineProps) {
+function AnimatedTimeline({ markers, segments, exit = false, onRemove, onToggleDeath, canRemoveNow, zoomed }: AnimatedTimelineProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [flippedKeys, setFlippedKeys] = useState<Set<string>>(new Set());
 
@@ -53,7 +55,7 @@ function AnimatedTimeline({ markers, segments, exit = false, onRemove, onToggleD
     if (!container) return;
 
     const isVertical = window.matchMedia("(max-width: 640px)").matches;
-    if (isVertical || exit) {
+    if (isVertical || exit || zoomed) {
       if (flippedKeys.size > 0) setFlippedKeys(new Set());
       return;
     }
@@ -94,7 +96,7 @@ function AnimatedTimeline({ markers, segments, exit = false, onRemove, onToggleD
     }
 
     setFlippedKeys(flipped);
-  }, [markers, segments, exit, fontsReady]);
+  }, [markers, segments, exit, fontsReady, zoomed]);
 
   useLayoutEffect(() => {
     const container = containerRef.current;
@@ -216,7 +218,11 @@ function AnimatedTimeline({ markers, segments, exit = false, onRemove, onToggleD
   }, [markers, segments, exit]);
 
   return (
-    <div ref={containerRef} className={styles.timeline}>
+    <div
+      ref={containerRef}
+      className={`${styles.timeline}${zoomed ? ` ${styles.timelineZoomed}` : ""}`}
+      style={zoomed && segments.length > 0 ? { width: `max(100%, ${segments.length * 25}vw)` } : undefined}
+    >
       {markers.map((marker, i) => (
         <Fragment key={marker.event.id}>
           <TimelineMarker
@@ -225,14 +231,14 @@ function AnimatedTimeline({ markers, segments, exit = false, onRemove, onToggleD
             onRemove={onRemove && (marker.event.id !== "0" || canRemoveNow) ? () => onRemove(eventKey(marker)) : undefined}
             onToggleDeath={onToggleDeath && marker.event.id !== "0" ? () => onToggleDeath(eventKey(marker)) : undefined}
           />
-          {i < segments.length && <TimelinePart segment={segments[i]} />}
+          {i < segments.length && <TimelinePart segment={segments[i]} zoomed={zoomed} />}
         </Fragment>
       ))}
     </div>
   );
 }
 
-export default function Timeline({ markers, segments, onRemove, onToggleDeath, canRemoveNow }: TimelineProps) {
+export default function Timeline({ markers, segments, onRemove, onToggleDeath, canRemoveNow, zoomed }: TimelineProps) {
   const hasMarkers = markers.length > 0;
 
   // Initialize exiting from module-level state (survives remounts)
@@ -293,5 +299,5 @@ export default function Timeline({ markers, segments, onRemove, onToggleDeath, c
     );
   }
 
-  return <AnimatedTimeline markers={markers} segments={segments} onRemove={onRemove} onToggleDeath={onToggleDeath} canRemoveNow={canRemoveNow} />;
+  return <AnimatedTimeline markers={markers} segments={segments} onRemove={onRemove} onToggleDeath={onToggleDeath} canRemoveNow={canRemoveNow} zoomed={zoomed} />;
 }

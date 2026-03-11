@@ -6,6 +6,14 @@
   justify-content: center;
 }
 
+.partZoomed {
+  min-width: 160px;
+}
+
+.partZoomed .partLabel {
+  opacity: 1;
+}
+
 .timeline {
   display: flex;
   align-items: flex-start;

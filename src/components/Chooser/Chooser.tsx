@@ -198,6 +198,7 @@ export default function Chooser({
 
   const shareHref = buildUrl(href, title, hideNow);
 
+  const [zoomed, setZoomed] = useState(false);
   const { exportRef, handleExport } = useExport(selected);
 
   // Global "/" shortcut to focus search input
@@ -238,16 +239,21 @@ export default function Chooser({
               onExport={timeline.markers.length >= 2 ? handleExport : undefined}
               showNowButton={hideNow && selected.length >= 2}
               onShowNow={handleShowNow}
+              zoomed={zoomed}
+              onToggleZoom={() => setZoomed((z) => !z)}
             />
           </>
         )}
-        <Timeline
-          markers={timeline.markers}
-          segments={timeline.segments}
-          onRemove={handleRemove}
-          onToggleDeath={handleToggleDeath}
-          canRemoveNow={canRemoveNow}
-        />
+        <div className={zoomed ? styles.timelineScroll : undefined}>
+          <Timeline
+            markers={timeline.markers}
+            segments={timeline.segments}
+            onRemove={handleRemove}
+            onToggleDeath={handleToggleDeath}
+            canRemoveNow={canRemoveNow}
+            zoomed={zoomed}
+          />
+        </div>
         <div className={styles.watermark} data-show-on-export>
           wiki:closerintime
         </div>

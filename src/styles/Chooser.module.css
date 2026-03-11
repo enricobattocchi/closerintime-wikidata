@@ -229,6 +229,10 @@
   padding-bottom: 24px;
 }
 
+.timelineScroll {
+  overflow-x: auto;
+}
+
 /* Hide action buttons during image export */
 .exportArea[data-exporting] [data-hide-on-export] {
   display: none !important;
