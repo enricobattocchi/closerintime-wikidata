@@ -230,7 +230,28 @@
 }
 
 .timelineScroll {
-  overflow-x: auto;
+  overflow-x: scroll;
+  scrollbar-color: var(--color-primary) var(--color-bg-disabled);
+  scrollbar-width: auto;
+}
+
+/* Webkit/Blink scrollbar styling */
+.timelineScroll::-webkit-scrollbar {
+  height: 12px;
+}
+
+.timelineScroll::-webkit-scrollbar-track {
+  background: var(--color-bg-disabled);
+  border-radius: 6px;
+}
+
+.timelineScroll::-webkit-scrollbar-thumb {
+  background: var(--color-primary);
+  border-radius: 6px;
+}
+
+.timelineScroll::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary-shadow);
 }
 
 /* Hide action buttons during image export */
