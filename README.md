@@ -48,11 +48,12 @@ The build uses `--webpack` to enable PWA service worker generation (Turbopack do
 - **Real-time Wikidata search** — search for any historical event, person, or milestone in Wikidata's knowledge base. Results are fetched on demand with debounced queries.
 - **Dark mode** — automatic via system preference, or manually toggle between System / Light / Dark in Settings. Choice persists across sessions.
 - **Unlimited events** — add as many events as you want. For people, choose between birth and death dates directly from the dropdown.
-- **Editable title** — name your timeline; the title is used in the page title, OG image, and share dialog.
+- **Editable title** — click the pencil icon to name your timeline; the title is used in the page title, OG image, and share dialog.
+- **Zoom mode** — toggle zoom on crowded timelines. The width scales based on the smallest gap between markers so info cards never overlap.
 - **Removable "Now" marker** — when you have 2+ events, you can hide the present-day marker and re-add it later.
 - **Smart overlap detection** — marker info cards that would overlap are automatically flipped above the timeline line.
 - **Dynamic OG images** — shared links generate branded Open Graph images with the timeline title, rendered server-side via `next/og`.
-- **Image export** — download the timeline as a PNG image with a "wiki:closerintime" watermark.
+- **Image export** — download the timeline as a PNG image with a "wiki:closerintime" watermark. Disabled while zoomed to avoid cropped output.
 - **Random event** — add a random Wikidata event to your timeline with one click.
 
 ## Project structure
@@ -70,7 +71,7 @@ src/
     Chooser/                # Single search input with Wikidata autocomplete
     Timeline/               # Proportional horizontal/vertical timeline with interactive markers
     EditableTitle.tsx        # Editable timeline title with auto-resize
-    ShareToolbar.tsx         # Copy link, share, export, and show-Now buttons
+    ShareToolbar.tsx         # Copy link, share, export, zoom, edit-title, and show-Now buttons
     HelpModal.tsx           # Instructions modal
     SettingsModal.tsx       # Theme + timespan format settings
     CategoryIcon.tsx        # Maps event type to MUI icon
