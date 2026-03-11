@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { ContentCopy, DownloadIcon, ShareIcon, EventAvailable, ZoomInIcon, ZoomOutIcon } from "@/components/Icon";
+import { ContentCopy, DownloadIcon, ShareIcon, EventAvailable, ZoomInIcon, ZoomOutIcon, EditOutlined } from "@/components/Icon";
 import styles from "@/styles/ShareToolbar.module.css";
 
 interface ShareToolbarProps {
@@ -12,9 +12,11 @@ interface ShareToolbarProps {
   onShowNow?: () => void;
   zoomed?: boolean;
   onToggleZoom?: () => void;
+  showEditTitle?: boolean;
+  onEditTitle?: () => void;
 }
 
-export default function ShareToolbar({ href, title, onExport, showNowButton, onShowNow, zoomed, onToggleZoom }: ShareToolbarProps) {
+export default function ShareToolbar({ href, title, onExport, showNowButton, onShowNow, zoomed, onToggleZoom, showEditTitle, onEditTitle }: ShareToolbarProps) {
   const [showToast, setShowToast] = useState(false);
   const [canShare, setCanShare] = useState(false);
 
@@ -71,6 +73,17 @@ export default function ShareToolbar({ href, title, onExport, showNowButton, onS
             data-hide-on-export
           >
             <DownloadIcon size={22} />
+          </button>
+        )}
+        {showEditTitle && onEditTitle && (
+          <button
+            className={styles.button}
+            onClick={onEditTitle}
+            aria-label="Set title"
+            title="Set title"
+            data-hide-on-export
+          >
+            <EditOutlined size={22} />
           </button>
         )}
         {onToggleZoom && (

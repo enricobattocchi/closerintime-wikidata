@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import type { Event, MarkerData, SegmentData } from "@/lib/types";
 import { useSettings } from "@/hooks/useSettings";
@@ -10,6 +10,7 @@ import { buildShareablePath } from "@/lib/custom-event-url";
 import EventAutocomplete from "./EventAutocomplete";
 import Timeline from "@/components/Timeline/Timeline";
 import EditableTitle from "@/components/EditableTitle";
+import type { EditableTitleHandle } from "@/components/EditableTitle";
 import ShareToolbar from "@/components/ShareToolbar";
 import styles from "@/styles/Chooser.module.css";
 
@@ -55,6 +56,7 @@ export default function Chooser({
     setHideNow(serverHideNow || false);
   }, [serverHideNow]);
 
+  const titleRef = useRef<EditableTitleHandle>(null);
   const [loadingRandom, setLoadingRandom] = useState(false);
   const currentKeys = selected.map((e) => `${e.id}${e.useDeath ? "~d" : ""}`);
 
@@ -232,7 +234,7 @@ export default function Chooser({
       <div ref={exportRef} className={styles.exportArea} aria-live="polite" aria-atomic="true">
         {selected.length > 0 && (
           <>
-            <EditableTitle value={title} onChange={handleTitleChange} />
+            <EditableTitle ref={titleRef} value={title} onChange={handleTitleChange} />
             <ShareToolbar
               href={shareHref}
               title={title}
@@ -241,6 +243,8 @@ export default function Chooser({
               onShowNow={handleShowNow}
               zoomed={zoomed}
               onToggleZoom={() => setZoomed((z) => !z)}
+              showEditTitle={!title}
+              onEditTitle={() => titleRef.current?.focus()}
             />
           </>
         )}

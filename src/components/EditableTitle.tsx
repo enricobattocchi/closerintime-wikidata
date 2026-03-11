@@ -1,7 +1,6 @@
 "use client";
 
-import { useRef, useCallback, useEffect } from "react";
-import { EditOutlined } from "@/components/Icon";
+import { useRef, useState, useCallback, useEffect, useImperativeHandle, forwardRef } from "react";
 import styles from "@/styles/EditableTitle.module.css";
 
 interface EditableTitleProps {
@@ -9,16 +8,26 @@ interface EditableTitleProps {
   onChange: (value: string) => void;
 }
 
+export interface EditableTitleHandle {
+  focus: () => void;
+}
+
 const MAX_LENGTH = 100;
-const PLACEHOLDER = "my timeline";
+const PLACEHOLDER = "timeline name";
 
 function autoResize(el: HTMLTextAreaElement) {
   el.style.height = "0";
   el.style.height = `${el.scrollHeight}px`;
 }
 
-export default function EditableTitle({ value, onChange }: EditableTitleProps) {
+export default forwardRef<EditableTitleHandle, EditableTitleProps>(function EditableTitle({ value, onChange }, ref) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [focused, setFocused] = useState(false);
+  const visible = value || focused;
+
+  useImperativeHandle(ref, () => ({
+    focus: () => textareaRef.current?.focus(),
+  }));
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -51,22 +60,16 @@ export default function EditableTitle({ value, onChange }: EditableTitleProps) {
   }, []);
 
   return (
-    <div className={styles.container}>
+    <div className={`${styles.container}${visible ? "" : ` ${styles.collapsed}`}`}>
       <div className={styles.inputWrapper}>
-        {!value && (
-          <span
-            className={styles.placeholder}
-            onClick={() => textareaRef.current?.focus()}
-            data-hide-on-export
-          >
-            {PLACEHOLDER} <EditOutlined size={14} />
-          </span>
-        )}
         <textarea
           ref={textareaRef}
           className={styles.input}
           value={value}
+          placeholder={PLACEHOLDER}
           onChange={handleChange}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
           onKeyDown={handleKeyDown}
           maxLength={MAX_LENGTH}
           rows={1}
@@ -81,4 +84,4 @@ export default function EditableTitle({ value, onChange }: EditableTitleProps) {
       )}
     </div>
   );
-}
+});

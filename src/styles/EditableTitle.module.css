@@ -5,6 +5,12 @@
   margin: 0 auto;
 }
 
+.collapsed {
+  padding: 0;
+  height: 0;
+  overflow: hidden;
+}
+
 .input {
   font-family: var(--font-serif), Georgia, serif;
   font-size: 1.5em;
@@ -20,28 +26,15 @@
   overflow: hidden;
 }
 
+.input::placeholder {
+  color: var(--color-text-light);
+  opacity: 0.6;
+}
+
 .inputWrapper {
   position: relative;
   display: inline-block;
   width: 100%;
-}
-
-.placeholder {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  font-family: var(--font-serif), Georgia, serif;
-  font-size: 1.5em;
-  line-height: 1.5;
-  color: var(--color-text-light);
-  pointer-events: none;
-  display: inline-flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 4px;
-  cursor: text;
-  pointer-events: auto;
 }
 
 .input:focus {
