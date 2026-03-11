@@ -1,0 +1,49 @@
+name: Build & Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm test
+
+      - name: Build & deploy to Netlify
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: npx netlify-cli deploy --build --prod --site=${{ secrets.NETLIFY_SITE_ID }} --auth=${{ secrets.NETLIFY_AUTH_TOKEN }}
+
+      - name: Deploy preview (PRs)
+        if: github.event_name == 'pull_request'
+        id: preview
+        run: |
+          output=$(npx netlify-cli deploy --build --site=${{ secrets.NETLIFY_SITE_ID }} --auth=${{ secrets.NETLIFY_AUTH_TOKEN }})
+          echo "$output"
+          url=$(echo "$output" | grep -oP 'Website draft URL: \K\S+')
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      - name: Comment preview URL
+        if: github.event_name == 'pull_request' && steps.preview.outputs.url
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `🔗 Deploy preview: ${process.env.URL}`
+            })
+        env:
+          URL: ${{ steps.preview.outputs.url }}
