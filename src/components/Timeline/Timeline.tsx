@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useEffect, useRef, useState, Fragment } from "react";
+import { useLayoutEffect, useEffect, useMemo, useRef, useState, Fragment } from "react";
 import type { MarkerData, SegmentData } from "@/lib/types";
 import { formatMonthDayYear, createUTCDate, currentYear } from "@/lib/date-utils";
 import TimelineMarker from "./TimelineMarker";
@@ -42,6 +42,18 @@ function eventKey(marker: MarkerData): string {
 function AnimatedTimeline({ markers, segments, exit = false, onRemove, onToggleDeath, canRemoveNow, zoomed }: AnimatedTimelineProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [flippedKeys, setFlippedKeys] = useState<Set<string>>(new Set());
+
+  const zoomedWidth = useMemo(() => {
+    if (!zoomed || markers.length < 2) return undefined;
+    let minGap = Infinity;
+    for (let i = 1; i < markers.length; i++) {
+      const gap = markers[i].position - markers[i - 1].position;
+      if (gap > 0 && gap < minGap) minGap = gap;
+    }
+    if (minGap === Infinity || minGap === 0) return undefined;
+    const requiredVw = Math.ceil((12 * 100) / minGap);
+    return `max(100%, ${requiredVw}vw)`;
+  }, [zoomed, markers]);
 
   // Re-measure after fonts load (card sizes depend on the serif font)
   const [fontsReady, setFontsReady] = useState(false);
@@ -221,7 +233,7 @@ function AnimatedTimeline({ markers, segments, exit = false, onRemove, onToggleD
     <div
       ref={containerRef}
       className={`${styles.timeline}${zoomed ? ` ${styles.timelineZoomed}` : ""}`}
-      style={zoomed && segments.length > 0 ? { width: `max(100%, ${segments.length * 25}vw)` } : undefined}
+      style={zoomedWidth ? { width: zoomedWidth } : undefined}
     >
       {markers.map((marker, i) => (
         <Fragment key={marker.event.id}>
