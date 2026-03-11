@@ -45,13 +45,20 @@ function AnimatedTimeline({ markers, segments, exit = false, onRemove, onToggleD
 
   const zoomedWidth = useMemo(() => {
     if (!zoomed || markers.length < 2) return undefined;
+    // Normalize positions to the actual visible range (handles hidden Now marker)
+    const first = markers[0].position;
+    const last = markers[markers.length - 1].position;
+    const range = last - first;
+    if (range <= 0) return undefined;
     let minGap = Infinity;
     for (let i = 1; i < markers.length; i++) {
       const gap = markers[i].position - markers[i - 1].position;
       if (gap > 0 && gap < minGap) minGap = gap;
     }
     if (minGap === Infinity || minGap === 0) return undefined;
-    const requiredVw = Math.ceil((12 * 100) / minGap);
+    // Express minGap as percentage of the visible range
+    const normalizedGap = (minGap / range) * 100;
+    const requiredVw = Math.ceil((12 * 100) / normalizedGap);
     return `max(100%, ${requiredVw}vw)`;
   }, [zoomed, markers]);
 
