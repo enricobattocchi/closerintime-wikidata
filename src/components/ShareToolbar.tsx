@@ -48,7 +48,7 @@ export default function ShareToolbar({ href, title, onExport, showNowButton, onS
           title="Copy link"
           data-hide-on-export
         >
-          <ContentCopy size={18} />
+          <ContentCopy size={22} />
         </button>
         {canShare && (
           <button
@@ -58,7 +58,7 @@ export default function ShareToolbar({ href, title, onExport, showNowButton, onS
             title="Share"
             data-hide-on-export
           >
-            <ShareIcon size={18} />
+            <ShareIcon size={22} />
           </button>
         )}
         {onExport && (
@@ -69,7 +69,7 @@ export default function ShareToolbar({ href, title, onExport, showNowButton, onS
             title="Download as image"
             data-hide-on-export
           >
-            <DownloadIcon size={18} />
+            <DownloadIcon size={22} />
           </button>
         )}
         {onToggleZoom && (
@@ -80,7 +80,7 @@ export default function ShareToolbar({ href, title, onExport, showNowButton, onS
             title={zoomed ? "Zoom out" : "Zoom in"}
             data-hide-on-export
           >
-            {zoomed ? <ZoomOutIcon size={18} /> : <ZoomInIcon size={18} />}
+            {zoomed ? <ZoomOutIcon size={22} /> : <ZoomInIcon size={22} />}
           </button>
         )}
         {showNowButton && onShowNow && (
@@ -91,7 +91,7 @@ export default function ShareToolbar({ href, title, onExport, showNowButton, onS
             title="Show present day"
             data-hide-on-export
           >
-            <EventAvailable size={18} />
+            <EventAvailable size={22} />
           </button>
         )}
       </div>
