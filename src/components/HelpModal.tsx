@@ -86,9 +86,10 @@ export default function HelpModal({ onClose }: HelpModalProps) {
             <a href="https://www.wikidata.org" target="_blank" rel="noopener">Wikidata</a>.
           </p>
           <p>
-            Pick up to three events by typing in the search fields. Results
-            come directly from Wikidata&apos;s knowledge base of millions of
-            entities &mdash; people, places, inventions, battles, and more.
+            Search for any number of events by typing in the search field.
+            Results come directly from Wikidata&apos;s knowledge base of
+            millions of entities &mdash; people, places, inventions, battles,
+            and more. For people, you can choose between birth and death dates.
           </p>
           <p>Events are classified into categories:</p>
           <ul className={styles.categories}>
@@ -100,17 +101,19 @@ export default function HelpModal({ onClose }: HelpModalProps) {
             ))}
           </ul>
           <p>
-            After you&apos;ve chosen your events, the timeline will update to
-            show the proportional timespans between them and now.
+            The timeline shows proportional timespans between your events and
+            now. You can hide the &ldquo;Now&rdquo; marker, give your timeline
+            a custom title via the pencil icon, and zoom in when markers are
+            crowded.
           </p>
           <p>
             Dates are sourced from Wikidata and may be approximate when precise
             dating is not possible. Click an event on the timeline to read its
-            Wikipedia article and learn more.
+            Wikipedia article.
           </p>
           <p>
-            Share your timeline by copying the URL &mdash; each combination of
-            events has a unique, shareable link.
+            Share your timeline by copying the URL or download it as a PNG
+            image. Each combination of events has a unique, shareable link.
           </p>
         </div>
         <div className={styles.footer}>
