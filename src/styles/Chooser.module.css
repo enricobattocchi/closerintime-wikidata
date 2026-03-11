@@ -230,9 +230,22 @@
 }
 
 .timelineScroll {
+  position: relative;
   overflow-x: scroll;
   scrollbar-color: var(--color-primary) var(--color-bg-disabled);
   scrollbar-width: auto;
+  mask-image: linear-gradient(to right, black calc(100% - 48px), transparent);
+  -webkit-mask-image: linear-gradient(to right, black calc(100% - 48px), transparent);
+}
+
+.timelineScroll.scrolledMiddle {
+  mask-image: linear-gradient(to right, transparent, black 48px, black calc(100% - 48px), transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 48px, black calc(100% - 48px), transparent);
+}
+
+.timelineScroll.scrolledEnd {
+  mask-image: linear-gradient(to right, transparent, black 48px);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 48px);
 }
 
 /* Webkit/Blink scrollbar styling */

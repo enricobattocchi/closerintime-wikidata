@@ -57,6 +57,8 @@ export default function Chooser({
   }, [serverHideNow]);
 
   const titleRef = useRef<EditableTitleHandle>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [scrollPos, setScrollPos] = useState<"start" | "middle" | "end">("start");
   const [loadingRandom, setLoadingRandom] = useState(false);
   const currentKeys = selected.map((e) => `${e.id}${e.useDeath ? "~d" : ""}`);
 
@@ -203,6 +205,18 @@ export default function Chooser({
   const [zoomed, setZoomed] = useState(false);
   const { exportRef, handleExport } = useExport(selected);
 
+  const handleScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const atStart = el.scrollLeft <= 2;
+    const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 2;
+    setScrollPos(atStart ? "start" : atEnd ? "end" : "middle");
+  }, []);
+
+  useEffect(() => {
+    setScrollPos("start");
+  }, [zoomed]);
+
   // Global "/" shortcut to focus search input
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
@@ -248,7 +262,7 @@ export default function Chooser({
             />
           </>
         )}
-        <div className={zoomed ? styles.timelineScroll : undefined}>
+        <div ref={scrollRef} className={zoomed ? `${styles.timelineScroll}${scrollPos !== "start" ? ` ${styles[scrollPos === "end" ? "scrolledEnd" : "scrolledMiddle"]}` : ""}` : undefined} onScroll={zoomed ? handleScroll : undefined}>
           <Timeline
             markers={timeline.markers}
             segments={timeline.segments}
