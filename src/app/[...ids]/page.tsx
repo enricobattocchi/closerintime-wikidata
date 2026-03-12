@@ -39,8 +39,9 @@ function expandEvents(fetched: Event[], segments: { qid: string; useDeath: boole
 
 export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
   const { ids: rawIds } = await params;
-  const { t } = await searchParams;
+  const { t, now } = await searchParams;
   const customTitle = typeof t === "string" ? t.slice(0, 100) : "";
+  const hideNow = now === "0";
   const segments = parseSegments(rawIds);
   if (!segments) return { title: "wiki:closerintime" };
 
@@ -58,6 +59,7 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
   const description = "Visualize the time between historical events.";
   const ogParams = [`ids=${rawIds.join(",")}`];
   if (customTitle) ogParams.push(`t=${encodeURIComponent(customTitle)}`);
+  if (hideNow) ogParams.push("now=0");
   const ogImage = `/api/og?${ogParams.join("&")}`;
 
   return {
