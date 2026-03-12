@@ -267,6 +267,31 @@
   background: var(--color-primary-shadow);
 }
 
+@media (max-width: 640px) {
+  .timelineScroll {
+    overflow-x: visible;
+    overflow-y: scroll;
+    max-height: 70vh;
+    mask-image: linear-gradient(to bottom, black calc(100% - 48px), transparent);
+    -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 48px), transparent);
+  }
+
+  .timelineScroll.scrolledMiddle {
+    mask-image: linear-gradient(to bottom, transparent, black 48px, black calc(100% - 48px), transparent);
+    -webkit-mask-image: linear-gradient(to bottom, transparent, black 48px, black calc(100% - 48px), transparent);
+  }
+
+  .timelineScroll.scrolledEnd {
+    mask-image: linear-gradient(to bottom, transparent, black 48px);
+    -webkit-mask-image: linear-gradient(to bottom, transparent, black 48px);
+  }
+
+  .timelineScroll::-webkit-scrollbar {
+    width: 8px;
+    height: auto;
+  }
+}
+
 /* Hide action buttons during image export */
 .exportArea[data-exporting] [data-hide-on-export] {
   display: none !important;

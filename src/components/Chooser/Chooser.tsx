@@ -208,9 +208,16 @@ export default function Chooser({
   const handleScroll = useCallback(() => {
     const el = scrollRef.current;
     if (!el) return;
-    const atStart = el.scrollLeft <= 2;
-    const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 2;
-    setScrollPos(atStart ? "start" : atEnd ? "end" : "middle");
+    const isMobile = window.innerWidth <= 640;
+    if (isMobile) {
+      const atStart = el.scrollTop <= 2;
+      const atEnd = el.scrollTop + el.clientHeight >= el.scrollHeight - 2;
+      setScrollPos(atStart ? "start" : atEnd ? "end" : "middle");
+    } else {
+      const atStart = el.scrollLeft <= 2;
+      const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 2;
+      setScrollPos(atStart ? "start" : atEnd ? "end" : "middle");
+    }
   }, []);
 
   useEffect(() => {

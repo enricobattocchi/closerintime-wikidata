@@ -51,8 +51,3 @@
   100% { opacity: 0; transform: translateX(-50%) translateY(-8px); }
 }
 
-@media (max-width: 640px) {
-  .zoomButton {
-    display: none;
-  }
-}

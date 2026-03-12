@@ -45,6 +45,7 @@ function AnimatedTimeline({ markers, segments, exit = false, onRemove, onToggleD
 
   const zoomedWidth = useMemo(() => {
     if (!zoomed || markers.length < 2) return undefined;
+    if (typeof window !== "undefined" && window.innerWidth <= 640) return undefined;
     // Normalize positions to the actual visible range (handles hidden Now marker)
     const first = markers[0].position;
     const last = markers[markers.length - 1].position;
@@ -60,6 +61,28 @@ function AnimatedTimeline({ markers, segments, exit = false, onRemove, onToggleD
     const normalizedGap = (minGap / range) * 100;
     const requiredVw = Math.ceil((12 * 100) / normalizedGap);
     return `max(100%, ${requiredVw}vw)`;
+  }, [zoomed, markers]);
+
+  const zoomedHeight = useMemo(() => {
+    if (!zoomed || markers.length < 2) return undefined;
+    if (typeof window === "undefined" || window.innerWidth > 640) return undefined;
+    const first = markers[0].position;
+    const last = markers[markers.length - 1].position;
+    const range = last - first;
+    if (range <= 0) return undefined;
+    let minGap = Infinity;
+    for (let i = 1; i < markers.length; i++) {
+      const gap = markers[i].position - markers[i - 1].position;
+      if (gap > 0 && gap < minGap) minGap = gap;
+    }
+    if (minGap === Infinity || minGap === 0) return undefined;
+    const normalizedGap = (minGap / range) * 100;
+    // Each smallest gap needs ~120px visible height for cards to breathe;
+    // express as svh so the container scales with the viewport
+    const pxPerGap = 120;
+    const svh = pxPerGap / (window.innerHeight / 100);
+    const requiredSvh = Math.ceil((svh * 100) / normalizedGap);
+    return `${requiredSvh}svh`;
   }, [zoomed, markers]);
 
   // Re-measure after fonts load (card sizes depend on the serif font)
@@ -240,7 +263,7 @@ function AnimatedTimeline({ markers, segments, exit = false, onRemove, onToggleD
     <div
       ref={containerRef}
       className={`${styles.timeline}${zoomed ? ` ${styles.timelineZoomed}` : ""}`}
-      style={zoomedWidth ? { width: zoomedWidth } : undefined}
+      style={zoomedWidth ? { width: zoomedWidth } : zoomedHeight ? { height: zoomedHeight } : undefined}
     >
       {markers.map((marker, i) => (
         <Fragment key={marker.event.id}>

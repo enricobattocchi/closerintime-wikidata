@@ -343,4 +343,10 @@ a.marker:focus-visible {
     white-space: normal;
     font-size: 0.75rem;
   }
+
+  .partZoomed {
+    min-width: unset;
+    min-height: 0;
+    flex-basis: 0;
+  }
 }
