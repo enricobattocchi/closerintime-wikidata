@@ -4,6 +4,7 @@
   "description": "Visualize the time between historical events.",
   "start_url": "/",
   "display": "standalone",
+com  "handle_links": "preferred",
   "theme_color": "#3366cc",
   "background_color": "#f8f9fa",
   "icons": [
