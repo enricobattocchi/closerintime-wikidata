@@ -86,14 +86,19 @@ function mapType(typeLabel: string | undefined): string {
     ["ocean liner", "transport"],
     ["rocket", "transport"],
 
+    // States & political entities
+    ["country", "state"],
+    ["territory", "state"],
+    ["colony", "state"],
+    ["kingdom", "state"],
+    ["empire", "state"],
+    ["republic", "state"],
+    ["sovereign state", "state"],
+    ["confederation", "state"],
+    ["federation", "state"],
+
     // Places
     ["city", "place"],
-    ["country", "place"],
-    ["territory", "place"],
-    ["colony", "place"],
-    ["kingdom", "place"],
-    ["empire", "place"],
-    ["republic", "place"],
     ["state", "place"],
     ["island", "place"],
 

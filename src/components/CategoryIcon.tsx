@@ -23,6 +23,7 @@ const iconMap: Record<string, IconComponent> = {
   place: PlaceIcon,
   organization: GroupIcon,
   position: AccountBalance,
+  state: AccountBalance,
   disaster: WarningIcon,
   military: MilitaryIcon,
   transport: FlightIcon,
