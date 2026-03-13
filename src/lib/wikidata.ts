@@ -97,6 +97,13 @@ function mapType(typeLabel: string | undefined): string {
     ["state", "place"],
     ["island", "place"],
 
+    // Positions & offices
+    ["position", "position"],
+    ["public office", "position"],
+    ["office", "position"],
+    ["head of state", "position"],
+    ["head of government", "position"],
+
     // Organizations
     ["organization", "organization"],
     ["company", "organization"],

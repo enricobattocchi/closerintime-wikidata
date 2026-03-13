@@ -16,7 +16,10 @@ export function eventDisplayName(event: Event): string {
     case "P570":
       return `Death of ${name}`;
     case "P571": {
-      const noun = event.type === "building" ? "Construction" : "Founding";
+      const noun =
+        event.type === "building" ? "Construction" :
+        event.type === "position" ? "Establishment" :
+        "Founding";
       return `${noun} of ${name}`;
     }
     case "P577": {
