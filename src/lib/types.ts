@@ -47,5 +47,6 @@ export type TimespanFormat = 0 | 1 | 2; // 0=days, 1=years only, 2=precise
 export const EVENT_TYPES = [
   "art", "book", "building", "computer", "disaster",
   "film", "history", "military", "music", "organization",
-  "person", "place", "pop culture", "science", "sport", "transport",
+  "person", "place", "pop culture", "position", "science",
+  "sport", "state", "transport",
 ] as const;

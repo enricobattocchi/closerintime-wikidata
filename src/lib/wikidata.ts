@@ -1,6 +1,6 @@
 import { cache } from "react";
 import type { Event } from "./types";
-import { EVENT_TYPES } from "./types";
+
 
 const WIKIDATA_API = "https://www.wikidata.org/w/api.php";
 const USER_AGENT = "wiki-closerintime/1.0 (https://wiki.closerinti.me)";
@@ -77,7 +77,6 @@ const TYPE_MAPPING: { pattern: RegExp; type: string }[] = ([
   ["spacecraft", "transport"],
   ["space mission", "transport"],
   ["maiden voyage", "transport"],
-  ["flight", "transport"],
   ["ocean liner", "transport"],
   ["rocket", "transport"],
 
@@ -238,7 +237,7 @@ const TYPE_MAPPING: { pattern: RegExp; type: string }[] = ([
   type,
 }));
 
-/** Map a Wikidata type description to one of our EVENT_TYPES */
+/** Map a Wikidata type description to one of our 18 EVENT_TYPES */
 function mapType(typeLabel: string | undefined): string {
   if (!typeLabel) return "history";
   const lower = typeLabel.toLowerCase();
