@@ -124,12 +124,13 @@
 
 .markerToggleDeath {
   position: absolute;
-  top: 2px;
-  left: 2px;
+  bottom: -18px;
+  left: 50%;
+  transform: translateX(-50%);
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  background: none;
+  background: var(--color-bg-surface);
   border: 1px solid var(--color-border);
   border-radius: 2px;
   cursor: pointer;
@@ -302,6 +303,7 @@ a.marker:focus-visible {
 
   .markerToggleDeath {
     position: static;
+    transform: none;
     margin-top: 4px;
   }
 
