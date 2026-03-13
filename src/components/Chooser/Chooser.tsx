@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import type { Event, MarkerData, SegmentData } from "@/lib/types";
 import { useSettings } from "@/hooks/useSettings";
@@ -60,7 +60,10 @@ export default function Chooser({
   const scrollRef = useRef<HTMLDivElement>(null);
   const [scrollPos, setScrollPos] = useState<"start" | "middle" | "end">("start");
   const [loadingRandom, setLoadingRandom] = useState(false);
-  const currentKeys = selected.map((e) => `${e.id}${e.useDeath ? "~d" : ""}`);
+  const currentKeys = useMemo(
+    () => selected.map((e) => `${e.id}${e.useDeath ? "~d" : ""}`),
+    [selected]
+  );
 
   const handleTitleChange = useCallback(
     (newTitle: string) => {
@@ -174,28 +177,32 @@ export default function Chooser({
   // Recompute client-side when format differs from default
   const needsClientCompute = timespanFormat !== 2;
 
-  let timeline: { markers: MarkerData[]; segments: SegmentData[] };
-  let href: string;
+  const { timeline, href } = useMemo(() => {
+    let tl: { markers: MarkerData[]; segments: SegmentData[] };
+    let h: string;
 
-  if (needsClientCompute && selected.length > 0) {
-    const result = computeTimeline(selected, timespanFormat);
-    timeline = { markers: result.markers, segments: result.segments };
-    href = buildShareablePath(selected);
-  } else {
-    timeline = serverTimeline || { markers: [], segments: [] };
-    href = serverHref || "/";
-  }
-
-  // Strip Now marker + last segment when hidden and 2+ events
-  if (hideNow && selected.length >= 2 && timeline.markers.length > 0) {
-    const lastMarker = timeline.markers[timeline.markers.length - 1];
-    if (lastMarker.event.id === "0") {
-      timeline = {
-        markers: timeline.markers.slice(0, -1),
-        segments: timeline.segments.slice(0, -1),
-      };
+    if (needsClientCompute && selected.length > 0) {
+      const result = computeTimeline(selected, timespanFormat);
+      tl = { markers: result.markers, segments: result.segments };
+      h = buildShareablePath(selected);
+    } else {
+      tl = serverTimeline || { markers: [], segments: [] };
+      h = serverHref || "/";
     }
-  }
+
+    // Strip Now marker + last segment when hidden and 2+ events
+    if (hideNow && selected.length >= 2 && tl.markers.length > 0) {
+      const lastMarker = tl.markers[tl.markers.length - 1];
+      if (lastMarker.event.id === "0") {
+        tl = {
+          markers: tl.markers.slice(0, -1),
+          segments: tl.segments.slice(0, -1),
+        };
+      }
+    }
+
+    return { timeline: tl, href: h };
+  }, [needsClientCompute, selected, timespanFormat, serverTimeline, serverHref, hideNow]);
 
   // Allow removing Now when there are 2+ events (timeline still has 2 markers without it)
   const canRemoveNow = selected.length >= 2;

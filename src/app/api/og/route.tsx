@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
     if (segments && segments.length > 0) {
       try {
         const uniqueQids = [...new Set(segments.map((s) => s.qid))];
-        const fetched = await fetchWikidataEvents(uniqueQids);
+        const fetched = await fetchWikidataEvents(uniqueQids.join(","));
         const byId = new Map(fetched.map((e) => [e.id, e]));
         for (const seg of segments) {
           const e = byId.get(seg.qid);

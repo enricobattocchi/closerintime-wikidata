@@ -49,7 +49,7 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
 
   let events;
   try {
-    events = expandEvents(await fetchWikidataEvents(uniqueQids), segments);
+    events = expandEvents(await fetchWikidataEvents(uniqueQids.join(",")), segments);
   } catch {
     return { title: "wiki:closerintime" };
   }
@@ -98,7 +98,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
 
   let events;
   try {
-    events = expandEvents(await fetchWikidataEvents(uniqueQids), sortedSegments);
+    events = expandEvents(await fetchWikidataEvents(uniqueQids.join(",")), sortedSegments);
   } catch {
     redirect("/");
   }

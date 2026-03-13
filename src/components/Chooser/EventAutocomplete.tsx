@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import type { Event } from "@/lib/types";
 import { useWikidataSearch } from "@/hooks/useWikidataSearch";
 import { formatYear } from "@/lib/date-utils";
@@ -21,13 +21,13 @@ function capitalize(s: string): string {
 }
 
 /** Expand a person with deathYear into birth + death sub-options */
-function expandPersonOptions(event: Event, selectedKeys: string[]): Event[] {
+function expandPersonOptions(event: Event, selectedKeys: Set<string>): Event[] {
   if (event.deathYear === null) return [event];
 
   const birthKey = event.id;
   const deathKey = `${event.id}~d`;
-  const birthSelected = selectedKeys.includes(birthKey);
-  const deathSelected = selectedKeys.includes(deathKey);
+  const birthSelected = selectedKeys.has(birthKey);
+  const deathSelected = selectedKeys.has(deathKey);
 
   const options: Event[] = [];
   if (!birthSelected) {
@@ -61,23 +61,27 @@ export default function EventAutocomplete({
 
   const { results, isLoading } = useWikidataSearch(query);
 
+  const selectedKeysSet = useMemo(() => new Set(selectedKeys), [selectedKeys]);
+
   // Build expanded dropdown items: persons with deathYear get birth+death sub-rows
-  const filtered: Event[] = [];
-  for (const e of results) {
-    const birthKey = e.id;
-    const deathKey = `${e.id}~d`;
-    const birthSelected = selectedKeys.includes(birthKey);
-    const deathSelected = selectedKeys.includes(deathKey);
+  const filtered = useMemo(() => {
+    const items: Event[] = [];
+    for (const e of results) {
+      const birthKey = e.id;
+      const deathKey = `${e.id}~d`;
+      const birthSelected = selectedKeysSet.has(birthKey);
+      const deathSelected = selectedKeysSet.has(deathKey);
 
-    if (birthSelected && deathSelected) continue;
+      if (birthSelected && deathSelected) continue;
 
-    if (e.deathYear !== null) {
-      // Person with death date — expand into sub-options
-      filtered.push(...expandPersonOptions(e, selectedKeys));
-    } else if (!birthSelected) {
-      filtered.push(e);
+      if (e.deathYear !== null) {
+        items.push(...expandPersonOptions(e, selectedKeysSet));
+      } else if (!birthSelected) {
+        items.push(e);
+      }
     }
-  }
+    return items;
+  }, [results, selectedKeysSet]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {

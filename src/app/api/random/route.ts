@@ -90,7 +90,7 @@ export async function GET(request: Request) {
   for (let attempt = 0; attempt < 3; attempt++) {
     const randomId = available[Math.floor(Math.random() * available.length)];
     try {
-      const events = await fetchWikidataEvents([randomId]);
+      const events = await fetchWikidataEvents(randomId);
       if (events.length > 0 && events[0].link) {
         return NextResponse.json(events[0]);
       }
