@@ -2,6 +2,7 @@
   "name": "wiki:closerintime",
   "short_name": "wiki:closerintime",
   "description": "Visualize the time between historical events.",
+  "id": "/",
   "start_url": "/",
   "display": "standalone",
   "handle_links": "preferred",
