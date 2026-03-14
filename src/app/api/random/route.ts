@@ -80,6 +80,7 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const excludeParam = url.searchParams.get("exclude");
   const excludeIds = excludeParam ? excludeParam.split(",") : [];
+  const lang = url.searchParams.get("lang") ?? "en";
 
   const available = NOTABLE_QIDS.filter((id) => !excludeIds.includes(id));
   if (available.length === 0) {
@@ -90,7 +91,7 @@ export async function GET(request: Request) {
   for (let attempt = 0; attempt < 3; attempt++) {
     const randomId = available[Math.floor(Math.random() * available.length)];
     try {
-      const events = await fetchWikidataEvents(randomId);
+      const events = await fetchWikidataEvents(randomId, lang);
       if (events.length > 0 && events[0].link) {
         return NextResponse.json(events[0]);
       }

@@ -5,6 +5,7 @@ import { fetchWikidataEvents } from "@/lib/wikidata";
 import { computeTimeline } from "@/lib/timeline-math";
 import { parseSegments } from "@/lib/url-params";
 import { eventDisplayName } from "@/lib/event-label";
+import enMessages from "@/i18n/messages/en.json";
 
 export const revalidate = 3600;
 
@@ -28,11 +29,23 @@ function segmentColor(order: number, total: number): string {
   return `hsl(${hue}, 55%, 45%)`;
 }
 
+async function loadMessages(lang: string): Promise<Record<string, Record<string, string>>> {
+  if (lang === "en") return enMessages as Record<string, Record<string, string>>;
+  try {
+    return (await import(`@/i18n/messages/${lang}.json`)).default;
+  } catch {
+    return enMessages as Record<string, Record<string, string>>;
+  }
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const ids = searchParams.get("ids");
   const customTitle = searchParams.get("t")?.slice(0, 100) || "";
   const hideNow = searchParams.get("now") === "0";
+  const lang = searchParams.get("lang") ?? "en";
+
+  const messages = await loadMessages(lang);
 
   let heading = "";
   let allEvents: Event[] = [];
@@ -41,7 +54,7 @@ export async function GET(request: NextRequest) {
     if (segments && segments.length > 0) {
       try {
         const uniqueQids = [...new Set(segments.map((s) => s.qid))];
-        const fetched = await fetchWikidataEvents(uniqueQids.join(","));
+        const fetched = await fetchWikidataEvents(uniqueQids.join(","), lang);
         const byId = new Map(fetched.map((e) => [e.id, e]));
         for (const seg of segments) {
           const e = byId.get(seg.qid);
@@ -53,7 +66,7 @@ export async function GET(request: NextRequest) {
           }
         }
         if (allEvents.length > 0) {
-          heading = customTitle || "Build your own timeline";
+          heading = customTitle || messages.meta?.defaultTitle || "Build your own timeline";
         }
       } catch {
         // Wikidata API unavailable — fall back to default image
@@ -75,6 +88,9 @@ export async function GET(request: NextRequest) {
       };
     }
   }
+
+  const fallbackDescription = messages.meta?.siteDescription || "Visualize the time between historical events.";
+  const nowLabel = messages.common?.now || "Now";
 
   return new ImageResponse(
     (
@@ -114,7 +130,7 @@ export async function GET(request: NextRequest) {
               lineHeight: 1.4,
             }}
           >
-            Visualize the time between historical events.
+            {fallbackDescription}
           </div>
         )}
         {timeline && (
@@ -192,8 +208,8 @@ export async function GET(request: NextRequest) {
                         overflow: "visible",
                       }}
                     >
-                      {isNow ? "Now" : eventDisplayName(marker.event).length > 25
-                        ? eventDisplayName(marker.event).slice(0, 23) + "…"
+                      {isNow ? nowLabel : eventDisplayName(marker.event).length > 25
+                        ? eventDisplayName(marker.event).slice(0, 23) + "\u2026"
                         : eventDisplayName(marker.event)}
                     </div>
                   </div>

@@ -1,10 +1,11 @@
 import type { MetadataRoute } from "next";
+import { locales, defaultLocale } from "@/i18n/config";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  return [
-    {
-      url: "https://wiki.closerinti.me",
-      priority: 1.0,
-    },
-  ];
+  const baseUrl = "https://wiki.closerinti.me";
+
+  return locales.map((locale) => ({
+    url: locale === defaultLocale ? baseUrl : `${baseUrl}/${locale}`,
+    priority: locale === defaultLocale ? 1.0 : 0.8,
+  }));
 }

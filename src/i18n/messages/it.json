@@ -1,0 +1,110 @@
+{
+  "common": {
+    "close": "Chiudi",
+    "save": "Salva",
+    "now": "Oggi",
+    "skipToContent": "Vai al contenuto"
+  },
+  "search": {
+    "placeholder": "Cerca un evento\u2026",
+    "noResults": "Nessun evento trovato",
+    "searching": "Ricerca su Wikidata\u2026",
+    "clearSearch": "Cancella ricerca",
+    "randomEvent": "Evento casuale"
+  },
+  "chooser": {
+    "heading": "Crea la tua linea del tempo",
+    "timelineName": "nome della linea del tempo",
+    "timelineTitle": "Titolo della linea del tempo"
+  },
+  "eventLabel": {
+    "birthOf": "Nascita di {name}",
+    "deathOf": "Morte di {name}",
+    "constructionOf": "Costruzione di {name}",
+    "establishmentOf": "Istituzione di {name}",
+    "foundingOf": "Fondazione di {name}",
+    "releaseOf": "Uscita di {name}",
+    "publicationOf": "Pubblicazione di {name}",
+    "launchOf": "Lancio di {name}",
+    "landingOf": "Atterraggio di {name}",
+    "firstPerformanceOf": "Prima rappresentazione di {name}",
+    "firstFlightOf": "Primo volo di {name}"
+  },
+  "date": {
+
+    "year": "{count, plural, one {# anno} other {# anni}}",
+    "month": "{count, plural, one {# mese} other {# mesi}}",
+    "day": "{count, plural, one {# giorno} other {# giorni}}",
+    "zeroDays": "0 giorni",
+    "zeroMonths": "0 mesi",
+    "and": "e"
+  },
+  "timeline": {
+    "removeEvent": "Rimuovi evento",
+    "switchToBirth": "Mostra data di nascita",
+    "switchToDeath": "Mostra data di morte",
+    "birth": "nascita",
+    "death": "morte",
+    "readWikipedia": "Leggi l\u2019articolo di Wikipedia su {name}"
+  },
+  "share": {
+    "copyLink": "Copia link",
+    "linkCopied": "Link copiato!",
+    "share": "Condividi",
+    "downloadImage": "Scarica come immagine",
+    "zoomOutToDownload": "Rimpicciolisci per scaricare",
+    "zoomIn": "Ingrandisci",
+    "zoomOut": "Rimpicciolisci",
+    "showPresentDay": "Mostra il giorno attuale",
+    "setTitle": "Imposta titolo"
+  },
+  "settings": {
+    "title": "Impostazioni",
+    "theme": "Tema",
+    "themeSystem": "Sistema",
+    "themeLight": "Chiaro",
+    "themeDark": "Scuro",
+    "timespanFormat": "Formato durata",
+    "formatDays": "Giorni",
+    "formatYears": "Solo anni",
+    "formatPrecise": "Preciso (anni, mesi, giorni)",
+    "language": "Lingua"
+  },
+  "help": {
+    "title": "Come funziona",
+    "description": "Visualizza il tempo tra gli eventi storici, grazie a <wikidata>Wikidata</wikidata>.",
+    "searchExplanation": "Cerca qualsiasi numero di eventi digitando nel campo di ricerca. I risultati provengono direttamente dalla base di conoscenza di Wikidata con milioni di entit\u00e0 \u2014 persone, luoghi, invenzioni, battaglie e altro. Per le persone, puoi scegliere tra data di nascita e di morte.",
+    "categoriesLabel": "Gli eventi sono classificati in categorie:",
+    "timelineExplanation": "La linea del tempo mostra intervalli proporzionali tra i tuoi eventi e ora. Puoi nascondere il marcatore \u00abOra\u00bb, dare un titolo personalizzato alla tua linea del tempo con l\u2019icona matita e ingrandire quando i marcatori sono troppo vicini.",
+    "datesExplanation": "Le date provengono da Wikidata e possono essere approssimative quando una datazione precisa non \u00e8 possibile. Clicca su un evento sulla linea del tempo per leggere il suo articolo Wikipedia.",
+    "shareExplanation": "Condividi la tua linea del tempo copiando l\u2019URL o scaricala come immagine PNG. Ogni combinazione di eventi ha un link unico e condivisibile."
+  },
+  "categories": {
+    "person": "persona",
+    "history": "storia",
+    "music": "musica",
+    "science": "scienza",
+    "art": "arte",
+    "film": "film",
+    "book": "libro",
+    "building": "edificio",
+    "computer": "informatica",
+    "sport": "sport",
+    "popCulture": "cultura pop",
+    "military": "militare",
+    "place": "luogo",
+    "organization": "organizzazione",
+    "disaster": "disastro",
+    "transport": "trasporto"
+  },
+  "footer": {
+    "help": "Aiuto",
+    "settings": "Impostazioni",
+    "credit": "Un\u2019app web progressiva di <lopoLink>Lopo.it</lopoLink> \u00b7 <githubLink>GitHub</githubLink>",
+    "checkAlso": "Vedi anche <link>#closerintime</link>"
+  },
+  "meta": {
+    "siteDescription": "Visualizza il tempo tra gli eventi storici.",
+    "defaultTitle": "Crea la tua linea del tempo"
+  }
+}

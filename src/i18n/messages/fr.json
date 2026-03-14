@@ -1,0 +1,110 @@
+{
+  "common": {
+    "close": "Fermer",
+    "save": "Enregistrer",
+    "now": "Maintenant",
+    "skipToContent": "Aller au contenu"
+  },
+  "search": {
+    "placeholder": "Rechercher un \u00e9v\u00e9nement\u2026",
+    "noResults": "Aucun \u00e9v\u00e9nement trouv\u00e9",
+    "searching": "Recherche sur Wikidata\u2026",
+    "clearSearch": "Effacer la recherche",
+    "randomEvent": "\u00c9v\u00e9nement al\u00e9atoire"
+  },
+  "chooser": {
+    "heading": "Cr\u00e9ez votre propre frise chronologique",
+    "timelineName": "nom de la frise",
+    "timelineTitle": "Titre de la frise"
+  },
+  "eventLabel": {
+    "birthOf": "Naissance de {name}",
+    "deathOf": "Mort de {name}",
+    "constructionOf": "Construction de {name}",
+    "establishmentOf": "\u00c9tablissement de {name}",
+    "foundingOf": "Fondation de {name}",
+    "releaseOf": "Sortie de {name}",
+    "publicationOf": "Publication de {name}",
+    "launchOf": "Lancement de {name}",
+    "landingOf": "Atterrissage de {name}",
+    "firstPerformanceOf": "Premi\u00e8re repr\u00e9sentation de {name}",
+    "firstFlightOf": "Premier vol de {name}"
+  },
+  "date": {
+
+    "year": "{count, plural, one {# an} other {# ans}}",
+    "month": "{count, plural, one {# mois} other {# mois}}",
+    "day": "{count, plural, one {# jour} other {# jours}}",
+    "zeroDays": "0 jours",
+    "zeroMonths": "0 mois",
+    "and": "et"
+  },
+  "timeline": {
+    "removeEvent": "Supprimer l\u2019\u00e9v\u00e9nement",
+    "switchToBirth": "Afficher la date de naissance",
+    "switchToDeath": "Afficher la date de d\u00e9c\u00e8s",
+    "birth": "naissance",
+    "death": "d\u00e9c\u00e8s",
+    "readWikipedia": "Lire l\u2019article Wikip\u00e9dia sur {name}"
+  },
+  "share": {
+    "copyLink": "Copier le lien",
+    "linkCopied": "Lien copi\u00e9 !",
+    "share": "Partager",
+    "downloadImage": "T\u00e9l\u00e9charger en image",
+    "zoomOutToDownload": "D\u00e9zoomez pour t\u00e9l\u00e9charger",
+    "zoomIn": "Zoom avant",
+    "zoomOut": "Zoom arri\u00e8re",
+    "showPresentDay": "Afficher le jour pr\u00e9sent",
+    "setTitle": "D\u00e9finir le titre"
+  },
+  "settings": {
+    "title": "Param\u00e8tres",
+    "theme": "Th\u00e8me",
+    "themeSystem": "Syst\u00e8me",
+    "themeLight": "Clair",
+    "themeDark": "Sombre",
+    "timespanFormat": "Format de dur\u00e9e",
+    "formatDays": "Jours",
+    "formatYears": "Ann\u00e9es uniquement",
+    "formatPrecise": "Pr\u00e9cis (ann\u00e9es, mois, jours)",
+    "language": "Langue"
+  },
+  "help": {
+    "title": "Comment \u00e7a marche",
+    "description": "Visualisez le temps entre les \u00e9v\u00e9nements historiques, propuls\u00e9 par <wikidata>Wikidata</wikidata>.",
+    "searchExplanation": "Recherchez autant d\u2019\u00e9v\u00e9nements que vous le souhaitez en tapant dans le champ de recherche. Les r\u00e9sultats proviennent directement de la base de connaissances Wikidata avec des millions d\u2019entit\u00e9s \u2014 personnes, lieux, inventions, batailles et plus encore. Pour les personnes, vous pouvez choisir entre la date de naissance et de d\u00e9c\u00e8s.",
+    "categoriesLabel": "Les \u00e9v\u00e9nements sont class\u00e9s par cat\u00e9gories :",
+    "timelineExplanation": "La frise chronologique montre les intervalles proportionnels entre vos \u00e9v\u00e9nements et maintenant. Vous pouvez masquer le marqueur \u00ab Maintenant \u00bb, donner un titre personnalis\u00e9 \u00e0 votre frise via l\u2019ic\u00f4ne crayon, et zoomer lorsque les marqueurs sont trop proches.",
+    "datesExplanation": "Les dates proviennent de Wikidata et peuvent \u00eatre approximatives lorsque la datation pr\u00e9cise n\u2019est pas possible. Cliquez sur un \u00e9v\u00e9nement sur la frise pour lire son article Wikip\u00e9dia.",
+    "shareExplanation": "Partagez votre frise en copiant l\u2019URL ou t\u00e9l\u00e9chargez-la en image PNG. Chaque combinaison d\u2019\u00e9v\u00e9nements a un lien unique et partageable."
+  },
+  "categories": {
+    "person": "personne",
+    "history": "histoire",
+    "music": "musique",
+    "science": "science",
+    "art": "art",
+    "film": "film",
+    "book": "livre",
+    "building": "b\u00e2timent",
+    "computer": "informatique",
+    "sport": "sport",
+    "popCulture": "culture pop",
+    "military": "militaire",
+    "place": "lieu",
+    "organization": "organisation",
+    "disaster": "catastrophe",
+    "transport": "transport"
+  },
+  "footer": {
+    "help": "Aide",
+    "settings": "Param\u00e8tres",
+    "credit": "Une application web progressive de <lopoLink>Lopo.it</lopoLink> \u00b7 <githubLink>GitHub</githubLink>",
+    "checkAlso": "Voir aussi <link>#closerintime</link>"
+  },
+  "meta": {
+    "siteDescription": "Visualisez le temps entre les \u00e9v\u00e9nements historiques.",
+    "defaultTitle": "Cr\u00e9ez votre propre frise chronologique"
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "common": {
+    "close": "Close",
+    "save": "Save",
+    "now": "Now",
+    "skipToContent": "Skip to content"
+  },
+  "search": {
+    "placeholder": "Search for an event...",
+    "noResults": "No events found",
+    "searching": "Searching Wikidata\u2026",
+    "clearSearch": "Clear search",
+    "randomEvent": "Random event"
+  },
+  "chooser": {
+    "heading": "Build your own timeline",
+    "timelineName": "timeline name",
+    "timelineTitle": "Timeline title"
+  },
+  "eventLabel": {
+    "birthOf": "Birth of {name}",
+    "deathOf": "Death of {name}",
+    "constructionOf": "Construction of {name}",
+    "establishmentOf": "Establishment of {name}",
+    "foundingOf": "Founding of {name}",
+    "releaseOf": "Release of {name}",
+    "publicationOf": "Publication of {name}",
+    "launchOf": "Launch of {name}",
+    "landingOf": "Landing of {name}",
+    "firstPerformanceOf": "First performance of {name}",
+    "firstFlightOf": "First flight of {name}"
+  },
+  "date": {
+
+    "year": "{count, plural, one {# year} other {# years}}",
+    "month": "{count, plural, one {# month} other {# months}}",
+    "day": "{count, plural, one {# day} other {# days}}",
+    "zeroDays": "0 days",
+    "zeroMonths": "0 months",
+    "and": "and"
+  },
+  "timeline": {
+    "removeEvent": "Remove event",
+    "switchToBirth": "Switch to birth date",
+    "switchToDeath": "Switch to death date",
+    "birth": "birth",
+    "death": "death",
+    "readWikipedia": "Read Wikipedia article about {name}"
+  },
+  "share": {
+    "copyLink": "Copy link",
+    "linkCopied": "Link copied!",
+    "share": "Share",
+    "downloadImage": "Download as image",
+    "zoomOutToDownload": "Zoom out to download",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "showPresentDay": "Show present day",
+    "setTitle": "Set title"
+  },
+  "settings": {
+    "title": "Settings",
+    "theme": "Theme",
+    "themeSystem": "System",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "timespanFormat": "Timespan format",
+    "formatDays": "Days",
+    "formatYears": "Years only",
+    "formatPrecise": "Precise (years, months, days)",
+    "language": "Language"
+  },
+  "help": {
+    "title": "How it works",
+    "description": "Visualize the time between historical events, powered by <wikidata>Wikidata</wikidata>.",
+    "searchExplanation": "Search for any number of events by typing in the search field. Results come directly from Wikidata's knowledge base of millions of entities \u2014 people, places, inventions, battles, and more. For people, you can choose between birth and death dates.",
+    "categoriesLabel": "Events are classified into categories:",
+    "timelineExplanation": "The timeline shows proportional timespans between your events and now. You can hide the \u201cNow\u201d marker, give your timeline a custom title via the pencil icon, and zoom in when markers are crowded.",
+    "datesExplanation": "Dates are sourced from Wikidata and may be approximate when precise dating is not possible. Click an event on the timeline to read its Wikipedia article.",
+    "shareExplanation": "Share your timeline by copying the URL or download it as a PNG image. Each combination of events has a unique, shareable link."
+  },
+  "categories": {
+    "person": "person",
+    "history": "history",
+    "music": "music",
+    "science": "science",
+    "art": "art",
+    "film": "film",
+    "book": "book",
+    "building": "building",
+    "computer": "computer",
+    "sport": "sport",
+    "popCulture": "pop culture",
+    "military": "military",
+    "place": "place",
+    "organization": "organization",
+    "disaster": "disaster",
+    "transport": "transport"
+  },
+  "footer": {
+    "help": "Help",
+    "settings": "Settings",
+    "credit": "A progressive web app from <lopoLink>Lopo.it</lopoLink> \u00b7 <githubLink>GitHub</githubLink>",
+    "checkAlso": "Check also <link>#closerintime</link>"
+  },
+  "meta": {
+    "siteDescription": "Visualize the time between historical events.",
+    "defaultTitle": "Build your own timeline"
+  }
+}

@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations, useLocale } from "next-intl";
 import type { Event, MarkerData, SegmentData } from "@/lib/types";
 import { useSettings } from "@/hooks/useSettings";
 import { useExport } from "@/hooks/useExport";
@@ -38,10 +39,17 @@ export default function Chooser({
   serverHideNow,
 }: ChooserProps) {
   const router = useRouter();
+  const locale = useLocale();
+  const t = useTranslations("chooser");
+  const tCommon = useTranslations("common");
+  const tDate = useTranslations("date");
   const { timespanFormat } = useSettings();
   const [selected, setSelected] = useState<Event[]>(selectedEvents);
   const [title, setTitle] = useState(serverTitle || "");
   const [hideNow, setHideNow] = useState(serverHideNow || false);
+
+  // Locale prefix for building URLs
+  const localePath = locale === "en" ? "" : `/${locale}`;
 
   // Sync with server-provided events when they change (navigation)
   useEffect(() => {
@@ -68,10 +76,10 @@ export default function Chooser({
   const handleTitleChange = useCallback(
     (newTitle: string) => {
       setTitle(newTitle);
-      const path = selected.length > 0 ? buildShareablePath(selected) : "/";
+      const path = selected.length > 0 ? `${localePath}${buildShareablePath(selected)}` : `${localePath}/`;
       window.history.replaceState(null, "", buildUrl(path, newTitle, hideNow));
     },
-    [selected, hideNow]
+    [selected, hideNow, localePath]
   );
 
   const handleRandom = useCallback(
@@ -79,27 +87,27 @@ export default function Chooser({
       setLoadingRandom(true);
       try {
         const exclude = currentKeys.join(",");
-        const res = await fetch(`/api/random${exclude ? `?exclude=${exclude}` : ""}`);
+        const res = await fetch(`/api/random${exclude ? `?exclude=${exclude}&lang=${locale}` : `?lang=${locale}`}`);
         const event = await res.json();
         if (event?.id) {
           const next = [...selected, event];
-          const path = buildShareablePath(next);
+          const path = `${localePath}${buildShareablePath(next)}`;
           router.push(buildUrl(path, title, hideNow));
         }
       } finally {
         setLoadingRandom(false);
       }
     },
-    [selected, currentKeys, router, title, hideNow]
+    [selected, currentKeys, router, title, hideNow, locale, localePath]
   );
 
   const handleSelect = useCallback(
     (event: Event) => {
       const next = [...selected, event];
-      const path = buildShareablePath(next);
+      const path = `${localePath}${buildShareablePath(next)}`;
       router.push(buildUrl(path, title, hideNow));
     },
-    [selected, router, title, hideNow]
+    [selected, router, title, hideNow, localePath]
   );
 
   const handleToggleDeath = useCallback(
@@ -134,13 +142,13 @@ export default function Chooser({
       }
 
       if (updated.length > 0) {
-        const path = buildShareablePath(updated);
+        const path = `${localePath}${buildShareablePath(updated)}`;
         router.push(buildUrl(path, title, hideNow));
       } else {
-        router.push(buildUrl("/", title, hideNow));
+        router.push(buildUrl(`${localePath}/`, title, hideNow));
       }
     },
-    [selected, router, title, hideNow]
+    [selected, router, title, hideNow, localePath]
   );
 
   const handleRemove = useCallback(
@@ -148,7 +156,7 @@ export default function Chooser({
       // Handle removing the "Now" marker
       if (eventKey === "0") {
         setHideNow(true);
-        const path = selected.length > 0 ? buildShareablePath(selected) : "/";
+        const path = selected.length > 0 ? `${localePath}${buildShareablePath(selected)}` : `${localePath}/`;
         window.history.replaceState(null, "", buildUrl(path, title, true));
         return;
       }
@@ -159,30 +167,36 @@ export default function Chooser({
       // If removing an event drops us below 2, re-show Now
       const nextHideNow = remaining.length >= 2 ? hideNow : false;
       if (remaining.length > 0) {
-        const path = buildShareablePath(remaining);
+        const path = `${localePath}${buildShareablePath(remaining)}`;
         router.push(buildUrl(path, title, nextHideNow));
       } else {
-        router.push(buildUrl("/", title, false));
+        router.push(buildUrl(`${localePath}/`, title, false));
       }
     },
-    [selected, router, title, hideNow]
+    [selected, router, title, hideNow, localePath]
   );
 
   const handleShowNow = useCallback(() => {
     setHideNow(false);
-    const path = selected.length > 0 ? buildShareablePath(selected) : "/";
+    const path = selected.length > 0 ? `${localePath}${buildShareablePath(selected)}` : `${localePath}/`;
     window.history.replaceState(null, "", buildUrl(path, title, false));
-  }, [selected, title]);
+  }, [selected, title, localePath]);
 
   // Recompute client-side when format differs from default
   const needsClientCompute = timespanFormat !== 2;
+
+  const nowLabel = tCommon("now");
+  const spanT = useCallback(
+    (key: string, values?: Record<string, string | number>) => tDate(key, values),
+    [tDate]
+  );
 
   const { timeline, href } = useMemo(() => {
     let tl: { markers: MarkerData[]; segments: SegmentData[] };
     let h: string;
 
     if (needsClientCompute && selected.length > 0) {
-      const result = computeTimeline(selected, timespanFormat);
+      const result = computeTimeline(selected, timespanFormat, locale, nowLabel, spanT);
       tl = { markers: result.markers, segments: result.segments };
       h = buildShareablePath(selected);
     } else {
@@ -202,12 +216,12 @@ export default function Chooser({
     }
 
     return { timeline: tl, href: h };
-  }, [needsClientCompute, selected, timespanFormat, serverTimeline, serverHref, hideNow]);
+  }, [needsClientCompute, selected, timespanFormat, serverTimeline, serverHref, hideNow, locale, nowLabel, spanT]);
 
   // Allow removing Now when there are 2+ events (timeline still has 2 markers without it)
   const canRemoveNow = selected.length >= 2;
 
-  const shareHref = buildUrl(href, title, hideNow);
+  const shareHref = buildUrl(`${localePath}${href}`, title, hideNow);
 
   const [zoomed, setZoomed] = useState(false);
   const { exportRef, handleExport } = useExport(selected);
@@ -250,7 +264,7 @@ export default function Chooser({
     <>
       <div className={styles.chooser}>
         <div className={styles.headingRow}>
-          <p className={styles.heading}>Build your own timeline</p>
+          <p className={styles.heading}>{t("heading")}</p>
         </div>
         <EventAutocomplete
           selectedKeys={currentKeys}

@@ -1,0 +1,110 @@
+{
+  "common": {
+    "close": "Schlie\u00dfen",
+    "save": "Speichern",
+    "now": "Jetzt",
+    "skipToContent": "Zum Inhalt springen"
+  },
+  "search": {
+    "placeholder": "Nach einem Ereignis suchen\u2026",
+    "noResults": "Keine Ereignisse gefunden",
+    "searching": "Suche in Wikidata\u2026",
+    "clearSearch": "Suche l\u00f6schen",
+    "randomEvent": "Zuf\u00e4lliges Ereignis"
+  },
+  "chooser": {
+    "heading": "Erstellen Sie Ihre eigene Zeitleiste",
+    "timelineName": "Name der Zeitleiste",
+    "timelineTitle": "Titel der Zeitleiste"
+  },
+  "eventLabel": {
+    "birthOf": "Geburt von {name}",
+    "deathOf": "Tod von {name}",
+    "constructionOf": "Bau von {name}",
+    "establishmentOf": "Gr\u00fcndung von {name}",
+    "foundingOf": "Gr\u00fcndung von {name}",
+    "releaseOf": "Ver\u00f6ffentlichung von {name}",
+    "publicationOf": "Ver\u00f6ffentlichung von {name}",
+    "launchOf": "Start von {name}",
+    "landingOf": "Landung von {name}",
+    "firstPerformanceOf": "Urauff\u00fchrung von {name}",
+    "firstFlightOf": "Erstflug von {name}"
+  },
+  "date": {
+
+    "year": "{count, plural, one {# Jahr} other {# Jahre}}",
+    "month": "{count, plural, one {# Monat} other {# Monate}}",
+    "day": "{count, plural, one {# Tag} other {# Tage}}",
+    "zeroDays": "0 Tage",
+    "zeroMonths": "0 Monate",
+    "and": "und"
+  },
+  "timeline": {
+    "removeEvent": "Ereignis entfernen",
+    "switchToBirth": "Zum Geburtsdatum wechseln",
+    "switchToDeath": "Zum Todesdatum wechseln",
+    "birth": "Geburt",
+    "death": "Tod",
+    "readWikipedia": "Wikipedia-Artikel \u00fcber {name} lesen"
+  },
+  "share": {
+    "copyLink": "Link kopieren",
+    "linkCopied": "Link kopiert!",
+    "share": "Teilen",
+    "downloadImage": "Als Bild herunterladen",
+    "zoomOutToDownload": "Herauszoomen zum Herunterladen",
+    "zoomIn": "Vergr\u00f6\u00dfern",
+    "zoomOut": "Verkleinern",
+    "showPresentDay": "Heutigen Tag anzeigen",
+    "setTitle": "Titel festlegen"
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "theme": "Design",
+    "themeSystem": "System",
+    "themeLight": "Hell",
+    "themeDark": "Dunkel",
+    "timespanFormat": "Zeitspannenformat",
+    "formatDays": "Tage",
+    "formatYears": "Nur Jahre",
+    "formatPrecise": "Genau (Jahre, Monate, Tage)",
+    "language": "Sprache"
+  },
+  "help": {
+    "title": "So funktioniert es",
+    "description": "Visualisieren Sie die Zeit zwischen historischen Ereignissen, unterst\u00fctzt von <wikidata>Wikidata</wikidata>.",
+    "searchExplanation": "Suchen Sie nach beliebig vielen Ereignissen, indem Sie im Suchfeld tippen. Die Ergebnisse stammen direkt aus der Wikidata-Wissensdatenbank mit Millionen von Eintr\u00e4gen \u2014 Personen, Orte, Erfindungen, Schlachten und mehr. Bei Personen k\u00f6nnen Sie zwischen Geburts- und Todesdatum w\u00e4hlen.",
+    "categoriesLabel": "Ereignisse werden in Kategorien eingeteilt:",
+    "timelineExplanation": "Die Zeitleiste zeigt proportionale Zeitspannen zwischen Ihren Ereignissen und jetzt. Sie k\u00f6nnen die \u201eJetzt\u201c-Markierung ausblenden, Ihrer Zeitleiste \u00fcber das Stiftsymbol einen eigenen Titel geben und bei eng beieinander liegenden Markierungen zoomen.",
+    "datesExplanation": "Die Daten stammen aus Wikidata und k\u00f6nnen angen\u00e4hert sein, wenn eine pr\u00e4zise Datierung nicht m\u00f6glich ist. Klicken Sie auf ein Ereignis in der Zeitleiste, um den Wikipedia-Artikel zu lesen.",
+    "shareExplanation": "Teilen Sie Ihre Zeitleiste, indem Sie die URL kopieren, oder laden Sie sie als PNG-Bild herunter. Jede Kombination von Ereignissen hat einen einzigartigen, teilbaren Link."
+  },
+  "categories": {
+    "person": "Person",
+    "history": "Geschichte",
+    "music": "Musik",
+    "science": "Wissenschaft",
+    "art": "Kunst",
+    "film": "Film",
+    "book": "Buch",
+    "building": "Geb\u00e4ude",
+    "computer": "Computer",
+    "sport": "Sport",
+    "popCulture": "Popkultur",
+    "military": "Milit\u00e4r",
+    "place": "Ort",
+    "organization": "Organisation",
+    "disaster": "Katastrophe",
+    "transport": "Transport"
+  },
+  "footer": {
+    "help": "Hilfe",
+    "settings": "Einstellungen",
+    "credit": "Eine Progressive Web App von <lopoLink>Lopo.it</lopoLink> \u00b7 <githubLink>GitHub</githubLink>",
+    "checkAlso": "Siehe auch <link>#closerintime</link>"
+  },
+  "meta": {
+    "siteDescription": "Visualisieren Sie die Zeit zwischen historischen Ereignissen.",
+    "defaultTitle": "Erstellen Sie Ihre eigene Zeitleiste"
+  }
+}
