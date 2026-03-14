@@ -9,6 +9,8 @@ import {
   formatYear,
   formatEventDate,
   formatSpan,
+  formatMonthDayYear,
+  type SpanTranslate,
 } from "./date-utils";
 
 describe("createUTCDate", () => {
@@ -272,5 +274,174 @@ describe("formatSpan", () => {
     const d1 = createUTCDate(2019, 0, 1);
     const d2 = createUTCDate(2020, 0, 1);
     expect(formatSpan(d1, d2, true, 1)).toBe("1 year");
+  });
+});
+
+describe("locale-aware formatting", () => {
+  describe("formatMonthDayYear", () => {
+    it("formats in Italian (no comma, day before month)", () => {
+      const d = createUTCDate(2026, 2, 14); // March 14, 2026
+      const result = formatMonthDayYear(d, "it");
+      expect(result).toContain("14");
+      expect(result).toContain("marzo");
+      expect(result).toContain("2026");
+      expect(result).not.toContain(",");
+    });
+
+    it("formats in French", () => {
+      const d = createUTCDate(2026, 2, 14);
+      const result = formatMonthDayYear(d, "fr");
+      expect(result).toContain("14");
+      expect(result).toContain("mars");
+      expect(result).toContain("2026");
+    });
+
+    it("formats in German", () => {
+      const d = createUTCDate(2026, 2, 14);
+      const result = formatMonthDayYear(d, "de");
+      expect(result).toContain("14");
+      expect(result).toContain("März");
+      expect(result).toContain("2026");
+    });
+
+    it("formats in Spanish", () => {
+      const d = createUTCDate(2026, 2, 14);
+      const result = formatMonthDayYear(d, "es");
+      expect(result).toContain("14");
+      expect(result).toContain("marzo");
+      expect(result).toContain("2026");
+    });
+
+    it("formats in Portuguese", () => {
+      const d = createUTCDate(2026, 2, 14);
+      const result = formatMonthDayYear(d, "pt");
+      expect(result).toContain("14");
+      expect(result).toContain("março");
+      expect(result).toContain("2026");
+    });
+  });
+
+  describe("formatYear with locale", () => {
+    it("uses Italian BC label for negative years", () => {
+      const result = formatYear(-30, "it");
+      expect(result).toContain("30");
+      expect(result).toContain("a.C.");
+    });
+
+    it("uses French BC label for negative years", () => {
+      const result = formatYear(-30, "fr");
+      expect(result).toContain("30");
+      expect(result).toContain("av. J.-C.");
+    });
+
+    it("uses German BC label for negative years", () => {
+      const result = formatYear(-30, "de");
+      expect(result).toContain("30");
+      expect(result).toContain("v. Chr.");
+    });
+
+    it("returns plain number for positive years regardless of locale", () => {
+      expect(formatYear(2026, "it")).toBe("2026");
+      expect(formatYear(2026, "fr")).toBe("2026");
+      expect(formatYear(2026, "de")).toBe("2026");
+    });
+  });
+
+  describe("formatEventDate with locale", () => {
+    it("formats full date in Italian", () => {
+      const result = formatEventDate({ year: 1969, month: 7, day: 20 }, "it");
+      expect(result).toContain("20");
+      expect(result).toContain("luglio");
+      expect(result).toContain("1969");
+      expect(result).not.toContain(",");
+    });
+
+    it("formats full BC date in Italian with correct year", () => {
+      const result = formatEventDate({ year: -30, month: 8, day: 12 }, "it");
+      expect(result).toContain("12");
+      expect(result).toContain("agosto");
+      expect(result).toContain("30");
+      expect(result).toContain("a.C.");
+      // Must not show 31 (astronomical year off-by-one)
+      expect(result).not.toContain("31");
+    });
+
+    it("formats full BC date in French with correct year", () => {
+      const result = formatEventDate({ year: -30, month: 8, day: 12 }, "fr");
+      expect(result).toContain("12");
+      expect(result).toContain("août");
+      expect(result).toContain("30");
+      expect(result).toContain("av. J.-C.");
+    });
+
+    it("formats month+year in German", () => {
+      const result = formatEventDate({ year: 1990, month: 6, day: null }, "de");
+      expect(result).toContain("Juni");
+      expect(result).toContain("1990");
+    });
+  });
+
+  describe("preciseDiff with translation function", () => {
+    const italianT: SpanTranslate = (key, values) => {
+      const count = Number(values?.count ?? 0);
+      switch (key) {
+        case "year": return count === 1 ? `${count} anno` : `${count} anni`;
+        case "month": return count === 1 ? `${count} mese` : `${count} mesi`;
+        case "day": return count === 1 ? `${count} giorno` : `${count} giorni`;
+        case "zeroDays": return "0 giorni";
+        case "and": return "e";
+        default: return key;
+      }
+    };
+
+    it("uses translated units", () => {
+      const d1 = createUTCDate(2020, 0, 1);
+      const d2 = createUTCDate(2022, 3, 16);
+      expect(preciseDiff(d1, d2, italianT)).toBe("2 anni, 3 mesi e 15 giorni");
+    });
+
+    it("uses translated singular", () => {
+      const d1 = createUTCDate(2020, 0, 1);
+      const d2 = createUTCDate(2021, 1, 2);
+      expect(preciseDiff(d1, d2, italianT)).toBe("1 anno, 1 mese e 1 giorno");
+    });
+
+    it("uses translated zero fallback", () => {
+      const d1 = createUTCDate(2020, 0, 1);
+      expect(preciseDiff(d1, d1, italianT)).toBe("0 giorni");
+    });
+  });
+
+  describe("formatSpan with translation function", () => {
+    const germanT: SpanTranslate = (key, values) => {
+      const count = Number(values?.count ?? 0);
+      switch (key) {
+        case "year": return count === 1 ? `${count} Jahr` : `${count} Jahre`;
+        case "month": return count === 1 ? `${count} Monat` : `${count} Monate`;
+        case "day": return count === 1 ? `${count} Tag` : `${count} Tage`;
+        case "zeroDays": return "0 Tage";
+        case "zeroMonths": return "0 Monate";
+        case "and": return "und";
+        default: return key;
+      }
+    };
+
+    it("formats years in German", () => {
+      const d1 = createUTCDate(2000, 0, 1);
+      const d2 = createUTCDate(2020, 0, 1);
+      expect(formatSpan(d1, d2, true, 2, false, germanT)).toBe("20 Jahre");
+    });
+
+    it("formats days in German", () => {
+      const d1 = createUTCDate(2020, 0, 1);
+      const d2 = createUTCDate(2020, 0, 11);
+      expect(formatSpan(d1, d2, false, 0, false, germanT)).toBe("10 Tage");
+    });
+
+    it("formats precise diff in German", () => {
+      const d1 = createUTCDate(2018, 0, 1);
+      const d2 = createUTCDate(2020, 3, 16);
+      expect(formatSpan(d1, d2, false, 2, false, germanT)).toBe("2 Jahre, 3 Monate und 15 Tage");
+    });
   });
 });
