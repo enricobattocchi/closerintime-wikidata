@@ -23,6 +23,7 @@
     "constructionOf": "Bau von {name}",
     "establishmentOf": "Gr\u00fcndung von {name}",
     "foundingOf": "Gr\u00fcndung von {name}",
+    "formationOf": "Gr\u00fcndung von {name}",
     "releaseOf": "Ver\u00f6ffentlichung von {name}",
     "publicationOf": "Ver\u00f6ffentlichung von {name}",
     "launchOf": "Start von {name}",

@@ -23,6 +23,7 @@
     "constructionOf": "Construction of {name}",
     "establishmentOf": "Establishment of {name}",
     "foundingOf": "Founding of {name}",
+    "formationOf": "Formation of {name}",
     "releaseOf": "Release of {name}",
     "publicationOf": "Publication of {name}",
     "launchOf": "Launch of {name}",
