@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useTranslations, useLocale } from "next-intl";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import type { TimespanFormat } from "@/lib/types";
 import type { Theme } from "@/hooks/useSettings";
 import { locales, localeNames, type Locale } from "@/i18n/config";
@@ -27,6 +27,7 @@ export default function SettingsModal({
   const tCommon = useTranslations("common");
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const currentLocale = useLocale();
   const [format, setFormat] = useState<TimespanFormat>(timespanFormat);
   const [selectedTheme, setSelectedTheme] = useState<Theme>(theme);
@@ -48,7 +49,8 @@ export default function SettingsModal({
           break;
         }
       }
-      const target = `/${selectedLocale}${newPath}`;
+      const query = searchParams.toString();
+      const target = `/${selectedLocale}${newPath}${query ? `?${query}` : ""}`;
       router.push(target);
     }
     onClose();
