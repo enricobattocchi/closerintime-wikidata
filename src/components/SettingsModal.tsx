@@ -48,8 +48,7 @@ export default function SettingsModal({
           break;
         }
       }
-      // Add new locale prefix (unless default "en")
-      const target = selectedLocale === "en" ? newPath : `/${selectedLocale}${newPath}`;
+      const target = `/${selectedLocale}${newPath}`;
       router.push(target);
     }
     onClose();
