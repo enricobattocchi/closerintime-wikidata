@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import type { MarkerData } from "@/lib/types";
 import { eventDisplayName } from "@/lib/event-label";
 import CategoryIcon from "@/components/CategoryIcon";
@@ -12,10 +13,14 @@ interface TimelineMarkerProps {
 }
 
 export default function TimelineMarker({ marker, flipped, onRemove, onToggleDeath }: TimelineMarkerProps) {
+  const t = useTranslations("timeline");
+  const tEvent = useTranslations("eventLabel");
   const { event, label } = marker;
   const isNow = event.id === "0";
   const hasLink = !isNow && event.link;
   const canToggleDeath = !isNow && event.deathYear !== null;
+
+  const displayName = eventDisplayName(event, (key, values) => tEvent(key, values));
 
   const circle = (
     <div className={`${styles.markerCircle} ${hasLink ? styles.markerClickable : ""}`}>
@@ -37,15 +42,15 @@ export default function TimelineMarker({ marker, flipped, onRemove, onToggleDeat
         <button
           className={styles.markerRemove}
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRemove(); }}
-          aria-label="Remove event"
-          title="Remove event"
+          aria-label={t("removeEvent")}
+          title={t("removeEvent")}
           data-hide-on-export
         >
           <CloseIcon size={12} />
         </button>
       )}
       <span className={styles.markerDate}>{label}</span>
-      <span className={styles.markerName}>{eventDisplayName(event)}</span>
+      <span className={styles.markerName}>{displayName}</span>
       {event.description && (
         <span className={styles.markerDesc}>{event.description}</span>
       )}
@@ -53,11 +58,11 @@ export default function TimelineMarker({ marker, flipped, onRemove, onToggleDeat
         <button
           className={styles.markerToggleDeath}
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleDeath(); }}
-          aria-label={event.useDeath ? "Switch to birth date" : "Switch to death date"}
-          title={event.useDeath ? "Switch to birth date" : "Switch to death date"}
+          aria-label={event.useDeath ? t("switchToBirth") : t("switchToDeath")}
+          title={event.useDeath ? t("switchToBirth") : t("switchToDeath")}
           data-hide-on-export
         >
-          <SwapIcon size={12} aria-hidden="true" /> {event.useDeath ? "birth" : "death"}
+          <SwapIcon size={12} aria-hidden="true" /> {event.useDeath ? t("birth") : t("death")}
         </button>
       )}
     </div>
@@ -70,7 +75,7 @@ export default function TimelineMarker({ marker, flipped, onRemove, onToggleDeat
         target="_blank"
         rel="noopener noreferrer"
         className={styles.marker}
-        aria-label={`Read Wikipedia article about ${event.name}`}
+        aria-label={t("readWikipedia", { name: event.name })}
       >
         {circle}
         {info}

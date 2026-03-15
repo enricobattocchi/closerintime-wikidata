@@ -1,8 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useTranslations, useLocale } from "next-intl";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import type { TimespanFormat } from "@/lib/types";
 import type { Theme } from "@/hooks/useSettings";
+import { locales, localeNames, type Locale } from "@/i18n/config";
 import styles from "@/styles/Settings.module.css";
 
 interface SettingsModalProps {
@@ -20,15 +23,36 @@ export default function SettingsModal({
   onThemeChange,
   onClose,
 }: SettingsModalProps) {
+  const t = useTranslations("settings");
+  const tCommon = useTranslations("common");
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentLocale = useLocale();
   const [format, setFormat] = useState<TimespanFormat>(timespanFormat);
   const [selectedTheme, setSelectedTheme] = useState<Theme>(theme);
+  const [selectedLocale, setSelectedLocale] = useState<Locale>(currentLocale as Locale);
   const modalRef = useRef<HTMLDivElement>(null);
 
-  const hasChanges = format !== timespanFormat || selectedTheme !== theme;
+  const hasChanges = format !== timespanFormat || selectedTheme !== theme || selectedLocale !== currentLocale;
 
   const handleSave = () => {
     if (format !== timespanFormat) onSave(format);
     if (selectedTheme !== theme) onThemeChange(selectedTheme);
+    if (selectedLocale !== currentLocale) {
+      // Switch locale by navigating to the new locale path
+      let newPath = pathname;
+      // Remove current locale prefix if present
+      for (const loc of locales) {
+        if (pathname.startsWith(`/${loc}/`) || pathname === `/${loc}`) {
+          newPath = pathname.slice(`/${loc}`.length) || "/";
+          break;
+        }
+      }
+      const query = searchParams.toString();
+      const target = `/${selectedLocale}${newPath}${query ? `?${query}` : ""}`;
+      router.push(target);
+    }
     onClose();
   };
 
@@ -53,17 +77,17 @@ export default function SettingsModal({
         tabIndex={-1}
       >
         <div className={styles.header}>
-          <h3 id="settings-title" className={styles.title}>Settings</h3>
+          <h3 id="settings-title" className={styles.title}>{t("title")}</h3>
           <button
             className={styles.closeButton}
             onClick={onClose}
-            aria-label="Close"
+            aria-label={tCommon("close")}
           >
             &times;
           </button>
         </div>
         <fieldset className={styles.fieldset}>
-          <legend className={styles.legend}>Theme</legend>
+          <legend className={styles.legend}>{t("theme")}</legend>
           <div className={styles.segmented}>
             <label>
               <input
@@ -72,7 +96,7 @@ export default function SettingsModal({
                 checked={selectedTheme === "system"}
                 onChange={() => setSelectedTheme("system")}
               />
-              <span>System</span>
+              <span>{t("themeSystem")}</span>
             </label>
             <label>
               <input
@@ -81,7 +105,7 @@ export default function SettingsModal({
                 checked={selectedTheme === "light"}
                 onChange={() => setSelectedTheme("light")}
               />
-              <span>Light</span>
+              <span>{t("themeLight")}</span>
             </label>
             <label>
               <input
@@ -90,12 +114,12 @@ export default function SettingsModal({
                 checked={selectedTheme === "dark"}
                 onChange={() => setSelectedTheme("dark")}
               />
-              <span>Dark</span>
+              <span>{t("themeDark")}</span>
             </label>
           </div>
         </fieldset>
         <fieldset className={styles.fieldset}>
-          <legend className={styles.legend}>Timespan format</legend>
+          <legend className={styles.legend}>{t("timespanFormat")}</legend>
           <div className={styles.optionList}>
             <label>
               <input
@@ -104,7 +128,7 @@ export default function SettingsModal({
                 checked={format === 0}
                 onChange={() => setFormat(0)}
               />
-              <span>Days</span>
+              <span>{t("formatDays")}</span>
             </label>
             <label>
               <input
@@ -113,7 +137,7 @@ export default function SettingsModal({
                 checked={format === 1}
                 onChange={() => setFormat(1)}
               />
-              <span>Years only</span>
+              <span>{t("formatYears")}</span>
             </label>
             <label>
               <input
@@ -122,8 +146,24 @@ export default function SettingsModal({
                 checked={format === 2}
                 onChange={() => setFormat(2)}
               />
-              <span>Precise (years, months, days)</span>
+              <span>{t("formatPrecise")}</span>
             </label>
+          </div>
+        </fieldset>
+        <fieldset className={styles.fieldset}>
+          <legend className={styles.legend}>{t("language")}</legend>
+          <div className={styles.optionList}>
+            {locales.map((loc) => (
+              <label key={loc}>
+                <input
+                  type="radio"
+                  name="language"
+                  checked={selectedLocale === loc}
+                  onChange={() => setSelectedLocale(loc)}
+                />
+                <span>{localeNames[loc]}</span>
+              </label>
+            ))}
           </div>
         </fieldset>
         <button
@@ -131,7 +171,7 @@ export default function SettingsModal({
           onClick={handleSave}
           disabled={!hasChanges}
         >
-          Save
+          {tCommon("save")}
         </button>
       </div>
     </div>

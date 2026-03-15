@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useLocale } from "next-intl";
 import type { Event } from "@/lib/types";
 
 export function useWikidataSearch(query: string) {
   const [results, setResults] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
+  const locale = useLocale();
 
   useEffect(() => {
     const trimmed = query.trim();
@@ -25,7 +27,7 @@ export function useWikidataSearch(query: string) {
       const controller = new AbortController();
       abortRef.current = controller;
 
-      fetch(`/api/search?q=${encodeURIComponent(trimmed)}`, {
+      fetch(`/api/search?q=${encodeURIComponent(trimmed)}&lang=${locale}`, {
         signal: controller.signal,
       })
         .then((res) => {
@@ -48,7 +50,7 @@ export function useWikidataSearch(query: string) {
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [query]);
+  }, [query, locale]);
 
   return { results, isLoading };
 }
