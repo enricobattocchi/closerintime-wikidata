@@ -63,7 +63,22 @@ export function daysInMonth(year: number, month: number): number {
  * Reimplementation of moment-precise-range logic.
  * Returns a human-readable string like "2 years, 3 months and 5 days".
  */
-export function preciseDiff(d1: Date, d2: Date): string {
+export type SpanTranslate = (key: string, values?: Record<string, string | number>) => string;
+
+const defaultSpanT: SpanTranslate = (key, values) => {
+  const count = Number(values?.count ?? 0);
+  switch (key) {
+    case "year": return count === 1 ? `${count} year` : `${count} years`;
+    case "month": return count === 1 ? `${count} month` : `${count} months`;
+    case "day": return count === 1 ? `${count} day` : `${count} days`;
+    case "zeroDays": return "0 days";
+    case "zeroMonths": return "0 months";
+    case "and": return "and";
+    default: return key;
+  }
+};
+
+export function preciseDiff(d1: Date, d2: Date, t: SpanTranslate = defaultSpanT): string {
   let m1 = new Date(d1.getTime());
   let m2 = new Date(d2.getTime());
 
@@ -96,44 +111,62 @@ export function preciseDiff(d1: Date, d2: Date): string {
   if (mDiff < 0) { mDiff += 12; yDiff--; }
 
   const parts: string[] = [];
-  if (yDiff) parts.push(yDiff + (yDiff === 1 ? " year" : " years"));
-  if (mDiff) parts.push(mDiff + (mDiff === 1 ? " month" : " months"));
-  if (dDiff) parts.push(dDiff + (dDiff === 1 ? " day" : " days"));
+  if (yDiff) parts.push(t("year", { count: yDiff }));
+  if (mDiff) parts.push(t("month", { count: mDiff }));
+  if (dDiff) parts.push(t("day", { count: dDiff }));
 
-  if (parts.length === 0) return "0 days";
+  if (parts.length === 0) return t("zeroDays");
   if (parts.length === 1) return parts[0];
-  return parts.slice(0, -1).join(", ") + " and " + parts[parts.length - 1];
+  return parts.slice(0, -1).join(", ") + " " + t("and") + " " + parts[parts.length - 1];
 }
 
-export function formatMonthDay(d: Date): string {
-  return d.toLocaleDateString("en-US", { month: "long", day: "numeric", timeZone: "UTC" });
+export function formatMonthDay(d: Date, locale: string = "en-US"): string {
+  return d.toLocaleDateString(locale, { month: "long", day: "numeric", timeZone: "UTC" });
 }
 
-export function formatMonthDayYear(d: Date): string {
-  return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
+export function formatMonthDayYear(d: Date, locale: string = "en-US"): string {
+  return d.toLocaleDateString(locale, { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
 }
 
-export function formatYear(year: number): string {
-  if (year < 0) return Math.abs(year) + " B.C.";
-  if (year === 0) return "1 B.C.";
+/**
+ * Format a Date with Intl, correcting the year for BC dates.
+ * Intl uses astronomical year numbering (year 0 exists), so -30 renders as
+ * "31 BC". We replace the year part with Math.abs(year) to get historical
+ * numbering where -30 = 30 BC.
+ */
+function formatDateBC(d: Date, locale: string, opts: Intl.DateTimeFormatOptions): string {
+  const parts = new Intl.DateTimeFormat(locale, opts).formatToParts(d);
+  const historicalYear = String(Math.abs(d.getUTCFullYear()));
+  return parts.map((p) => p.type === "year" ? historicalYear : p.value).join("");
+}
+
+export function formatYear(year: number, locale: string = "en-US"): string {
+  if (year <= 0) {
+    const d = createUTCDate(year, 0, 1);
+    return formatDateBC(d, locale, { year: "numeric", era: "short", timeZone: "UTC" });
+  }
   return String(year);
 }
 
-export function formatEventDate(event: { year: number; month: number | null; day: number | null }): string {
+export function formatEventDate(
+  event: { year: number; month: number | null; day: number | null },
+  locale: string = "en-US"
+): string {
   if (event.month && event.day) {
     const d = createUTCDate(event.year, event.month - 1, event.day);
-    const year = formatYear(event.year);
-    return formatMonthDay(d) + ", " + year;
+    if (event.year <= 0) {
+      return formatDateBC(d, locale, { month: "long", day: "numeric", year: "numeric", era: "short", timeZone: "UTC" });
+    }
+    return formatMonthDayYear(d, locale);
   }
   if (event.month) {
     const d = createUTCDate(event.year, event.month - 1, 1);
-    return d.toLocaleDateString("en-US", { month: "long", timeZone: "UTC" }) + " " + formatYear(event.year);
+    if (event.year <= 0) {
+      return formatDateBC(d, locale, { month: "long", year: "numeric", era: "short", timeZone: "UTC" });
+    }
+    return d.toLocaleDateString(locale, { month: "long", year: "numeric", timeZone: "UTC" });
   }
-  return formatYear(event.year);
-}
-
-function plural(n: number, unit: string): string {
-  return n + " " + unit + (n !== 1 ? "s" : "");
+  return formatYear(event.year, locale);
 }
 
 export function formatSpan(
@@ -141,27 +174,28 @@ export function formatSpan(
   d2: Date,
   yearsOnly: boolean,
   timespanFormat: number,
-  monthsOnly?: boolean
+  monthsOnly?: boolean,
+  t: SpanTranslate = defaultSpanT
 ): string {
   if (yearsOnly || timespanFormat === 1) {
     const years = diffYears(d1, d2);
-    return plural(years, "year");
+    return t("year", { count: years });
   }
   if (monthsOnly) {
     const totalMonths = diffMonths(d1, d2);
     const years = Math.floor(totalMonths / 12);
     const months = totalMonths % 12;
     const parts: string[] = [];
-    if (years) parts.push(plural(years, "year"));
-    if (months) parts.push(plural(months, "month"));
-    if (parts.length === 0) return "0 months";
+    if (years) parts.push(t("year", { count: years }));
+    if (months) parts.push(t("month", { count: months }));
+    if (parts.length === 0) return t("zeroMonths");
     if (parts.length === 1) return parts[0];
-    return parts[0] + " and " + parts[1];
+    return parts[0] + " " + t("and") + " " + parts[1];
   }
   if (timespanFormat === 2) {
-    return preciseDiff(d1, d2);
+    return preciseDiff(d1, d2, t);
   }
   // timespanFormat === 0: days
   const days = diffDays(d1, d2);
-  return plural(days, "day");
+  return t("day", { count: days });
 }

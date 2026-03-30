@@ -1,6 +1,7 @@
 "use client";
 
 import { useLayoutEffect, useEffect, useMemo, useRef, useState, Fragment } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import type { MarkerData, SegmentData } from "@/lib/types";
 import { formatMonthDayYear, createUTCDate, currentYear } from "@/lib/date-utils";
 import TimelineMarker from "./TimelineMarker";
@@ -16,15 +17,17 @@ interface TimelineProps {
   zoomed?: boolean;
 }
 
-const nowMarker: MarkerData = {
-  event: {
-    id: "0", name: "Now", description: null, year: currentYear(),
-    month: null, day: null, type: "", link: null, dateProperty: null,
-    deathYear: null, deathMonth: null, deathDay: null, useDeath: false,
-  },
-  label: formatMonthDayYear(createUTCDate()),
-  position: 100,
-};
+function makeNowMarker(name: string, locale: string = "en-US"): MarkerData {
+  return {
+    event: {
+      id: "0", name, description: null, year: currentYear(),
+      month: null, day: null, type: "", link: null, dateProperty: null,
+      deathYear: null, deathMonth: null, deathDay: null, useDeath: false,
+    },
+    label: formatMonthDayYear(createUTCDate(), locale),
+    position: 100,
+  };
+}
 
 // Module-level: survives component remounts during client navigation
 let prevMarkerPositions: Map<string, number> | null = null;
@@ -281,7 +284,10 @@ function AnimatedTimeline({ markers, segments, exit = false, onRemove, onToggleD
 }
 
 export default function Timeline({ markers, segments, onRemove, onToggleDeath, canRemoveNow, zoomed }: TimelineProps) {
+  const t = useTranslations("common");
+  const locale = useLocale();
   const hasMarkers = markers.length > 0;
+  const nowMarker = useMemo(() => makeNowMarker(t("now"), locale), [t, locale]);
 
   // Initialize exiting from module-level state (survives remounts)
   const [exiting, setExiting] = useState(

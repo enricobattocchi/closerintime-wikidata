@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import type { Event } from "@/lib/types";
 import { useWikidataSearch } from "@/hooks/useWikidataSearch";
 import { formatYear } from "@/lib/date-utils";
@@ -52,6 +53,9 @@ export default function EventAutocomplete({
   isLoadingRandom,
   onRandom,
 }: EventAutocompleteProps) {
+  const t = useTranslations("search");
+  const tEvent = useTranslations("eventLabel");
+  const locale = useLocale();
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
@@ -173,7 +177,7 @@ export default function EventAutocomplete({
           <input
             ref={inputRef}
             className={`${styles.input}${query ? ` ${styles.inputWithClear}` : ""}`}
-            placeholder="Search for an event..."
+            placeholder={t("placeholder")}
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
@@ -194,8 +198,8 @@ export default function EventAutocomplete({
                 setQuery("");
                 inputRef.current?.focus();
               }}
-              aria-label="Clear search"
-              title="Clear search"
+              aria-label={t("clearSearch")}
+              title={t("clearSearch")}
             >
               <CloseIcon size={16} />
             </button>
@@ -204,16 +208,16 @@ export default function EventAutocomplete({
             <div className={styles.dropdown}>
               <div role="listbox" id={listboxId} ref={listRef}>
                 {isLoading ? (
-                  <div className={styles.noResults}><span className="spinner" /> Searching Wikidata…</div>
+                  <div className={styles.noResults}><span className="spinner" /> {t("searching")}</div>
                 ) : filtered.length === 0 ? (
-                  <div className={styles.noResults}>No events found</div>
+                  <div className={styles.noResults}>{t("noResults")}</div>
                 ) : (
                   filtered.map((event, index) => {
                     const key = `${event.id}${event.useDeath ? "~d" : ""}`;
                     const label = event.useDeath
-                      ? `Death of ${capitalize(event.name)}`
+                      ? tEvent("deathOf", { name: capitalize(event.name) })
                       : event.deathYear !== null
-                        ? `Birth of ${capitalize(event.name)}`
+                        ? tEvent("birthOf", { name: capitalize(event.name) })
                         : capitalize(event.name);
                     return (
                       <div
@@ -240,7 +244,7 @@ export default function EventAutocomplete({
                           )}
                         </span>
                         <span className={styles.optionYear}>
-                          {formatYear(event.useDeath ? event.year : event.year)}
+                          {formatYear(event.year, locale)}
                         </span>
                       </div>
                     );
@@ -255,8 +259,8 @@ export default function EventAutocomplete({
             className={styles.randomButton}
             onClick={onRandom}
             disabled={isLoadingRandom}
-            aria-label="Random event"
-            title="Random event"
+            aria-label={t("randomEvent")}
+            title={t("randomEvent")}
           >
             {isLoadingRandom ? <span className="spinner" /> : <DiceIcon size={18} />}
           </button>

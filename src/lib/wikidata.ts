@@ -282,10 +282,10 @@ interface WikidataClaim {
 
 interface WikidataEntity {
   id: string;
-  labels?: { en?: { value: string } };
-  descriptions?: { en?: { value: string } };
+  labels?: Record<string, { value: string }>;
+  descriptions?: Record<string, { value: string }>;
   claims?: Record<string, WikidataClaim[]>;
-  sitelinks?: { enwiki?: { url: string; title: string } };
+  sitelinks?: Record<string, { url: string; title: string }>;
 }
 
 /** Extract the best date from an entity's claims */
@@ -304,26 +304,37 @@ function extractDate(claims: Record<string, WikidataClaim[]>): { year: number; m
   return null;
 }
 
-/** Get English Wikipedia link from sitelinks */
-function extractWikiLink(entity: WikidataEntity): string | null {
-  const enwiki = entity.sitelinks?.enwiki;
-  if (enwiki?.title) {
-    return `https://en.wikipedia.org/wiki/${encodeURIComponent(enwiki.title.replace(/ /g, "_"))}`;
+/** Get Wikipedia link from sitelinks, preferring the given locale */
+function extractWikiLink(entity: WikidataEntity, locale: string = "en"): string | null {
+  const localeWiki = entity.sitelinks?.[`${locale}wiki`];
+  if (localeWiki?.title) {
+    return `https://${locale}.wikipedia.org/wiki/${encodeURIComponent(localeWiki.title.replace(/ /g, "_"))}`;
+  }
+  // Fall back to English
+  if (locale !== "en") {
+    const enwiki = entity.sitelinks?.enwiki;
+    if (enwiki?.title) {
+      return `https://en.wikipedia.org/wiki/${encodeURIComponent(enwiki.title.replace(/ /g, "_"))}`;
+    }
   }
   return null;
 }
 
 /** Fetch entities by Q-IDs and convert to Event[] */
-async function entitiesToEvents(qids: string[]): Promise<Event[]> {
+async function entitiesToEvents(qids: string[], locale: string = "en"): Promise<Event[]> {
   if (qids.length === 0) return [];
+
+  // Fetch labels/descriptions in the requested locale (and English as fallback)
+  const languages = locale === "en" ? "en" : `${locale}|en`;
+  const sitefilter = locale === "en" ? "enwiki" : `${locale}wiki|enwiki`;
 
   // wbgetentities supports up to 50 IDs at once
   const url = new URL(WIKIDATA_API);
   url.searchParams.set("action", "wbgetentities");
   url.searchParams.set("ids", qids.join("|"));
   url.searchParams.set("props", "labels|descriptions|claims|sitelinks");
-  url.searchParams.set("languages", "en");
-  url.searchParams.set("sitefilter", "enwiki");
+  url.searchParams.set("languages", languages);
+  url.searchParams.set("sitefilter", sitefilter);
   url.searchParams.set("format", "json");
   url.searchParams.set("origin", "*");
 
@@ -352,7 +363,7 @@ async function entitiesToEvents(qids: string[]): Promise<Event[]> {
     }
   }
 
-  // Fetch labels for type targets
+  // Fetch labels for type targets — always in English for TYPE_MAPPING
   const typeLabels = new Map<string, string>();
   if (typeTargetIds.size > 0) {
     const typeUrl = new URL(WIKIDATA_API);
@@ -382,7 +393,8 @@ async function entitiesToEvents(qids: string[]): Promise<Event[]> {
     const date = extractDate(entity.claims);
     if (!date) continue;
 
-    const label = entity.labels?.en?.value;
+    // Prefer locale label, fall back to English
+    const label = entity.labels?.[locale]?.value ?? entity.labels?.en?.value;
     if (!label) continue;
 
     const typeTargetId = entityTypeMap.get(qid);
@@ -408,12 +420,12 @@ async function entitiesToEvents(qids: string[]): Promise<Event[]> {
     events.push({
       id: qid,
       name: label,
-      description: entity.descriptions?.en?.value ?? null,
+      description: entity.descriptions?.[locale]?.value ?? entity.descriptions?.en?.value ?? null,
       year: date.year,
       month: date.month,
       day: date.day,
       type: mapType(typeLabel),
-      link: extractWikiLink(entity),
+      link: extractWikiLink(entity, locale),
       dateProperty: date.property,
       deathYear,
       deathMonth,
@@ -430,11 +442,11 @@ async function entitiesToEvents(qids: string[]): Promise<Event[]> {
  * Step 1: Use wbsearchentities for fast text search (up to 30 candidates).
  * Step 2: Fetch entity data via wbgetentities, filter to those with dates.
  */
-export async function searchWikidata(term: string): Promise<Event[]> {
+export async function searchWikidata(term: string, locale: string = "en"): Promise<Event[]> {
   const searchUrl = new URL(WIKIDATA_API);
   searchUrl.searchParams.set("action", "wbsearchentities");
   searchUrl.searchParams.set("search", term);
-  searchUrl.searchParams.set("language", "en");
+  searchUrl.searchParams.set("language", locale);
   searchUrl.searchParams.set("limit", "30");
   searchUrl.searchParams.set("format", "json");
   searchUrl.searchParams.set("origin", "*");
@@ -449,12 +461,12 @@ export async function searchWikidata(term: string): Promise<Event[]> {
 
   if (qids.length === 0) return [];
 
-  const events = await entitiesToEvents(qids);
-  // Only show results that have an English Wikipedia article
+  const events = await entitiesToEvents(qids, locale);
+  // Only show results that have a Wikipedia article (in locale or English)
   return events.filter((e) => e.link);
 }
 
 /** Fetch specific events by their Q-IDs (cached per React render pass via comma-joined key) */
-export const fetchWikidataEvents = cache(async (qidsKey: string): Promise<Event[]> => {
-  return entitiesToEvents(qidsKey.split(","));
+export const fetchWikidataEvents = cache(async (qidsKey: string, locale: string = "en"): Promise<Event[]> => {
+  return entitiesToEvents(qidsKey.split(","), locale);
 });

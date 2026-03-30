@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Event } from "@/lib/types";
 import { fetchWikidataEvents } from "@/lib/wikidata";
 import { computeTimeline } from "@/lib/timeline-math";
@@ -10,7 +11,7 @@ import Chooser from "@/components/Chooser/Chooser";
 export const revalidate = 3600;
 
 interface PageProps {
-  params: Promise<{ ids: string[] }>;
+  params: Promise<{ locale: string; ids: string[] }>;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
@@ -38,9 +39,9 @@ function expandEvents(fetched: Event[], segments: { qid: string; useDeath: boole
 }
 
 export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
-  const { ids: rawIds } = await params;
-  const { t, now } = await searchParams;
-  const customTitle = typeof t === "string" ? t.slice(0, 100) : "";
+  const { locale, ids: rawIds } = await params;
+  const { t: customTitleParam, now } = await searchParams;
+  const customTitle = typeof customTitleParam === "string" ? customTitleParam.slice(0, 100) : "";
   const hideNow = now === "0";
   const segments = parseSegments(rawIds);
   if (!segments) return { title: "wiki:closerintime" };
@@ -49,17 +50,19 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
 
   let events;
   try {
-    events = expandEvents(await fetchWikidataEvents(uniqueQids.join(",")), segments);
+    events = expandEvents(await fetchWikidataEvents(uniqueQids.join(","), locale), segments);
   } catch {
     return { title: "wiki:closerintime" };
   }
   if (events.length === 0) return { title: "wiki:closerintime" };
 
-  const title = customTitle || "Build your own timeline";
-  const description = "Visualize the time between historical events.";
+  const t = await getTranslations({ locale, namespace: "meta" });
+  const title = customTitle || t("defaultTitle");
+  const description = t("siteDescription");
   const ogParams = [`ids=${rawIds.join(",")}`];
   if (customTitle) ogParams.push(`t=${encodeURIComponent(customTitle)}`);
   if (hideNow) ogParams.push("now=0");
+  ogParams.push(`lang=${locale}`);
   const ogImage = `/api/og?${ogParams.join("&")}`;
 
   return {
@@ -71,14 +74,18 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
 }
 
 export default async function EventPage({ params, searchParams }: PageProps) {
-  const { ids: rawIds } = await params;
+  const { locale, ids: rawIds } = await params;
+  setRequestLocale(locale);
+
   const { t, now } = await searchParams;
   const customTitle = typeof t === "string" ? t.slice(0, 100) : "";
   const hideNow = now === "0";
   const segments = parseSegments(rawIds);
 
+  const localePath = locale === "en" ? "" : `/${locale}`;
+
   if (!segments) {
-    redirect("/");
+    redirect(`${localePath}/`);
   }
 
   // Redirect to sorted order for canonical URLs
@@ -90,7 +97,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
   const sortedPath = sortedSegments.map((s) => `${s.qid}${s.useDeath ? "~d" : ""}`);
   const rawPath = segments.map((s) => `${s.qid}${s.useDeath ? "~d" : ""}`);
   if (rawPath.some((v, i) => v !== sortedPath[i])) {
-    const redirectPath = "/" + sortedPath.join("/");
+    const redirectPath = `${localePath}/` + sortedPath.join("/");
     redirect(customTitle ? `${redirectPath}?t=${encodeURIComponent(customTitle)}` : redirectPath);
   }
 
@@ -98,16 +105,21 @@ export default async function EventPage({ params, searchParams }: PageProps) {
 
   let events;
   try {
-    events = expandEvents(await fetchWikidataEvents(uniqueQids.join(",")), sortedSegments);
+    events = expandEvents(await fetchWikidataEvents(uniqueQids.join(","), locale), sortedSegments);
   } catch {
-    redirect("/");
+    redirect(`${localePath}/`);
   }
 
   if (events.length === 0) {
-    redirect("/");
+    redirect(`${localePath}/`);
   }
 
-  const timeline = computeTimeline(events);
+  const tCommon = await getTranslations({ locale, namespace: "common" });
+  const tDate = await getTranslations({ locale, namespace: "date" });
+  const nowName = tCommon("now");
+
+  const spanT = (key: string, values?: Record<string, string | number>) => tDate(key, values);
+  const timeline = computeTimeline(events, 2, locale, nowName, spanT);
   const href = buildShareablePath(events);
 
   return (

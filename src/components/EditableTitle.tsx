@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useCallback, useEffect, useImperativeHandle, forwardRef } from "react";
+import { useTranslations } from "next-intl";
 import styles from "@/styles/EditableTitle.module.css";
 
 interface EditableTitleProps {
@@ -13,7 +14,6 @@ export interface EditableTitleHandle {
 }
 
 const MAX_LENGTH = 100;
-const PLACEHOLDER = "timeline name";
 
 function autoResize(el: HTMLTextAreaElement) {
   el.style.height = "0";
@@ -21,6 +21,7 @@ function autoResize(el: HTMLTextAreaElement) {
 }
 
 export default forwardRef<EditableTitleHandle, EditableTitleProps>(function EditableTitle({ value, onChange }, ref) {
+  const t = useTranslations("chooser");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [focused, setFocused] = useState(false);
   const visible = value || focused;
@@ -66,14 +67,14 @@ export default forwardRef<EditableTitleHandle, EditableTitleProps>(function Edit
           ref={textareaRef}
           className={styles.input}
           value={value}
-          placeholder={PLACEHOLDER}
+          placeholder={t("timelineName")}
           onChange={handleChange}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           onKeyDown={handleKeyDown}
           maxLength={MAX_LENGTH}
           rows={1}
-          aria-label="Timeline title"
+          aria-label={t("timelineTitle")}
           data-hide-on-export
         />
       </div>

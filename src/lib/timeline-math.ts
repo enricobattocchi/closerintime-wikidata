@@ -4,12 +4,11 @@ import {
   diffYears,
   diffMonths,
   diffDays,
-  isBefore,
   formatEventDate,
   formatMonthDayYear,
-  formatYear,
   formatSpan,
   currentYear,
+  type SpanTranslate,
 } from "./date-utils";
 
 function eventPrecision(events: Event[]): DatePrecision {
@@ -28,12 +27,12 @@ function eventToDate(event: Event, precision: DatePrecision): Date {
   return createUTCDate(event.year, event.month! - 1, event.day!);
 }
 
-function formatNowLabel(precision: DatePrecision, now: Date): string {
+function formatNowLabel(precision: DatePrecision, now: Date, locale: string = "en-US"): string {
   if (precision === "year") return String(currentYear());
   if (precision === "month") {
-    return now.toLocaleDateString("en-US", { month: "long", timeZone: "UTC" }) + " " + currentYear();
+    return now.toLocaleDateString(locale, { month: "long", timeZone: "UTC" }) + " " + currentYear();
   }
-  return formatMonthDayYear(now);
+  return formatMonthDayYear(now, locale);
 }
 
 function spanValue(d1: Date, d2: Date, precision: DatePrecision): number {
@@ -44,7 +43,10 @@ function spanValue(d1: Date, d2: Date, precision: DatePrecision): number {
 
 export function computeTimeline(
   events: Event[],
-  timespanFormat: TimespanFormat = 2
+  timespanFormat: TimespanFormat = 2,
+  locale: string = "en-US",
+  nowName: string = "Now",
+  spanT?: SpanTranslate
 ): TimelineResult {
   const precision = eventPrecision(events);
   const yearsOnly = precision === "year";
@@ -75,9 +77,9 @@ export function computeTimeline(
     const percentage = totalSpan > 0 ? (100 * span) / totalSpan : 100 / total;
 
     segments.push({
-      startLabel: i === 0 ? formatEventDate(sorted[0]) : "",
-      endLabel: i === sorted.length - 1 ? formatNowLabel(precision, now) : "",
-      spanLabel: formatSpan(d1, d2, yearsOnly, timespanFormat, monthsOnly),
+      startLabel: i === 0 ? formatEventDate(sorted[0], locale) : "",
+      endLabel: i === sorted.length - 1 ? formatNowLabel(precision, now, locale) : "",
+      spanLabel: formatSpan(d1, d2, yearsOnly, timespanFormat, monthsOnly, spanT),
       percentage,
       order: i,
       total,
@@ -91,15 +93,15 @@ export function computeTimeline(
       : (100 * i) / (sorted.length);
     return {
       event,
-      label: formatEventDate(event),
+      label: formatEventDate(event, locale),
       position: pos,
     };
   });
 
   // "Now" marker
   markers.push({
-    event: { id: "0", name: "Now", description: null, year: currentYear(), month: null, day: null, type: "", link: null, dateProperty: null, deathYear: null, deathMonth: null, deathDay: null, useDeath: false },
-    label: formatNowLabel(precision, now),
+    event: { id: "0", name: nowName, description: null, year: currentYear(), month: null, day: null, type: "", link: null, dateProperty: null, deathYear: null, deathMonth: null, deathDay: null, useDeath: false },
+    label: formatNowLabel(precision, now, locale),
     position: 100,
   });
 

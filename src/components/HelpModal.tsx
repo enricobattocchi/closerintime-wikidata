@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import {
   AccountBalance, MusicNote, Movie, Domain, MenuBook,
   ScienceIcon, PaletteIcon, MemoryIcon, SportsSoccer,
@@ -13,26 +14,29 @@ interface HelpModalProps {
   onClose: () => void;
 }
 
-const categories = [
-  { icon: PersonIcon, label: "person" },
-  { icon: AccountBalance, label: "history" },
-  { icon: MusicNote, label: "music" },
-  { icon: ScienceIcon, label: "science" },
-  { icon: PaletteIcon, label: "art" },
-  { icon: Movie, label: "film" },
-  { icon: MenuBook, label: "book" },
-  { icon: Domain, label: "building" },
-  { icon: MemoryIcon, label: "computer" },
-  { icon: SportsSoccer, label: "sport" },
-  { icon: LiveTv, label: "pop culture" },
-  { icon: MilitaryIcon, label: "military" },
-  { icon: PlaceIcon, label: "place" },
-  { icon: GroupIcon, label: "organization" },
-  { icon: WarningIcon, label: "disaster" },
-  { icon: FlightIcon, label: "transport" },
-];
+const categoryIcons = [
+  { icon: PersonIcon, key: "person" },
+  { icon: AccountBalance, key: "history" },
+  { icon: MusicNote, key: "music" },
+  { icon: ScienceIcon, key: "science" },
+  { icon: PaletteIcon, key: "art" },
+  { icon: Movie, key: "film" },
+  { icon: MenuBook, key: "book" },
+  { icon: Domain, key: "building" },
+  { icon: MemoryIcon, key: "computer" },
+  { icon: SportsSoccer, key: "sport" },
+  { icon: LiveTv, key: "popCulture" },
+  { icon: MilitaryIcon, key: "military" },
+  { icon: PlaceIcon, key: "place" },
+  { icon: GroupIcon, key: "organization" },
+  { icon: WarningIcon, key: "disaster" },
+  { icon: FlightIcon, key: "transport" },
+] as const;
 
 export default function HelpModal({ onClose }: HelpModalProps) {
+  const t = useTranslations("help");
+  const tCommon = useTranslations("common");
+  const tCat = useTranslations("categories");
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -71,54 +75,40 @@ export default function HelpModal({ onClose }: HelpModalProps) {
         tabIndex={-1}
       >
         <div className={styles.header}>
-          <h3 id="help-title" className={styles.title}>How it works</h3>
+          <h3 id="help-title" className={styles.title}>{t("title")}</h3>
           <button
             className={styles.closeButton}
             onClick={onClose}
-            aria-label="Close"
+            aria-label={tCommon("close")}
           >
             &times;
           </button>
         </div>
         <div className={styles.body}>
           <p className={styles.description}>
-            Visualize the time between historical events, powered by{" "}
-            <a href="https://www.wikidata.org" target="_blank" rel="noopener">Wikidata</a>.
+            {t.rich("description", {
+              wikidata: (chunks) => (
+                <a href="https://www.wikidata.org" target="_blank" rel="noopener">{chunks}</a>
+              ),
+            })}
           </p>
-          <p>
-            Search for any number of events by typing in the search field.
-            Results come directly from Wikidata&apos;s knowledge base of
-            millions of entities &mdash; people, places, inventions, battles,
-            and more. For people, you can choose between birth and death dates.
-          </p>
-          <p>Events are classified into categories:</p>
+          <p>{t("searchExplanation")}</p>
+          <p>{t("categoriesLabel")}</p>
           <ul className={styles.categories}>
-            {categories.map(({ icon: Icon, label }) => (
-              <li key={label} className={styles.category}>
+            {categoryIcons.map(({ icon: Icon, key }) => (
+              <li key={key} className={styles.category}>
                 <Icon size={20} className={styles.categoryIcon} />
-                {label}
+                {tCat(key)}
               </li>
             ))}
           </ul>
-          <p>
-            The timeline shows proportional timespans between your events and
-            now. You can hide the &ldquo;Now&rdquo; marker, give your timeline
-            a custom title via the pencil icon, and zoom in when markers are
-            crowded.
-          </p>
-          <p>
-            Dates are sourced from Wikidata and may be approximate when precise
-            dating is not possible. Click an event on the timeline to read its
-            Wikipedia article.
-          </p>
-          <p>
-            Share your timeline by copying the URL or download it as a PNG
-            image. Each combination of events has a unique, shareable link.
-          </p>
+          <p>{t("timelineExplanation")}</p>
+          <p>{t("datesExplanation")}</p>
+          <p>{t("shareExplanation")}</p>
         </div>
         <div className={styles.footer}>
           <button className={styles.closeBtn} onClick={onClose}>
-            Close
+            {tCommon("close")}
           </button>
         </div>
       </div>
