@@ -1,6 +1,6 @@
 # wiki.closerintime
 
-A refactor of [closerintime](https://github.com/enricobattocchi/closerintime) that replaces the curated event database with real-time Wikidata search.
+A refactor of [closerintime](https://github.com/enricobattocchi/closerintime-node) that replaces the curated event database with real-time Wikidata search.
 
 Search for any number of historical events and see them on a proportional timeline. Give your timeline a custom title, share it as a link, or export it as a PNG image.
 
