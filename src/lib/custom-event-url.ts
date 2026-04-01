@@ -12,3 +12,14 @@ export function buildShareablePath(events: Event[]): string {
     .sort();
   return "/" + segments.join("/");
 }
+
+/**
+ * Append optional query parameters (title, hideNow) to a path.
+ */
+export function buildUrl(path: string, title: string, hideNow: boolean): string {
+  const params = new URLSearchParams();
+  if (title) params.set("t", title);
+  if (hideNow) params.set("now", "0");
+  const qs = params.toString();
+  return qs ? `${path}?${qs}` : path;
+}

@@ -7,7 +7,7 @@ import type { Event, MarkerData, SegmentData } from "@/lib/types";
 import { useSettings } from "@/hooks/useSettings";
 import { useExport } from "@/hooks/useExport";
 import { computeTimeline } from "@/lib/timeline-math";
-import { buildShareablePath } from "@/lib/custom-event-url";
+import { buildShareablePath, buildUrl } from "@/lib/custom-event-url";
 import EventAutocomplete from "./EventAutocomplete";
 import Timeline from "@/components/Timeline/Timeline";
 import EditableTitle from "@/components/EditableTitle";
@@ -21,14 +21,6 @@ interface ChooserProps {
   serverHref?: string;
   serverTitle?: string;
   serverHideNow?: boolean;
-}
-
-function buildUrl(path: string, title: string, hideNow: boolean): string {
-  const params = new URLSearchParams();
-  if (title) params.set("t", title);
-  if (hideNow) params.set("now", "0");
-  const qs = params.toString();
-  return qs ? `${path}?${qs}` : path;
 }
 
 export default function Chooser({
@@ -78,6 +70,7 @@ export default function Chooser({
       setTitle(newTitle);
       const path = selected.length > 0 ? `${localePath}${buildShareablePath(selected)}` : `${localePath}/`;
       window.history.replaceState(null, "", buildUrl(path, newTitle, hideNow));
+      document.title = newTitle ? `${newTitle} | wiki:closerintime` : "wiki:closerintime";
     },
     [selected, hideNow, localePath]
   );
