@@ -119,7 +119,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
   const nowName = tCommon("now");
 
   const spanT = (key: string, values?: Record<string, string | number>) => tDate(key, values);
-  const timeline = computeTimeline(events, 2, locale, nowName, spanT);
+  const timeline = computeTimeline(events, 2, locale, nowName, spanT, hideNow);
   const href = buildShareablePath(events);
 
   return (

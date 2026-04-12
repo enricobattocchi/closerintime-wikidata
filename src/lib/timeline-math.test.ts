@@ -264,6 +264,38 @@ describe("computeTimeline", () => {
     });
   });
 
+  describe("hideNow", () => {
+    it("excludes Now marker when hideNow is true and 2+ events", () => {
+      const events = [
+        makeEvent({ id: "Q1", year: 2000 }),
+        makeEvent({ id: "Q2", year: 2020 }),
+      ];
+      const result = computeTimeline(events, 2, "en-US", "Now", undefined, true);
+      // Only event markers, no Now
+      expect(result.markers).toHaveLength(2);
+      expect(result.markers.every(m => m.event.id !== "0")).toBe(true);
+    });
+
+    it("keeps Now when hideNow is true but only 1 event", () => {
+      const events = [makeEvent({ id: "Q1", year: 2000 })];
+      const result = computeTimeline(events, 2, "en-US", "Now", undefined, true);
+      expect(result.markers.some(m => m.event.id === "0")).toBe(true);
+    });
+
+    it("works with future events and hideNow", () => {
+      const events = [
+        makeEvent({ id: "Q1", year: 2000 }),
+        makeEvent({ id: "Q2", year: 2048 }),
+      ];
+      const result = computeTimeline(events, 2, "en-US", "Now", undefined, true);
+      expect(result.markers).toHaveLength(2);
+      expect(result.markers[0].position).toBe(0);
+      expect(result.markers[1].position).toBe(100);
+      expect(result.segments).toHaveLength(1);
+      expect(result.segments[0].percentage).toBe(100);
+    });
+  });
+
   describe("timespanFormat", () => {
     it("uses precise format by default (format 2)", () => {
       const events = [makeEvent({ id: "Q1", year: 2000, month: 6, day: 15 })];
