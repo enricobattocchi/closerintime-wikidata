@@ -100,7 +100,7 @@ function AnimatedTimeline({ markers, segments, exit = false, onRemove, onToggleD
     if (!container) return;
 
     const isVertical = window.matchMedia("(max-width: 640px)").matches;
-    if (isVertical || exit || zoomed) {
+    if (isVertical || exit) {
       if (flippedKeys.size > 0) setFlippedKeys(new Set());
       return;
     }
