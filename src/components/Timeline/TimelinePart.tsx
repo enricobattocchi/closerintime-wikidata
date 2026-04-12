@@ -13,7 +13,7 @@ export default function TimelinePart({ segment, zoomed }: TimelinePartProps) {
   return (
     <div
       className={`${styles.part}${zoomed ? ` ${styles.partZoomed}` : ""}`}
-      style={{ flexGrow: zoomed ? Math.sqrt(segment.percentage) : segment.percentage, borderColor: color }}
+      style={{ flexGrow: segment.percentage, borderColor: color }}
     >
       <span className={styles.partLabel} style={{ color }}>
         {segment.spanLabel}
