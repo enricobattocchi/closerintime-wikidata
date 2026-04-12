@@ -189,6 +189,113 @@ describe("computeTimeline", () => {
     });
   });
 
+  describe("future events", () => {
+    it("places a single future event to the right of Now", () => {
+      const events = [makeEvent({ id: "Q1", year: 2030 })];
+      const result = computeTimeline(events);
+      // Now should be at position 0, future event at position 100
+      const nowMarker = result.markers.find(m => m.event.id === "0");
+      const eventMarker = result.markers.find(m => m.event.id === "Q1");
+      expect(nowMarker!.position).toBe(0);
+      expect(eventMarker!.position).toBe(100);
+    });
+
+    it("positions Now chronologically between past and future events", () => {
+      const events = [
+        makeEvent({ id: "Q1", year: 2000 }),
+        makeEvent({ id: "Q2", year: 2048 }),
+      ];
+      const result = computeTimeline(events);
+      // 2000 → 2024 → 2048, total span = 48 years
+      const pastMarker = result.markers.find(m => m.event.id === "Q1");
+      const nowMarker = result.markers.find(m => m.event.id === "0");
+      const futureMarker = result.markers.find(m => m.event.id === "Q2");
+      expect(pastMarker!.position).toBe(0);
+      expect(nowMarker!.position).toBe(50); // 24/48 = 50%
+      expect(futureMarker!.position).toBe(100);
+    });
+
+    it("handles all events in the future", () => {
+      const events = [
+        makeEvent({ id: "Q1", year: 2030 }),
+        makeEvent({ id: "Q2", year: 2040 }),
+      ];
+      const result = computeTimeline(events);
+      // Now (2024) → 2030 → 2040, total span = 16 years
+      const nowMarker = result.markers.find(m => m.event.id === "0");
+      const event1 = result.markers.find(m => m.event.id === "Q1");
+      const event2 = result.markers.find(m => m.event.id === "Q2");
+      expect(nowMarker!.position).toBe(0);
+      expect(event1!.position).toBeCloseTo((6 / 16) * 100, 1); // 6/16
+      expect(event2!.position).toBe(100);
+    });
+
+    it("creates correct number of segments with mixed past/future", () => {
+      const events = [
+        makeEvent({ id: "Q1", year: 2000 }),
+        makeEvent({ id: "Q2", year: 2048 }),
+      ];
+      const result = computeTimeline(events);
+      // 3 points (event, now, event) → 2 segments
+      expect(result.segments).toHaveLength(2);
+      expect(result.markers).toHaveLength(3);
+    });
+
+    it("segment percentages sum to 100 with future events", () => {
+      const events = [
+        makeEvent({ id: "Q1", year: 2000 }),
+        makeEvent({ id: "Q2", year: 2030 }),
+        makeEvent({ id: "Q3", year: 2048 }),
+      ];
+      const result = computeTimeline(events);
+      const sum = result.segments.reduce((s, seg) => s + seg.percentage, 0);
+      expect(sum).toBeCloseTo(100, 5);
+    });
+
+    it("sorts Now among markers in chronological order", () => {
+      const events = [
+        makeEvent({ id: "Q1", name: "Past", year: 2000 }),
+        makeEvent({ id: "Q2", name: "Future", year: 2030 }),
+      ];
+      const result = computeTimeline(events);
+      expect(result.markers[0].event.name).toBe("Past");
+      expect(result.markers[1].event.name).toBe("Now");
+      expect(result.markers[2].event.name).toBe("Future");
+    });
+  });
+
+  describe("hideNow", () => {
+    it("excludes Now marker when hideNow is true and 2+ events", () => {
+      const events = [
+        makeEvent({ id: "Q1", year: 2000 }),
+        makeEvent({ id: "Q2", year: 2020 }),
+      ];
+      const result = computeTimeline(events, 2, "en-US", "Now", undefined, true);
+      // Only event markers, no Now
+      expect(result.markers).toHaveLength(2);
+      expect(result.markers.every(m => m.event.id !== "0")).toBe(true);
+    });
+
+    it("keeps Now when hideNow is true but only 1 event", () => {
+      const events = [makeEvent({ id: "Q1", year: 2000 })];
+      const result = computeTimeline(events, 2, "en-US", "Now", undefined, true);
+      expect(result.markers.some(m => m.event.id === "0")).toBe(true);
+    });
+
+    it("works with future events and hideNow", () => {
+      const events = [
+        makeEvent({ id: "Q1", year: 2000 }),
+        makeEvent({ id: "Q2", year: 2048 }),
+      ];
+      const result = computeTimeline(events, 2, "en-US", "Now", undefined, true);
+      expect(result.markers).toHaveLength(2);
+      expect(result.markers[0].position).toBe(0);
+      expect(result.markers[1].position).toBe(100);
+      expect(result.segments).toHaveLength(1);
+      expect(result.segments[0].percentage).toBe(100);
+    });
+  });
+
   describe("timespanFormat", () => {
     it("uses precise format by default (format 2)", () => {
       const events = [makeEvent({ id: "Q1", year: 2000, month: 6, day: 15 })];

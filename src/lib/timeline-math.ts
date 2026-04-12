@@ -46,7 +46,8 @@ export function computeTimeline(
   timespanFormat: TimespanFormat = 2,
   locale: string = "en-US",
   nowName: string = "Now",
-  spanT?: SpanTranslate
+  spanT?: SpanTranslate,
+  hideNow?: boolean
 ): TimelineResult {
   const precision = eventPrecision(events);
   const yearsOnly = precision === "year";
@@ -62,23 +63,55 @@ export function computeTimeline(
 
   const dates = sorted.map((e) => eventToDate(e, precision));
 
-  // Total span from oldest event to now
-  const totalSpan = spanValue(dates[0], now, precision);
+  // Find where Now belongs chronologically among the sorted events
+  const nowTime = now.getTime();
+  let nowIndex: number;
+  if (hideNow && sorted.length >= 2) {
+    nowIndex = -1; // Now excluded from timeline
+  } else {
+    nowIndex = dates.findIndex(d => d.getTime() > nowTime);
+    if (nowIndex === -1) nowIndex = dates.length; // Now is after all events
+  }
 
-  // Build segments: between each consecutive pair of points (events + now)
-  const allDates = [...dates, now];
+  // Build full ordered list of all timeline points (events + Now when included)
+  const allDates = [...dates];
+  if (nowIndex >= 0) {
+    allDates.splice(nowIndex, 0, now);
+  }
+
+  // Total span from first to last point on the timeline
+  const totalSpan = spanValue(allDates[0], allDates[allDates.length - 1], precision);
+
+  // Build segments between each consecutive pair of points
   const segments: SegmentData[] = [];
-  const total = sorted.length; // number of segments = number of events
+  const total = allDates.length - 1; // number of segments = points - 1
 
-  for (let i = 0; i < sorted.length; i++) {
+  for (let i = 0; i < total; i++) {
     const d1 = allDates[i];
     const d2 = allDates[i + 1];
     const span = spanValue(d1, d2, precision);
     const percentage = totalSpan > 0 ? (100 * span) / totalSpan : 100 / total;
 
+    const isFirst = i === 0;
+    const isLast = i === total - 1;
+
+    let startLabel = "";
+    if (isFirst) {
+      startLabel = nowIndex === 0
+        ? formatNowLabel(precision, now, locale)
+        : formatEventDate(sorted[0], locale);
+    }
+
+    let endLabel = "";
+    if (isLast) {
+      endLabel = nowIndex >= 0 && nowIndex === dates.length
+        ? formatNowLabel(precision, now, locale)
+        : formatEventDate(sorted[sorted.length - 1], locale);
+    }
+
     segments.push({
-      startLabel: i === 0 ? formatEventDate(sorted[0], locale) : "",
-      endLabel: i === sorted.length - 1 ? formatNowLabel(precision, now, locale) : "",
+      startLabel,
+      endLabel,
       spanLabel: formatSpan(d1, d2, yearsOnly, timespanFormat, monthsOnly, spanT),
       percentage,
       order: i,
@@ -86,24 +119,25 @@ export function computeTimeline(
     });
   }
 
-  // Build markers: one per event + "Now"
-  const markers: MarkerData[] = sorted.map((event, i) => {
-    const pos = totalSpan > 0
-      ? (100 * spanValue(dates[0], dates[i], precision)) / totalSpan
-      : (100 * i) / (sorted.length);
-    return {
-      event,
-      label: formatEventDate(event, locale),
-      position: pos,
-    };
-  });
+  // Build markers in chronological order with Now at its correct position (when included)
+  const nowEvent: Event = { id: "0", name: nowName, description: null, year: currentYear(), month: null, day: null, type: "", link: null, dateProperty: null, deathYear: null, deathMonth: null, deathDay: null, useDeath: false };
+  const markers: MarkerData[] = [];
+  let eventIdx = 0;
 
-  // "Now" marker
-  markers.push({
-    event: { id: "0", name: nowName, description: null, year: currentYear(), month: null, day: null, type: "", link: null, dateProperty: null, deathYear: null, deathMonth: null, deathDay: null, useDeath: false },
-    label: formatNowLabel(precision, now, locale),
-    position: 100,
-  });
+  for (let i = 0; i < allDates.length; i++) {
+    if (nowIndex >= 0 && i === nowIndex) {
+      const pos = totalSpan > 0
+        ? (100 * spanValue(allDates[0], now, precision)) / totalSpan
+        : (100 * nowIndex) / (allDates.length - 1 || 1);
+      markers.push({ event: nowEvent, label: formatNowLabel(precision, now, locale), position: pos });
+    } else {
+      const pos = totalSpan > 0
+        ? (100 * spanValue(allDates[0], dates[eventIdx], precision)) / totalSpan
+        : (100 * i) / (allDates.length - 1 || 1);
+      markers.push({ event: sorted[eventIdx], label: formatEventDate(sorted[eventIdx], locale), position: pos });
+      eventIdx++;
+    }
+  }
 
   return { markers, segments, totalDays: totalSpan, yearsOnly, precision };
 }

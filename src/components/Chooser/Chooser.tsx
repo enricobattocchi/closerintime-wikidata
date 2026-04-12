@@ -175,8 +175,8 @@ export default function Chooser({
     window.history.replaceState(null, "", buildUrl(path, title, false));
   }, [selected, title, localePath]);
 
-  // Recompute client-side when format differs from default
-  const needsClientCompute = timespanFormat !== 2;
+  // Recompute client-side when format differs from default or hideNow changed
+  const needsClientCompute = timespanFormat !== 2 || hideNow !== (serverHideNow || false);
 
   const nowLabel = tCommon("now");
   const spanT = useCallback(
@@ -189,23 +189,12 @@ export default function Chooser({
     let h: string;
 
     if (needsClientCompute && selected.length > 0) {
-      const result = computeTimeline(selected, timespanFormat, locale, nowLabel, spanT);
+      const result = computeTimeline(selected, timespanFormat, locale, nowLabel, spanT, hideNow);
       tl = { markers: result.markers, segments: result.segments };
       h = buildShareablePath(selected);
     } else {
       tl = serverTimeline || { markers: [], segments: [] };
       h = serverHref || "/";
-    }
-
-    // Strip Now marker + last segment when hidden and 2+ events
-    if (hideNow && selected.length >= 2 && tl.markers.length > 0) {
-      const lastMarker = tl.markers[tl.markers.length - 1];
-      if (lastMarker.event.id === "0") {
-        tl = {
-          markers: tl.markers.slice(0, -1),
-          segments: tl.segments.slice(0, -1),
-        };
-      }
     }
 
     return { timeline: tl, href: h };

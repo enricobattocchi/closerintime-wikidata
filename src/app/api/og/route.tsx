@@ -76,21 +76,10 @@ export async function GET(request: NextRequest) {
 
   const font = await getFont();
 
-  let timeline = allEvents.length > 0 ? computeTimeline(allEvents) : null;
-
-  if (hideNow && timeline && allEvents.length >= 2) {
-    const lastMarker = timeline.markers[timeline.markers.length - 1];
-    if (lastMarker?.event.id === "0") {
-      timeline = {
-        ...timeline,
-        markers: timeline.markers.slice(0, -1),
-        segments: timeline.segments.slice(0, -1),
-      };
-    }
-  }
+  const nowLabel = messages.common?.now || "Now";
+  let timeline = allEvents.length > 0 ? computeTimeline(allEvents, 2, "en-US", nowLabel, undefined, hideNow) : null;
 
   const fallbackDescription = messages.meta?.siteDescription || "Visualize the time between historical events.";
-  const nowLabel = messages.common?.now || "Now";
 
   return new ImageResponse(
     (

@@ -49,7 +49,7 @@ function AnimatedTimeline({ markers, segments, exit = false, onRemove, onToggleD
   const zoomedWidth = useMemo(() => {
     if (!zoomed || markers.length < 2) return undefined;
     if (typeof window !== "undefined" && window.innerWidth <= 640) return undefined;
-    // Normalize positions to the actual visible range (handles hidden Now marker)
+    // Normalize positions to the actual visible range
     const first = markers[0].position;
     const last = markers[markers.length - 1].position;
     const range = last - first;
@@ -232,7 +232,8 @@ function AnimatedTimeline({ markers, segments, exit = false, onRemove, onToggleD
       });
     } else {
       // ── SUBSEQUENT: new markers slide from Now, existing FLIP ──
-      const nowPos = markerEls[markerEls.length - 1][posProp];
+      const nowMarkerIdx = markers.findIndex(m => m.event.id === "0");
+      const nowPos = nowMarkerIdx >= 0 ? markerEls[nowMarkerIdx][posProp] : markerEls[markerEls.length - 1][posProp];
 
       markers.forEach((marker, i) => {
         const el = markerEls[i];
