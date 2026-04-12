@@ -46,47 +46,37 @@ function AnimatedTimeline({ markers, segments, exit = false, onRemove, onToggleD
   const containerRef = useRef<HTMLDivElement>(null);
   const [flippedKeys, setFlippedKeys] = useState<Set<string>>(new Set());
 
+  // Zoom uses sqrt-scaled segment proportions so that large segments don't
+  // dominate the container width. This avoids extreme scrolling when a few
+  // events are clustered near Now and one event is far away.
   const zoomedWidth = useMemo(() => {
-    if (!zoomed || markers.length < 2) return undefined;
+    if (!zoomed || segments.length < 1) return undefined;
     if (typeof window !== "undefined" && window.innerWidth <= 640) return undefined;
-    // Normalize positions to the actual visible range
-    const first = markers[0].position;
-    const last = markers[markers.length - 1].position;
-    const range = last - first;
-    if (range <= 0) return undefined;
-    let minGap = Infinity;
-    for (let i = 1; i < markers.length; i++) {
-      const gap = markers[i].position - markers[i - 1].position;
-      if (gap > 0 && gap < minGap) minGap = gap;
-    }
-    if (minGap === Infinity || minGap === 0) return undefined;
-    // Express minGap as percentage of the visible range
-    const normalizedGap = (minGap / range) * 100;
-    const requiredVw = Math.ceil((12 * 100) / normalizedGap);
+    const sqrtValues = segments.map(s => Math.sqrt(Math.max(s.percentage, 0.01)));
+    const sqrtTotal = sqrtValues.reduce((a, b) => a + b, 0);
+    if (sqrtTotal === 0) return undefined;
+    const smallestProportion = Math.min(...sqrtValues) / sqrtTotal;
+    if (smallestProportion <= 0) return undefined;
+    // Container must be wide enough for the smallest sqrt-scaled segment
+    // to be at least 160px (matching .partZoomed min-width)
+    const requiredPx = Math.ceil(160 / smallestProportion);
+    const requiredVw = Math.ceil((requiredPx / window.innerWidth) * 100);
     return `max(100%, ${requiredVw}vw)`;
-  }, [zoomed, markers]);
+  }, [zoomed, segments]);
 
   const zoomedHeight = useMemo(() => {
-    if (!zoomed || markers.length < 2) return undefined;
+    if (!zoomed || segments.length < 1) return undefined;
     if (typeof window === "undefined" || window.innerWidth > 640) return undefined;
-    const first = markers[0].position;
-    const last = markers[markers.length - 1].position;
-    const range = last - first;
-    if (range <= 0) return undefined;
-    let minGap = Infinity;
-    for (let i = 1; i < markers.length; i++) {
-      const gap = markers[i].position - markers[i - 1].position;
-      if (gap > 0 && gap < minGap) minGap = gap;
-    }
-    if (minGap === Infinity || minGap === 0) return undefined;
-    const normalizedGap = (minGap / range) * 100;
-    // Each smallest gap needs ~120px visible height for cards to breathe;
-    // express as svh so the container scales with the viewport
-    const pxPerGap = 120;
-    const svh = pxPerGap / (window.innerHeight / 100);
-    const requiredSvh = Math.ceil((svh * 100) / normalizedGap);
-    return `${requiredSvh}svh`;
-  }, [zoomed, markers]);
+    const sqrtValues = segments.map(s => Math.sqrt(Math.max(s.percentage, 0.01)));
+    const sqrtTotal = sqrtValues.reduce((a, b) => a + b, 0);
+    if (sqrtTotal === 0) return undefined;
+    const smallestProportion = Math.min(...sqrtValues) / sqrtTotal;
+    if (smallestProportion <= 0) return undefined;
+    // Each smallest gap needs ~120px visible height for cards to breathe
+    const requiredPx = Math.ceil(120 / smallestProportion);
+    const svh = requiredPx / (window.innerHeight / 100);
+    return `${Math.ceil(svh)}svh`;
+  }, [zoomed, segments]);
 
   // Re-measure after fonts load (card sizes depend on the serif font)
   const [fontsReady, setFontsReady] = useState(false);
