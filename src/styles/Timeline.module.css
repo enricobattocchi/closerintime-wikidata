@@ -312,12 +312,16 @@ a.marker:focus-visible {
   }
 
   .markerInfoFlipped {
-    position: relative;
+    position: absolute;
     bottom: auto;
+    top: 50%;
+    right: calc(100% + 5px);
     left: auto;
-    transform: none;
+    transform: translateY(-50%);
     margin-top: 0;
-    margin-left: 5px;
+    margin-left: 0;
+    text-align: right;
+    width: calc(20vw - 10px);
   }
 
   .part {

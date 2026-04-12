@@ -94,16 +94,17 @@ function AnimatedTimeline({ markers, segments, exit = false, onRemove, onToggleD
     document.fonts.ready.then(() => setFontsReady(true));
   }, []);
 
-  // Detect overlapping info cards and flip alternating ones above the line
+  // Detect overlapping info cards and flip alternating ones above/beside the line
   useLayoutEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    const isVertical = window.matchMedia("(max-width: 640px)").matches;
-    if (isVertical || exit) {
+    if (exit) {
       if (flippedKeys.size > 0) setFlippedKeys(new Set());
       return;
     }
+
+    const isVertical = window.matchMedia("(max-width: 640px)").matches;
 
     const markerEls = Array.from(
       container.querySelectorAll<HTMLElement>(`:scope > .${styles.marker}`)
@@ -114,28 +115,58 @@ function AnimatedTimeline({ markers, segments, exit = false, onRemove, onToggleD
     });
 
     const flipped = new Set<string>();
-    let lastBelowRight = -Infinity;
-    let lastAboveRight = -Infinity;
 
-    for (let i = 0; i < markers.length; i++) {
-      const rect = rects[i];
-      if (!rect) continue;
+    if (isVertical) {
+      // Vertical layout: check vertical overlap, flip to left side of timeline
+      let lastRightBottom = -Infinity;
+      let lastLeftBottom = -Infinity;
 
-      const overlapBelow = rect.left < lastBelowRight;
-      const overlapAbove = rect.left < lastAboveRight;
+      for (let i = 0; i < markers.length; i++) {
+        const rect = rects[i];
+        if (!rect) continue;
 
-      if (!overlapBelow) {
-        lastBelowRight = rect.right;
-      } else if (!overlapAbove) {
-        flipped.add(eventKey(markers[i]));
-        lastAboveRight = rect.right;
-      } else {
-        // Both tracks overlap — pick the less crowded one
-        if (lastAboveRight - rect.left < lastBelowRight - rect.left) {
+        const overlapRight = rect.top < lastRightBottom;
+        const overlapLeft = rect.top < lastLeftBottom;
+
+        if (!overlapRight) {
+          lastRightBottom = rect.bottom;
+        } else if (!overlapLeft) {
+          flipped.add(eventKey(markers[i]));
+          lastLeftBottom = rect.bottom;
+        } else {
+          if (lastLeftBottom - rect.top < lastRightBottom - rect.top) {
+            flipped.add(eventKey(markers[i]));
+            lastLeftBottom = rect.bottom;
+          } else {
+            lastRightBottom = rect.bottom;
+          }
+        }
+      }
+    } else {
+      // Horizontal layout: check horizontal overlap, flip above the line
+      let lastBelowRight = -Infinity;
+      let lastAboveRight = -Infinity;
+
+      for (let i = 0; i < markers.length; i++) {
+        const rect = rects[i];
+        if (!rect) continue;
+
+        const overlapBelow = rect.left < lastBelowRight;
+        const overlapAbove = rect.left < lastAboveRight;
+
+        if (!overlapBelow) {
+          lastBelowRight = rect.right;
+        } else if (!overlapAbove) {
           flipped.add(eventKey(markers[i]));
           lastAboveRight = rect.right;
         } else {
-          lastBelowRight = rect.right;
+          // Both tracks overlap — pick the less crowded one
+          if (lastAboveRight - rect.left < lastBelowRight - rect.left) {
+            flipped.add(eventKey(markers[i]));
+            lastAboveRight = rect.right;
+          } else {
+            lastBelowRight = rect.right;
+          }
         }
       }
     }
