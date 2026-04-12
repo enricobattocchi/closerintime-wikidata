@@ -271,13 +271,21 @@ function parseWikidataTime(timeValue: string): { year: number; month: number | n
   };
 }
 
-interface WikidataClaim {
+export interface WikidataClaim {
   mainsnak: {
     datavalue?: {
       value: { time: string; precision?: number } | { id: string } | string;
       type: string;
     };
   };
+  rank?: "preferred" | "normal" | "deprecated";
+}
+
+/** Pick the best claim from a list, skipping deprecated and preferring preferred rank */
+export function bestClaim(claims: WikidataClaim[]): WikidataClaim | null {
+  const nonDeprecated = claims.filter((c) => c.rank !== "deprecated");
+  if (nonDeprecated.length === 0) return null;
+  return nonDeprecated.find((c) => c.rank === "preferred") ?? nonDeprecated[0];
 }
 
 interface WikidataEntity {
@@ -294,7 +302,10 @@ function extractDate(claims: Record<string, WikidataClaim[]>): { year: number; m
     const propClaims = claims[prop];
     if (!propClaims?.length) continue;
 
-    const dv = propClaims[0].mainsnak.datavalue;
+    const claim = bestClaim(propClaims);
+    if (!claim) continue;
+
+    const dv = claim.mainsnak.datavalue;
     if (!dv || dv.type !== "time") continue;
 
     const timeVal = dv.value as { time: string };
@@ -406,13 +417,16 @@ async function entitiesToEvents(qids: string[], locale: string = "en"): Promise<
     let deathDay: number | null = null;
     const p570 = entity.claims["P570"];
     if (p570?.length) {
-      const dv = p570[0].mainsnak.datavalue;
-      if (dv?.type === "time") {
-        const parsed = parseWikidataTime((dv.value as { time: string }).time);
-        if (parsed) {
-          deathYear = parsed.year;
-          deathMonth = parsed.month;
-          deathDay = parsed.day;
+      const deathClaim = bestClaim(p570);
+      if (deathClaim) {
+        const dv = deathClaim.mainsnak.datavalue;
+        if (dv?.type === "time") {
+          const parsed = parseWikidataTime((dv.value as { time: string }).time);
+          if (parsed) {
+            deathYear = parsed.year;
+            deathMonth = parsed.month;
+            deathDay = parsed.day;
+          }
         }
       }
     }
