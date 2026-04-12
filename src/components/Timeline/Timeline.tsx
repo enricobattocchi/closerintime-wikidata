@@ -46,12 +46,8 @@ function AnimatedTimeline({ markers, segments, exit = false, onRemove, onToggleD
   const containerRef = useRef<HTMLDivElement>(null);
   const [flippedKeys, setFlippedKeys] = useState<Set<string>>(new Set());
 
-  // For zoom, compute min gap between event markers only (exclude Now which is a
-  // reference point, not a content card that needs minimum spacing)
-  const eventMarkers = useMemo(() => markers.filter(m => m.event.id !== "0"), [markers]);
-
   const zoomedWidth = useMemo(() => {
-    if (!zoomed || eventMarkers.length < 2) return undefined;
+    if (!zoomed || markers.length < 2) return undefined;
     if (typeof window !== "undefined" && window.innerWidth <= 640) return undefined;
     // Normalize positions to the actual visible range
     const first = markers[0].position;
@@ -59,8 +55,8 @@ function AnimatedTimeline({ markers, segments, exit = false, onRemove, onToggleD
     const range = last - first;
     if (range <= 0) return undefined;
     let minGap = Infinity;
-    for (let i = 1; i < eventMarkers.length; i++) {
-      const gap = eventMarkers[i].position - eventMarkers[i - 1].position;
+    for (let i = 1; i < markers.length; i++) {
+      const gap = markers[i].position - markers[i - 1].position;
       if (gap > 0 && gap < minGap) minGap = gap;
     }
     if (minGap === Infinity || minGap === 0) return undefined;
@@ -68,18 +64,18 @@ function AnimatedTimeline({ markers, segments, exit = false, onRemove, onToggleD
     const normalizedGap = (minGap / range) * 100;
     const requiredVw = Math.ceil((12 * 100) / normalizedGap);
     return `max(100%, ${requiredVw}vw)`;
-  }, [zoomed, markers, eventMarkers]);
+  }, [zoomed, markers]);
 
   const zoomedHeight = useMemo(() => {
-    if (!zoomed || eventMarkers.length < 2) return undefined;
+    if (!zoomed || markers.length < 2) return undefined;
     if (typeof window === "undefined" || window.innerWidth > 640) return undefined;
     const first = markers[0].position;
     const last = markers[markers.length - 1].position;
     const range = last - first;
     if (range <= 0) return undefined;
     let minGap = Infinity;
-    for (let i = 1; i < eventMarkers.length; i++) {
-      const gap = eventMarkers[i].position - eventMarkers[i - 1].position;
+    for (let i = 1; i < markers.length; i++) {
+      const gap = markers[i].position - markers[i - 1].position;
       if (gap > 0 && gap < minGap) minGap = gap;
     }
     if (minGap === Infinity || minGap === 0) return undefined;
@@ -90,7 +86,7 @@ function AnimatedTimeline({ markers, segments, exit = false, onRemove, onToggleD
     const svh = pxPerGap / (window.innerHeight / 100);
     const requiredSvh = Math.ceil((svh * 100) / normalizedGap);
     return `${requiredSvh}svh`;
-  }, [zoomed, markers, eventMarkers]);
+  }, [zoomed, markers]);
 
   // Re-measure after fonts load (card sizes depend on the serif font)
   const [fontsReady, setFontsReady] = useState(false);
