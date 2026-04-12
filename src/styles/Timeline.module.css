@@ -312,12 +312,16 @@ a.marker:focus-visible {
   }
 
   .markerInfoFlipped {
-    position: relative;
+    position: absolute;
     bottom: auto;
-    left: auto;
+    top: var(--timeline-marker-size);
+    left: calc(var(--timeline-marker-size) + 5px);
+    right: auto;
     transform: none;
     margin-top: 0;
-    margin-left: 5px;
+    margin-left: 0;
+    text-align: left;
+    width: 50vw;
   }
 
   .part {
