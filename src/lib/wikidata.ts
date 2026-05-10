@@ -520,15 +520,16 @@ async function _searchWikidata(term: string, locale: string): Promise<Event[]> {
   return events.filter((e) => e.link);
 }
 
-const _cachedSearchWikidata = unstable_cache(
-  _searchWikidata,
-  ["wikidata-search"],
-  { revalidate: 86400, tags: ["wikidata"] }
-);
-
-/** Search Wikidata for events matching a search term (cross-request cached, 24h TTL) */
+/** Search Wikidata for events matching a search term.
+ *  Cached per (term, locale) for 24h — identical queries reuse the same entry,
+ *  different queries get distinct cache entries. */
 export async function searchWikidata(term: string, locale: string = "en"): Promise<Event[]> {
-  return _cachedSearchWikidata(term, locale);
+  const cached = unstable_cache(
+    () => _searchWikidata(term, locale),
+    ["wikidata-search", term, locale],
+    { revalidate: 86400, tags: ["wikidata"] }
+  );
+  return cached();
 }
 
 /** Fetch specific events by their Q-IDs (cross-request cached 24h + per-render deduplicated) */

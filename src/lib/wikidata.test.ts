@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { bestClaim, fetchWithRetry, type WikidataClaim } from "./wikidata";
+import { bestClaim, fetchWithRetry, searchWikidata, type WikidataClaim } from "./wikidata";
 
 vi.mock("next/cache", () => ({
   unstable_cache: (fn: (...args: unknown[]) => unknown) => fn,
@@ -121,5 +121,24 @@ describe("bestClaim", () => {
     ];
     const result = bestClaim(claims);
     expect((result!.mainsnak.datavalue!.value as { time: string }).time).toBe("+2026-04-01T00:00:00Z");
+  });
+});
+
+describe("searchWikidata", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("propagates the term into the Wikidata search URL", async () => {
+    const empty = () =>
+      new Response(JSON.stringify({ search: [] }), { status: 200 });
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation(async () => empty());
+
+    await searchWikidata("Napoleon", "en");
+    await searchWikidata("Leonardo", "en");
+
+    const urls = fetchSpy.mock.calls.map((c) => String(c[0]));
+    expect(urls.some((u) => u.includes("search=Napoleon"))).toBe(true);
+    expect(urls.some((u) => u.includes("search=Leonardo"))).toBe(true);
   });
 });
