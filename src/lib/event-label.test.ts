@@ -23,6 +23,10 @@ describe("eventDisplayName", () => {
     expect(eventDisplayName(makeEvent({ name: "rome", dateProperty: "P571", type: "place" }))).toBe("Founding of Rome");
   });
 
+  it("adds Invention prefix for P571 science", () => {
+    expect(eventDisplayName(makeEvent({ name: "telephone", dateProperty: "P571", type: "science" }))).toBe("Invention of Telephone");
+  });
+
   it("adds Release prefix for P577 film", () => {
     expect(eventDisplayName(makeEvent({ name: "star wars", dateProperty: "P577", type: "film" }))).toBe("Release of Star wars");
   });
@@ -39,6 +43,7 @@ describe("eventDisplayName with translation function", () => {
       deathOf: "Morte di {name}",
       constructionOf: "Costruzione di {name}",
       foundingOf: "Fondazione di {name}",
+      inventionOf: "Invenzione di {name}",
       releaseOf: "Uscita di {name}",
       publicationOf: "Pubblicazione di {name}",
       launchOf: "Lancio di {name}",
@@ -65,6 +70,10 @@ describe("eventDisplayName with translation function", () => {
 
   it("translates founding prefix for other types", () => {
     expect(eventDisplayName(makeEvent({ name: "roma", dateProperty: "P571", type: "place" }), italianT)).toBe("Fondazione di Roma");
+  });
+
+  it("translates invention prefix for science", () => {
+    expect(eventDisplayName(makeEvent({ name: "telefono", dateProperty: "P571", type: "science" }), italianT)).toBe("Invenzione di Telefono");
   });
 
   it("translates release prefix for film", () => {

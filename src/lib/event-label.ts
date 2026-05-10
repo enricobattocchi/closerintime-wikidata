@@ -27,6 +27,7 @@ export function eventDisplayName(event: Event, t?: TranslateFunc): string {
           event.type === "building" ? "constructionOf" :
           event.type === "position" || event.type === "state" ? "establishmentOf" :
           event.type === "music" || event.type === "organization" ? "formationOf" :
+          event.type === "science" ? "inventionOf" :
           "foundingOf";
         return t(key, { name });
       }
@@ -58,6 +59,7 @@ export function eventDisplayName(event: Event, t?: TranslateFunc): string {
         event.type === "building" ? "Construction" :
         event.type === "position" || event.type === "state" ? "Establishment" :
         event.type === "music" || event.type === "organization" ? "Formation" :
+        event.type === "science" ? "Invention" :
         "Founding";
       return `${noun} of ${name}`;
     }
