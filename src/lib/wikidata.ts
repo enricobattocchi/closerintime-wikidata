@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import type { Event } from "./types";
 
 
@@ -331,8 +332,51 @@ function extractWikiLink(entity: WikidataEntity, locale: string = "en"): string 
   return null;
 }
 
-/** Fetch entities by Q-IDs and convert to Event[] */
-async function entitiesToEvents(qids: string[], locale: string = "en"): Promise<Event[]> {
+/**
+ * Fetch from the Wikidata API with a 10s timeout and one automatic retry on
+ * 429 (rate-limited) or 503 (overloaded), honouring the Retry-After header
+ * (capped at 5s so interactive paths don't stall too long).
+ */
+export async function fetchWithRetry(url: string): Promise<Response> {
+  const makeRequest = () => fetch(url, { ...FETCH_OPTIONS, signal: AbortSignal.timeout(10_000) });
+  const res = await makeRequest();
+  if (res.status !== 429 && res.status !== 503) return res;
+  const retryAfterSec = Math.min(parseInt(res.headers.get("Retry-After") ?? "1", 10), 5);
+  await new Promise<void>((resolve) => setTimeout(resolve, retryAfterSec * 1000));
+  return makeRequest();
+}
+
+/**
+ * Fetch English labels for a set of Wikidata type entities (P31 targets).
+ * These are stable Q-IDs (Q5 = human, Q3624078 = sovereign state, etc.) so
+ * we cache them for 7 days, separate from the entity data cache.
+ */
+const fetchTypeLabels = unstable_cache(
+  async (typeIds: string[]): Promise<Record<string, string>> => {
+    const url = new URL(WIKIDATA_API);
+    url.searchParams.set("action", "wbgetentities");
+    url.searchParams.set("ids", typeIds.join("|"));
+    url.searchParams.set("props", "labels");
+    url.searchParams.set("languages", "en");
+    url.searchParams.set("format", "json");
+    url.searchParams.set("origin", "*");
+
+    const res = await fetchWithRetry(url.toString());
+    if (!res.ok) return {};
+    const data = await res.json();
+    const result: Record<string, string> = {};
+    for (const [id, ent] of Object.entries(data.entities ?? {})) {
+      const label = (ent as WikidataEntity).labels?.en?.value;
+      if (label) result[id] = label;
+    }
+    return result;
+  },
+  ["wikidata-type-labels"],
+  { revalidate: 604800, tags: ["wikidata-types"] }
+);
+
+/** Fetch entities by Q-IDs and convert to Event[] — raw implementation */
+async function _entitiesToEvents(qids: string[], locale: string): Promise<Event[]> {
   if (qids.length === 0) return [];
 
   // Fetch labels/descriptions in the requested locale (and English as fallback)
@@ -349,7 +393,7 @@ async function entitiesToEvents(qids: string[], locale: string = "en"): Promise<
   url.searchParams.set("format", "json");
   url.searchParams.set("origin", "*");
 
-  const res = await fetch(url.toString(), FETCH_OPTIONS);
+  const res = await fetchWithRetry(url.toString());
   if (!res.ok) {
     throw new Error(`Wikidata API error: ${res.status}`);
   }
@@ -374,24 +418,13 @@ async function entitiesToEvents(qids: string[], locale: string = "en"): Promise<
     }
   }
 
-  // Fetch labels for type targets — always in English for TYPE_MAPPING
+  // Fetch labels for type targets using the long-lived separate cache
   const typeLabels = new Map<string, string>();
   if (typeTargetIds.size > 0) {
-    const typeUrl = new URL(WIKIDATA_API);
-    typeUrl.searchParams.set("action", "wbgetentities");
-    typeUrl.searchParams.set("ids", [...typeTargetIds].join("|"));
-    typeUrl.searchParams.set("props", "labels");
-    typeUrl.searchParams.set("languages", "en");
-    typeUrl.searchParams.set("format", "json");
-    typeUrl.searchParams.set("origin", "*");
-
-    const typeRes = await fetch(typeUrl.toString(), FETCH_OPTIONS);
-    if (typeRes.ok) {
-      const typeData = await typeRes.json();
-      for (const [id, ent] of Object.entries(typeData.entities || {})) {
-        const label = (ent as WikidataEntity).labels?.en?.value;
-        if (label) typeLabels.set(id, label);
-      }
+    const sortedTypeIds = [...typeTargetIds].sort();
+    const labelMap = await fetchTypeLabels(sortedTypeIds);
+    for (const [id, label] of Object.entries(labelMap)) {
+      typeLabels.set(id, label);
     }
   }
 
@@ -451,12 +484,19 @@ async function entitiesToEvents(qids: string[], locale: string = "en"): Promise<
   return events;
 }
 
+/** Cross-request cache for entity fetches (24h TTL) */
+const entitiesToEvents = unstable_cache(
+  _entitiesToEvents,
+  ["wikidata-entities"],
+  { revalidate: 86400, tags: ["wikidata"] }
+);
+
 /**
- * Search Wikidata for events matching a search term.
+ * Search Wikidata for events matching a search term — raw implementation.
  * Step 1: Use wbsearchentities for fast text search (up to 30 candidates).
  * Step 2: Fetch entity data via wbgetentities, filter to those with dates.
  */
-export async function searchWikidata(term: string, locale: string = "en"): Promise<Event[]> {
+async function _searchWikidata(term: string, locale: string): Promise<Event[]> {
   const searchUrl = new URL(WIKIDATA_API);
   searchUrl.searchParams.set("action", "wbsearchentities");
   searchUrl.searchParams.set("search", term);
@@ -465,7 +505,7 @@ export async function searchWikidata(term: string, locale: string = "en"): Promi
   searchUrl.searchParams.set("format", "json");
   searchUrl.searchParams.set("origin", "*");
 
-  const searchRes = await fetch(searchUrl.toString(), FETCH_OPTIONS);
+  const searchRes = await fetchWithRetry(searchUrl.toString());
   if (!searchRes.ok) {
     throw new Error(`Wikidata search error: ${searchRes.status}`);
   }
@@ -480,7 +520,18 @@ export async function searchWikidata(term: string, locale: string = "en"): Promi
   return events.filter((e) => e.link);
 }
 
-/** Fetch specific events by their Q-IDs (cached per React render pass via comma-joined key) */
+const _cachedSearchWikidata = unstable_cache(
+  _searchWikidata,
+  ["wikidata-search"],
+  { revalidate: 86400, tags: ["wikidata"] }
+);
+
+/** Search Wikidata for events matching a search term (cross-request cached, 24h TTL) */
+export async function searchWikidata(term: string, locale: string = "en"): Promise<Event[]> {
+  return _cachedSearchWikidata(term, locale);
+}
+
+/** Fetch specific events by their Q-IDs (cross-request cached 24h + per-render deduplicated) */
 export const fetchWikidataEvents = cache(async (qidsKey: string, locale: string = "en"): Promise<Event[]> => {
   return entitiesToEvents(qidsKey.split(","), locale);
 });
