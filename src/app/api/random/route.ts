@@ -93,9 +93,7 @@ export async function GET(request: Request) {
     try {
       const events = await fetchWikidataEvents(randomId, lang);
       if (events.length > 0 && events[0].link) {
-        return NextResponse.json(events[0], {
-          headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600" },
-        });
+        return NextResponse.json(events[0]);
       }
     } catch {
       // try another
