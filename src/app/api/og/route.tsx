@@ -7,7 +7,7 @@ import { parseSegments } from "@/lib/url-params";
 import { eventDisplayName } from "@/lib/event-label";
 import enMessages from "@/i18n/messages/en.json";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 let fontCache: ArrayBuffer | null = null;
 

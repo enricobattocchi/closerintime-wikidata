@@ -1,5 +1,9 @@
-import { describe, it, expect } from "vitest";
-import { bestClaim, type WikidataClaim } from "./wikidata";
+import { describe, it, expect, vi, afterEach } from "vitest";
+import { bestClaim, fetchWithRetry, type WikidataClaim } from "./wikidata";
+
+vi.mock("next/cache", () => ({
+  unstable_cache: (fn: (...args: unknown[]) => unknown) => fn,
+}));
 
 function makeClaim(time: string, rank?: "preferred" | "normal" | "deprecated"): WikidataClaim {
   return {
@@ -12,6 +16,59 @@ function makeClaim(time: string, rank?: "preferred" | "normal" | "deprecated"): 
     rank,
   };
 }
+
+describe("fetchWithRetry", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("returns the response directly on success", async () => {
+    const mockRes = new Response(JSON.stringify({ ok: true }), { status: 200 });
+    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(mockRes);
+    const res = await fetchWithRetry("https://example.com/api");
+    expect(res.status).toBe(200);
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("retries once on 429 and returns the second response", async () => {
+    const retry429 = new Response(null, {
+      status: 429,
+      headers: { "Retry-After": "0" },
+    });
+    const success = new Response(JSON.stringify([]), { status: 200 });
+    vi.spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(retry429)
+      .mockResolvedValueOnce(success);
+    const res = await fetchWithRetry("https://example.com/api");
+    expect(res.status).toBe(200);
+    expect(fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it("retries once on 503 and returns the second response", async () => {
+    const retry503 = new Response(null, {
+      status: 503,
+      headers: { "Retry-After": "0" },
+    });
+    const success = new Response(JSON.stringify([]), { status: 200 });
+    vi.spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(retry503)
+      .mockResolvedValueOnce(success);
+    const res = await fetchWithRetry("https://example.com/api");
+    expect(res.status).toBe(200);
+    expect(fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it("returns the second 429 response without a third attempt", async () => {
+    const retry = new Response(null, { status: 429, headers: { "Retry-After": "0" } });
+    const retry2 = new Response(null, { status: 429, headers: { "Retry-After": "0" } });
+    vi.spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(retry)
+      .mockResolvedValueOnce(retry2);
+    const res = await fetchWithRetry("https://example.com/api");
+    expect(res.status).toBe(429);
+    expect(fetch).toHaveBeenCalledTimes(2);
+  });
+});
 
 describe("bestClaim", () => {
   it("returns the preferred claim over normal ones", () => {

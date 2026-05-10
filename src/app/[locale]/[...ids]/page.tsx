@@ -8,7 +8,7 @@ import { buildShareablePath } from "@/lib/custom-event-url";
 import { parseSegments } from "@/lib/url-params";
 import Chooser from "@/components/Chooser/Chooser";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 interface PageProps {
   params: Promise<{ locale: string; ids: string[] }>;
