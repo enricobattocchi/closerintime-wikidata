@@ -38,6 +38,45 @@ async function loadMessages(lang: string): Promise<Record<string, Record<string,
   }
 }
 
+/** Resolve `{name}`-style placeholders. */
+function interpolate(template: string, values?: Record<string, string | number>): string {
+  if (!values) return template;
+  return template.replace(/\{(\w+)\}/g, (_, k) => (k in values ? String(values[k]) : `{${k}}`));
+}
+
+/** Resolve a single ICU plural message like `{count, plural, one {# year} other {# years}}`. */
+function resolvePlural(template: string, locale: string, values?: Record<string, string | number>): string {
+  const pluralMatch = template.match(/^\{(\w+),\s*plural,\s*([\s\S]+)\}$/);
+  if (!pluralMatch) return interpolate(template, values);
+
+  const [, varName, body] = pluralMatch;
+  const count = Number(values?.[varName] ?? 0);
+
+  // Parse branches like: one {# year} other {# years} =0 {no years}
+  const branches = new Map<string, string>();
+  const branchRegex = /(=?\w+)\s*\{([^{}]*)\}/g;
+  let m: RegExpExecArray | null;
+  while ((m = branchRegex.exec(body))) {
+    branches.set(m[1], m[2]);
+  }
+
+  let chosen = branches.get(`=${count}`);
+  if (chosen === undefined) {
+    const cat = new Intl.PluralRules(locale).select(count);
+    chosen = branches.get(cat) ?? branches.get("other") ?? template;
+  }
+
+  return interpolate(chosen.replace(/#/g, String(count)), values);
+}
+
+function makeTranslator(messages: Record<string, Record<string, string>>, namespace: string, locale: string) {
+  return (key: string, values?: Record<string, string | number>): string => {
+    const template = messages[namespace]?.[key];
+    if (!template) return key;
+    return resolvePlural(template, locale, values);
+  };
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const ids = searchParams.get("ids");
@@ -77,7 +116,9 @@ export async function GET(request: NextRequest) {
   const font = await getFont();
 
   const nowLabel = messages.common?.now || "Now";
-  let timeline = allEvents.length > 0 ? computeTimeline(allEvents, 2, "en-US", nowLabel, undefined, hideNow) : null;
+  const spanT = makeTranslator(messages, "date", lang);
+  const eventLabelT = makeTranslator(messages, "eventLabel", lang);
+  let timeline = allEvents.length > 0 ? computeTimeline(allEvents, 2, lang, nowLabel, spanT, hideNow) : null;
 
   const fallbackDescription = messages.meta?.siteDescription || "Visualize the time between historical events.";
 
@@ -197,9 +238,9 @@ export async function GET(request: NextRequest) {
                         overflow: "visible",
                       }}
                     >
-                      {isNow ? nowLabel : eventDisplayName(marker.event).length > 25
-                        ? eventDisplayName(marker.event).slice(0, 23) + "\u2026"
-                        : eventDisplayName(marker.event)}
+                      {isNow ? nowLabel : eventDisplayName(marker.event, eventLabelT).length > 25
+                        ? eventDisplayName(marker.event, eventLabelT).slice(0, 23) + "\u2026"
+                        : eventDisplayName(marker.event, eventLabelT)}
                     </div>
                   </div>
                 );
