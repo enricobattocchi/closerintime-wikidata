@@ -14,9 +14,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const events = await searchWikidata(sanitized, lang);
-    return NextResponse.json(events, {
-      headers: { "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=604800" },
-    });
+    return NextResponse.json(events);
   } catch {
     return NextResponse.json(
       { error: "Failed to search Wikidata" },
